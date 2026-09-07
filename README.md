@@ -20,6 +20,10 @@ The local API base defaults to `/api/v1` and is configurable through
 at `http://localhost:3000`; no production API URL is committed. Explicit absolute API origins are validated against the independent-product
 host denylist; the same-origin default remains the safe local baseline.
 
+## CI and deployment boundary
+
+CI runs on pull requests and pushes to `main` and checks install, lint, types, unit tests, build, and dependency audit. Phase 00 configures no deployment workflow; production deployment remains a separate approved task.
+
 ## Implementation references
 
 The shell follows the official React, Vite, and React Router documentation:
