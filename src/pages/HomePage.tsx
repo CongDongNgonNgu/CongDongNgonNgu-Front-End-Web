@@ -9,6 +9,19 @@ export function HomePage() {
     <div className="home-page">
       <section className="intro-grid" aria-labelledby="page-title">
         <div className="intro-copy">
+          <figure className="logo-showcase">
+            <img
+              className="logo-showcase-mark"
+              src="/brand/congdongngonngu-mark.png"
+              alt=""
+              width="512"
+              height="512"
+            />
+            <figcaption className="logo-showcase-caption">
+              <span className="logo-showcase-name">CONGDONGNGONNGU.VN</span>
+              <span className="logo-showcase-tagline">Global Language Community</span>
+            </figcaption>
+          </figure>
           <p className="eyebrow">Independent web foundation</p>
           <h1 id="page-title">A language community foundation.</h1>
           <p className="lede">
