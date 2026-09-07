@@ -1,0 +1,6 @@
+# CongDongNgonNgu
+
+Independent language community foundation. This temporary shell exposes only
+the foundation home and intentionally does not expose domain features yet.
+
+- [Foundation home](/)
