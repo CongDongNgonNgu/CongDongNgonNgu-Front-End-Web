@@ -17,7 +17,8 @@ npm run build
 
 The local API base defaults to `/api/v1` and is configurable through
 `VITE_API_BASE_URL`. Vite proxies that path to the independent local backend
-at `http://localhost:3000`; no production API URL is committed.
+at `http://localhost:3000`; no production API URL is committed. Explicit absolute API origins are validated against the independent-product
+host denylist; the same-origin default remains the safe local baseline.
 
 ## Implementation references
 

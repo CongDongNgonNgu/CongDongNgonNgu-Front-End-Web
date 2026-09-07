@@ -14,6 +14,8 @@ export interface ApiFailure {
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
+const BLOCKED_API_HOST_MARKERS = ["eduai", "giaoducso.org.vn"] as const;
+
 const DEFAULT_API_BASE_URL = "/api/v1";
 
 export class ApiClientError extends Error {
@@ -64,6 +66,8 @@ export function resolveApiBaseUrl(
     throw new Error("API base URL must use HTTP or HTTPS");
   }
 
+  assertIndependentApiUrl(url);
+
   const path = url.pathname.replace(/\/+$/, "") || "/";
   return isRootRelative ? path : `${url.origin}${path}`;
 }
@@ -106,6 +110,13 @@ export class ApiClient {
 
     if (isApiSuccess<T>(body)) return body.data;
     return body as T;
+  }
+}
+
+function assertIndependentApiUrl(url: URL): void {
+  const hostname = url.hostname.toLowerCase();
+  if (BLOCKED_API_HOST_MARKERS.some((marker) => hostname.includes(marker))) {
+    throw new Error("API base URL points to a blocked external-product host");
   }
 }
 

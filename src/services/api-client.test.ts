@@ -25,6 +25,10 @@ describe("resolveApiBaseUrl", () => {
     expect(() => resolveApiBaseUrl("/api/v1?token=secret", "https://app.example.test"))
       .toThrow(/query/i);
   });
+  it("rejects an external-product API origin", () => {
+    expect(() => resolveApiBaseUrl("https://api.eduai.example.test/api/v1", "https://app.example.test"))
+      .toThrow("API base URL points to a blocked external-product host");
+  });
 });
 
 describe("ApiClient", () => {
