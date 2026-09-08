@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import styles from "./Button.module.css";
 
 export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -23,10 +24,10 @@ export function Button({
   ...props
 }: ButtonProps) {
   const classes = [
-    "button",
-    `button--${variant}`,
-    `button--${size}`,
-    fullWidth ? "button--full" : "",
+    styles.button,
+    styles[`button--${variant}`],
+    styles[`button--${size}`],
+    fullWidth ? styles.buttonFull : "",
     className ?? "",
   ]
     .filter(Boolean)
@@ -41,7 +42,7 @@ export function Button({
       aria-busy={loading || undefined}
       data-state={loading ? "loading" : disabled ? "disabled" : "default"}
     >
-      {loading ? <span className="button-spinner" aria-hidden="true" /> : null}
+      {loading ? <span className={styles.buttonSpinner} aria-hidden="true" /> : null}
       <span>{children}</span>
     </button>
   );

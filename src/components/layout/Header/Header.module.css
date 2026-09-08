@@ -1,0 +1,340 @@
+.siteHeader {
+  position: sticky;
+  z-index: var(--z-header);
+  top: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+}
+
+.desktopHeader,
+.mobileHeader {
+  min-height: 4.5rem;
+}
+
+.headerInner,
+.mobileHeaderInner {
+  display: flex;
+  min-height: inherit;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.headerInner {
+  justify-content: space-between;
+}
+
+.brand,
+.mobileBrand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.brand {
+  flex: 0 1 20rem;
+  gap: var(--space-3);
+}
+
+.brandMark,
+.mobileBrand img {
+  display: block;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.brandMark {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.brandWordmark {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+}
+
+.brandName {
+  overflow: hidden;
+  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brandTagline {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: var(--font-weight-regular);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.desktopNav {
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.desktopNavList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLinkActive,
+.iconButton,
+.accountTrigger {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  background: transparent;
+  text-decoration: none;
+}
+
+.navLinkActive {
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.navLinkActive:hover,
+.navLinkActive:focus-visible,
+.iconButton:hover,
+.accountTrigger:hover {
+  color: var(--color-brand-navy);
+  background: var(--color-surface-muted);
+}
+
+.navLinkActive {
+  color: var(--color-brand-navy);
+  box-shadow: inset 0 -3px 0 var(--color-brand-orange);
+}
+
+.iconButton,
+.accountTrigger {
+  min-width: 2.75rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.headerActions,
+.mobileHeaderActions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.accountTrigger {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.accountMenuWrap {
+  position: relative;
+}
+
+.accountMenu,
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.accountMenu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  min-width: 11rem;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-medium);
+}
+
+.dropdownItem {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.dropdownItem:hover,
+.dropdownItem:focus-visible {
+  color: var(--color-brand-navy);
+  background: var(--color-surface-muted);
+}
+
+.drawerNav {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.drawerNavItem {
+  display: flex;
+  min-height: 2.875rem;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.drawerNavItem:hover,
+.drawerNavItem:focus-visible {
+  background: var(--color-surface-muted);
+}
+
+.drawerNavItemActive {
+  color: var(--color-brand-navy);
+  background: var(--color-surface-active);
+  box-shadow: inset 3px 0 0 var(--color-brand-orange);
+  font-weight: var(--font-weight-semibold);
+}
+
+.searchPanel {
+  position: absolute;
+  z-index: 25;
+  top: 100%;
+  right: 0;
+  left: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-medium);
+}
+
+.searchPanelInner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+}
+
+.searchPanelInner form {
+  flex: 1;
+}
+
+.searchPanelStatus {
+  padding-bottom: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.mobileHeader,
+.mobileActionBar {
+  display: none;
+}
+
+@media (max-width: 64rem) {
+  .brandTagline {
+    display: none;
+  }
+}
+
+@media (max-width: 47.999rem) {
+  .desktopHeader {
+    display: none;
+  }
+
+  .mobileHeader {
+    display: block;
+    min-height: 3.5rem;
+  }
+
+  .mobileHeaderInner {
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .mobileBrand {
+    min-width: 0;
+    min-height: 2.75rem;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+  }
+
+  .mobileBrand img {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .mobileBrand span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobileHeaderActions {
+    gap: 0;
+  }
+
+  .mobileAccountButton {
+    min-width: 2.75rem;
+    padding: var(--space-1);
+    border: 0;
+  }
+
+  .mobileActionBar {
+    position: fixed;
+    z-index: var(--z-header);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-height: 4.25rem;
+    padding: var(--space-1) 0 max(var(--space-2), env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface-elevated);
+    box-shadow: 0 -4px 16px rgba(24, 50, 76, 0.08);
+  }
+
+  .mobileAction {
+    display: grid;
+    min-width: 0;
+    min-height: 3.5rem;
+    align-content: center;
+    justify-items: center;
+    gap: 0.25rem;
+    padding: var(--space-1);
+    border: 0;
+    border-radius: 0;
+    color: var(--color-text-secondary);
+    background: transparent;
+    font-size: 0.6875rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.1;
+    text-decoration: none;
+  }
+
+  .mobileAction:hover,
+  .mobileAction:focus-visible {
+    color: var(--color-brand-navy);
+    background: var(--color-surface-muted);
+  }
+
+  .mobileAction[aria-current="page"] {
+    color: var(--color-brand-navy);
+    box-shadow: inset 0 3px 0 var(--color-brand-orange);
+    font-weight: var(--font-weight-semibold);
+  }
+}

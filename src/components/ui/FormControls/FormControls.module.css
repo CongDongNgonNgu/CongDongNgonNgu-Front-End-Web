@@ -1,0 +1,95 @@
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.fieldLabel {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.fieldHint,
+.fieldError {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  line-height: var(--leading-body);
+}
+
+.fieldHint { color: var(--color-text-secondary); }
+.fieldError { color: var(--color-danger); }
+
+.textInput,
+.selectControl {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+}
+
+.textInput:focus,
+.selectControl:focus {
+  border-color: var(--color-focus);
+  outline: 3px solid rgb(217 110 40 / 0.18);
+  outline-offset: 0;
+}
+
+.textInput[aria-invalid="true"] { border-color: var(--color-danger); }
+.textArea { min-height: 7rem; resize: vertical; }
+
+.checkControl,
+.switchControl {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-primary);
+}
+
+.switchTrack {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 1.5rem;
+  align-items: center;
+  padding: 0.1875rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+}
+
+.switchTrack span {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: var(--color-surface-elevated);
+  transition: transform var(--motion-standard);
+}
+
+.switchControl input:checked + .switchTrack { background: var(--color-brand-green); }
+.switchControl input:checked + .switchTrack span { transform: translateX(1.25rem); }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-secondary);
+  background: transparent;
+  font-weight: var(--font-weight-semibold);
+}
+
+.tabActive {
+  color: var(--color-brand-navy);
+  border-bottom-color: var(--color-brand-orange);
+}
+
+.tab:disabled { opacity: 0.55; }

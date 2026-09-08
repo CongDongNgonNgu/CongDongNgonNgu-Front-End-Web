@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import { Footer } from "./Footer";
-import { Header } from "./Header";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { Footer } from "./Footer/Footer";
+import { Header } from "./Header/Header";
 
 interface AppShellProps {
   children: ReactNode;
@@ -15,7 +14,6 @@ export function AppShell({ children, isAuthenticated = false }: AppShellProps) {
       <Header isAuthenticated={isAuthenticated} />
       <main className="shell-width site-main" id="main-content" tabIndex={-1}>{children}</main>
       <Footer />
-      <MobileBottomNav />
     </div>
   );
 }

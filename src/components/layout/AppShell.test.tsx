@@ -11,16 +11,18 @@ function renderShell(isAuthenticated = false) {
 }
 
 describe("AppShell", () => {
-  it("opens and closes the mobile drawer with future routes gated", async () => {
+  it("opens and closes the mobile drawer with real public destinations", async () => {
     const user = userEvent.setup();
     renderShell();
 
-    await user.click(screen.getByRole("button", { name: "Mở menu" }));
+    await user.click(screen.getAllByRole("button", { name: "Mở menu" })[0]);
 
     const drawer = screen.getByRole("dialog", { name: "Menu" });
     expect(drawer).toBeVisible();
     expect(within(drawer).getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
-    expect(screen.getAllByText("Sắp có").length).toBeGreaterThan(5);
+    expect(within(drawer).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("href", "#languages");
+    expect(within(drawer).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("href", "#community");
+    expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
     expect(document.activeElement).toHaveAttribute("aria-label", "Đóng menu");
 
     await user.click(screen.getByRole("button", { name: "Đóng menu" }));
@@ -35,20 +37,22 @@ describe("AppShell", () => {
     expect(screen.getByRole("dialog", { name: /tìm kiếm trong cộng đồng/i })).toBeVisible();
     await user.type(screen.getByPlaceholderText("Tìm kiếm trong cộng đồng"), "ngôn ngữ");
     await user.click(screen.getByRole("button", { name: "Tìm" }));
-    expect(screen.getByRole("status")).toHaveTextContent(/tìm kiếm sẽ khả dụng/i);
+    expect(screen.getByRole("status")).toHaveTextContent(/đã nhận từ khóa/i);
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog", { name: /tìm kiếm trong cộng đồng/i })).not.toBeInTheDocument();
+    expect(document.activeElement).toHaveAttribute("aria-label", "Tìm kiếm");
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Phòng nói");
-    expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Sắp có");
+    expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Ngôn ngữ");
+    expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Cách bắt đầu");
+    expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
   });
 
-  it("renders the logged-in account variant without activating auth routes", () => {
+  it("renders the logged-in account variant without unavailable badges", () => {
     renderShell(true);
 
     expect(screen.getAllByRole("button", { name: "Tài khoản" }).length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: /đăng nhập, sắp có/i })).not.toBeInTheDocument();
-    expect(screen.getAllByText("Sắp có").length).toBeGreaterThan(4);
+    expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
   });
 });

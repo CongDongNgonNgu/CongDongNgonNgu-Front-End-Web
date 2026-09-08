@@ -1,0 +1,22 @@
+.listRow {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.listRow > span:last-child {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.listRow strong {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+.listRow span:last-child span {
+  color: var(--color-text-secondary);
+  line-height: var(--leading-body);
+}
