@@ -22,7 +22,7 @@ export function HeaderMobile({ isAuthenticated, searchOpen, onSearch, onMenu, me
         <div className="mobile-header__actions">
           <button className="icon-button" type="button" onClick={onSearch} aria-label="Tìm kiếm" aria-expanded={searchOpen} aria-controls="global-search-panel"><span className="shell-icon" aria-hidden="true">⌕</span></button>
           <button className="icon-button" type="button" disabled aria-label="Thông báo, sắp có"><span className="shell-icon" aria-hidden="true">•</span></button>
-          {isAuthenticated ? <Button variant="quiet" size="sm" className="mobile-account-button" aria-label="Tài khoản"><Avatar name="Người học" size="sm" /></Button> : null}
+          {isAuthenticated ? <Button variant="quiet" size="sm" className="mobile-account-button" onClick={onMenu} aria-label="Tài khoản" aria-haspopup="dialog"><Avatar name="Người học" size="sm" /></Button> : null}
           <button ref={menuButtonRef} className="icon-button" type="button" onClick={onMenu} aria-label="Mở menu"><span className="shell-icon" aria-hidden="true">≡</span></button>
         </div>
       </div>
