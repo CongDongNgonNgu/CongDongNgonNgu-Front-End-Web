@@ -3,9 +3,9 @@
   --color-brand-orange: #d96e28;
   --color-brand-green: #1e8a66;
   --color-brand-cyan: #2a9db0;
-  --color-surface: #f4f6f2;
+  --color-surface: #f8faf6;
   --color-surface-elevated: #fbfcf9;
-  --color-surface-muted: #e7ece8;
+  --color-surface-muted: #edf2ee;
   --color-text-primary: #18324c;
   --color-text-secondary: #5f6e78;
   --color-text-on-brand: #ffffff;
@@ -19,6 +19,9 @@
   --color-brand-navy-hover: #153652;
   --color-brand-orange-hover: #b9561b;
   --color-brand-orange-readable: #a64b14;
+  --color-brand-orange-bright: #fd8a42;
+  --color-brand-orange-bright-hover: #f7a05e;
+  --color-brand-orange-on-bright: #682c00;
   --color-surface-active: #e2edf2;
   --color-info-strong: #075d70;
   --color-info-surface: #d7f0f3;

@@ -10,6 +10,10 @@ afterEach(() => {
 describe('final human-first homepage narrative', () => {
   it('renders the required product sections and language ecosystem', () => {
     render(<App />);
+    expect(screen.getByRole('heading', { name: 'Học ngôn ngữ cùng nhau' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Xem cách bắt đầu' })).toHaveAttribute('href', '#how-it-works');
+    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '#community');
+    expect(screen.getByRole('img', { name: /cộng đồng đa ngôn ngữ/i })).toHaveAttribute('src', '/brand/language-community-hero-v2.jpg');
     expect(screen.getByRole('heading', { name: /vòng lặp học tập cộng đồng/i })).toBeVisible();
     expect(screen.getByRole('heading', { name: /thư viện ngôn ngữ mở/i })).toBeVisible();
     expect(screen.getByRole('heading', { name: /ngôn ngữ của bạn thuộc về thế giới/i })).toBeVisible();

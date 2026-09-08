@@ -13,7 +13,7 @@ describe("App", () => {
 
     expect(screen.getByRole("banner")).toHaveTextContent("Cộng đồng ngôn ngữ");
     expect(screen.getByRole("heading", { name: /học ngôn ngữ cùng nhau/i })).toBeVisible();
-    expect(screen.getByRole("img", { name: /bốn người cùng chia sẻ/i })).toHaveAttribute("src", "/brand/language-community-hero-v1.jpg");
+    expect(screen.getByRole("img", { name: /cộng đồng đa ngôn ngữ/i })).toHaveAttribute("src", "/brand/language-community-hero-v2.jpg");
     expect(screen.getByRole("link", { name: /bỏ qua đến nội dung chính/i })).toHaveAttribute("href", "#main-content");
     expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
     expect(screen.getByRole("contentinfo")).toHaveTextContent("Cùng nhau học hỏi và chia sẻ ngôn ngữ");

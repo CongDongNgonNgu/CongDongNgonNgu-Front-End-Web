@@ -48,35 +48,30 @@ export function HomePage() {
     <div className={styles.homePage}>
       <section className={styles.hero} aria-labelledby='page-title'>
         <div className={styles.heroCopy}>
-          <p className={styles.kicker}>Cộng đồng ngôn ngữ</p>
-          <h1 id='page-title'>Học ngôn ngữ cùng nhau.</h1>
+          <h1 id='page-title'>Học ngôn ngữ cùng nhau</h1>
           <p className={styles.lede}>
-            Một cộng đồng mở để học cùng con người, thực hành với AI và xây dựng tri thức ngôn ngữ.
+            Kết nối con người thực sự. Xây dựng môi trường ngôn ngữ thực tế qua việc chia sẻ và học hỏi lẫn nhau.
           </p>
           <div className={styles.heroActions}>
             <a className={joinClasses(styles.buttonLink, styles.buttonPrimary)} href='#how-it-works'>
               Xem cách bắt đầu
-              <Icon name='arrow-left-right' size={18} />
             </a>
-            <a className={styles.textLink} href='#languages'>Khám phá ngôn ngữ</a>
+            <a className={joinClasses(styles.buttonLink, styles.buttonSecondary)} href='#community'>
+              Khám phá cộng đồng
+            </a>
           </div>
-          <p className={styles.heroNote}>
-            <Icon name='users' size={18} />
-            Từ người mới bắt đầu đến người muốn chia sẻ điều mình biết.
-          </p>
         </div>
         <figure className={styles.heroMedia}>
           <img
-            src='/brand/language-community-hero-v1.jpg'
-            alt='Bốn người cùng chia sẻ ghi chú học ngôn ngữ'
-            width='1200'
-            height='800'
+            src='/brand/language-community-hero-v2.jpg'
+            alt='Cộng đồng đa ngôn ngữ cùng chia sẻ ghi chú học tập'
+            width='512'
+            height='286'
             loading='eager'
             decoding='async'
           />
           <figcaption>
-            <span>Cộng đồng học tập thực tế từ những con người thực tế.</span>
-            <Icon name='globe' size={18} />
+            Cộng đồng học tập thực tế từ những con người thực tế.
           </figcaption>
         </figure>
       </section>

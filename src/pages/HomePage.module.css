@@ -1,4 +1,6 @@
 .homePage {
+  --home-radius: 1.125rem;
+
   padding: clamp(2.5rem, 6vw, 5rem) 0 7rem;
   overflow-x: clip;
 }
@@ -73,18 +75,32 @@
 .buttonLink {
   padding: var(--space-2) var(--space-4);
   border: 1px solid transparent;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-pill);
   transition: background-color var(--motion-standard), border-color var(--motion-standard), transform var(--motion-standard);
 }
 
 .buttonPrimary {
-  color: var(--color-text-on-brand);
-  background: var(--color-brand-navy);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
 }
 
 .buttonPrimary:hover,
 .buttonPrimary:focus-visible {
-  background: var(--color-brand-navy-hover);
+  background: var(--color-brand-orange-bright-hover);
+  transform: translateY(-1px);
+}
+
+.buttonSecondary {
+  color: var(--color-brand-navy);
+  border-color: var(--color-brand-navy);
+  background: transparent;
+}
+
+.buttonSecondary:hover,
+.buttonSecondary:focus-visible {
+  color: var(--color-brand-navy);
+  background: var(--color-surface-muted);
+  border-color: var(--color-brand-navy);
   transform: translateY(-1px);
 }
 
@@ -102,22 +118,6 @@
   text-decoration-color: currentColor;
 }
 
-.heroNote {
-  display: flex;
-  max-width: 30rem;
-  align-items: center;
-  gap: var(--space-2);
-  margin: var(--space-6) 0 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  line-height: var(--leading-body);
-}
-
-.heroNote svg {
-  flex: 0 0 auto;
-  color: var(--color-brand-green);
-}
-
 .heroMedia {
   min-width: 0;
   margin: 0;
@@ -127,25 +127,21 @@
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border-radius: var(--radius-surface);
+  border-radius: var(--home-radius);
   object-fit: cover;
-  box-shadow: var(--shadow-low);
+  box-shadow: 0 0.75rem 2rem rgb(24 50 76 / 0.12);
 }
 
 .heroMedia figcaption {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--space-3);
   padding-top: var(--space-3);
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   line-height: 1.4;
-}
-
-.heroMedia figcaption svg {
-  flex: 0 0 auto;
-  color: var(--color-brand-cyan);
+  text-align: center;
 }
 
 .section {
@@ -313,7 +309,7 @@
   gap: clamp(2rem, 7vw, 7rem);
   align-items: stretch;
   padding: clamp(2rem, 5vw, 4rem);
-  border-radius: var(--radius-surface);
+  border-radius: var(--home-radius);
   background: var(--color-info-surface);
 }
 
@@ -324,7 +320,7 @@
   justify-content: space-between;
   padding: clamp(1.5rem, 4vw, 3rem);
   border: 1px solid var(--color-info-border);
-  border-radius: var(--radius-surface);
+  border-radius: var(--home-radius);
   background: var(--color-surface-elevated);
 }
 
@@ -514,7 +510,7 @@
 .librarySection {
   padding: clamp(2rem, 5vw, 4rem);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
+  border-radius: var(--home-radius);
   background: var(--color-surface-elevated);
 }
 
@@ -563,7 +559,7 @@
   gap: clamp(2rem, 8vw, 8rem);
   align-items: center;
   padding: clamp(2.5rem, 6vw, 5rem);
-  border-radius: var(--radius-surface);
+  border-radius: var(--home-radius);
   color: var(--color-text-on-brand);
   background: var(--color-brand-navy);
 }
@@ -742,9 +738,10 @@
   }
 
   .hero h1 {
-    max-width: 11ch;
+    max-width: 14ch;
     margin-top: var(--space-3);
-    font-size: clamp(2.5rem, 12vw, 3.25rem);
+    font-size: 2rem;
+    line-height: 1.2;
   }
 
   .heroActions {
@@ -752,9 +749,9 @@
     gap: var(--space-3);
   }
 
-  .heroActions .buttonLink,
-  .heroActions .textLink {
-    flex: 1 1 auto;
+  .heroActions .buttonLink {
+    width: 100%;
+    flex: 0 0 auto;
   }
 
   .heroMedia img {

@@ -17,16 +17,18 @@ describe("AppShell", () => {
 
     await user.click(screen.getAllByRole("button", { name: "Mở menu" })[0]);
 
-    const drawer = screen.getByRole("dialog", { name: "Menu" });
+    const drawer = screen.getByRole("dialog", { name: "Community Hub" });
     expect(drawer).toBeVisible();
-    expect(within(drawer).getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
+    expect(within(drawer).getByRole("link", { name: "Khám phá" })).toHaveAttribute("href", "/");
+    expect(within(drawer).getByRole("link", { name: "Trao đổi" })).toHaveAttribute("href", "#exchange");
+    expect(within(drawer).getByRole("link", { name: "Luyện tập với AI" })).toHaveAttribute("href", "#ai-practice");
+    expect(within(drawer).getByRole("link", { name: "Thư viện mở" })).toHaveAttribute("href", "#library");
     expect(within(drawer).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("href", "#languages");
-    expect(within(drawer).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("href", "#community");
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
     expect(document.activeElement).toHaveAttribute("aria-label", "Đóng menu");
 
     await user.click(screen.getByRole("button", { name: "Đóng menu" }));
-    expect(screen.queryByRole("dialog", { name: "Menu" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Community Hub" })).not.toBeInTheDocument();
   });
 
   it("opens searchable shell feedback and supports the desktop overflow menu", async () => {
