@@ -1,0 +1,67 @@
+:root {
+  --color-brand-navy: #1e4165;
+  --color-brand-orange: #d96e28;
+  --color-brand-green: #1e8a66;
+  --color-brand-cyan: #2a9db0;
+  --color-surface: #f4f6f2;
+  --color-surface-elevated: #fbfcf9;
+  --color-surface-muted: #e7ece8;
+  --color-text-primary: #18324c;
+  --color-text-secondary: #5f6e78;
+  --color-text-on-brand: #ffffff;
+  --color-border: #d7ded8;
+  --color-border-strong: #aebdb5;
+  --color-focus: #d96e28;
+  --color-success: #1e8a66;
+  --color-warning: #a66a16;
+  --color-danger: #b42318;
+  --color-info: #2a9db0;
+  --font-family-sans: "Be Vietnam Pro", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-display: clamp(2.75rem, 8vw, 5.25rem);
+  --font-weight-regular: 400;
+  --font-weight-medium: 600;
+  --font-weight-bold: 700;
+  --leading-tight: 1.12;
+  --leading-body: 1.55;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --radius-control: 0.5rem;
+  --radius-surface: 0.75rem;
+  --radius-pill: 999px;
+  --shadow-low: 0 1px 2px rgba(24, 50, 76, 0.06);
+  --shadow-medium: 0 8px 24px rgba(24, 50, 76, 0.1);
+  --motion-standard: 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --container-max: 75rem;
+  --gutter-mobile: 1rem;
+  --gutter-desktop: 1.5rem;
+  --breakpoint-mobile: 48rem;
+  --breakpoint-desktop: 64rem;
+  --z-header: 20;
+  --z-drawer: 40;
+  --z-toast: 50;
+}
+
+[data-theme="dark"] {
+  --color-surface: #102337;
+  --color-surface-elevated: #18324c;
+  --color-surface-muted: #254765;
+  --color-text-primary: #f4f6f2;
+  --color-text-secondary: #c9d5d0;
+  --color-border: #54738d;
+  --color-border-strong: #8aa6b9;
+}
