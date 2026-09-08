@@ -22,7 +22,7 @@ export function SearchField({ value, onChange, onSubmit, placeholder = "Tìm ki�
       <label className="visually-hidden" htmlFor={id}>Tìm kiếm trong cộng đồng</label>
       <Icon name="search" size={18} className={styles.searchFormIcon} />
       <input id={id} className={styles.searchFormInput} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
-      <Button variant="quiet" size="sm" type="submit">Tìm</Button>
+      <Button className={compact ? styles.searchSubmit : undefined} variant="quiet" size="sm" type="submit">Tìm</Button>
     </form>
   );
 }

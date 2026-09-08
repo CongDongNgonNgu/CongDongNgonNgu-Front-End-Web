@@ -5,7 +5,7 @@ import { Avatar } from "../../ui/Surface";
 import { Button } from "../../ui/Button";
 import { Drawer, DropdownMenu } from "../../ui/Overlays";
 import { SearchField } from "../../ui/Feedback";
-import { additionalNavigation, headerNavigation, mobileDrawerNavigation, type NavigationItem } from "../../navigation/navigation";
+import { additionalNavigation, headerNavigation, type NavigationItem } from "../../navigation/navigation";
 import styles from "./Header.module.css";
 
 interface HeaderProps {
@@ -87,8 +87,9 @@ function MobileHeader({ isAuthenticated, searchOpen, onSearch, onMenu }: { isAut
       <div className="shell-width">
         <div className={styles.mobileHeaderInner}>
           <button className={styles.iconButton} type="button" onClick={onMenu} aria-label="Mở menu"><Icon name="menu" size={20} /></button>
-          <Link className={styles.mobileBrand} to="/" aria-label="CONGDONGNGONNGU.VN">
-            <span>CONGDONGNGONNGU.VN</span>
+          <Link className={styles.mobileBrand} to="/" aria-label="Cộng đồng ngôn ngữ, Trang chủ">
+            <img src="/brand/congdongngonngu-mark.png" alt="" width="512" height="512" />
+            <span>Cộng đồng ngôn ngữ</span>
           </Link>
           <div className={styles.mobileHeaderActions}>
             <button className={styles.iconButton} type="button" onClick={onSearch} aria-label="Tìm kiếm" aria-expanded={searchOpen} aria-controls="global-search-panel"><Icon name="search" size={20} /></button>
@@ -171,17 +172,17 @@ export function Header({ isAuthenticated = false }: HeaderProps) {
       {searchOpen ? (
         <div id="global-search-panel" className={styles.searchPanel} role="dialog" aria-label="Tìm kiếm trong cộng đồng">
           <div className={`shell-width ${styles.searchPanelInner}`}>
-            <SearchField value={searchValue} onChange={(value) => { setSearchValue(value); setSearchAnnouncement(""); }} onSubmit={submitSearch} />
-            <Button variant="quiet" size="sm" onClick={closeSearch}>Đóng</Button>
+            <SearchField value={searchValue} onChange={(value) => { setSearchValue(value); setSearchAnnouncement(""); }} onSubmit={submitSearch} compact />
+            <Button className={styles.searchClose} variant="quiet" size="sm" onClick={closeSearch}>Đóng</Button>
           </div>
           {searchAnnouncement ? <p className={`shell-width ${styles.searchPanelStatus}`} role="status">{searchAnnouncement}</p> : null}
         </div>
       ) : null}
 
-      <Drawer open={drawerOpen} title="Community Hub" onClose={closeDrawer} initialFocusRef={drawerCloseRef} returnFocusRef={menuButtonRef}>
+      <Drawer open={drawerOpen} title="Menu" onClose={closeDrawer} initialFocusRef={drawerCloseRef} returnFocusRef={menuButtonRef}>
         <nav className={styles.drawerNav} aria-label="Điều hướng menu di động">
-          <Link className={`${styles.drawerNavItem} ${styles.drawerNavItemActive}`} to="/" onClick={closeDrawer}><Icon name="compass" size={20} /><span>Khám phá</span></Link>
-          {mobileDrawerNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={closeDrawer} />)}
+          <Link className={`${styles.drawerNavItem} ${styles.drawerNavItemActive}`} to="/" onClick={closeDrawer}><Icon name="home" size={20} /><span>Trang chủ</span></Link>
+          {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={closeDrawer} />)}
         </nav>
       </Drawer>
 

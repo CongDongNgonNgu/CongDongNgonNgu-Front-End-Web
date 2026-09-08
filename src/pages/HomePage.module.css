@@ -118,6 +118,22 @@
   text-decoration-color: currentColor;
 }
 
+.heroNote {
+  display: flex;
+  max-width: 30rem;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-6) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--leading-body);
+}
+
+.heroNote svg {
+  flex: 0 0 auto;
+  color: var(--color-brand-green);
+}
+
 .heroMedia {
   min-width: 0;
   margin: 0;
@@ -126,6 +142,7 @@
 .heroMedia img {
   display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 3;
   border-radius: var(--home-radius);
   object-fit: cover;
@@ -135,13 +152,17 @@
 .heroMedia figcaption {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: var(--space-3);
   padding-top: var(--space-3);
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   line-height: 1.4;
-  text-align: center;
+}
+
+.heroMedia figcaption svg {
+  flex: 0 0 auto;
+  color: var(--color-brand-cyan);
 }
 
 .section {
@@ -309,7 +330,7 @@
   gap: clamp(2rem, 7vw, 7rem);
   align-items: stretch;
   padding: clamp(2rem, 5vw, 4rem);
-  border-radius: var(--home-radius);
+  border-radius: var(--radius-surface);
   background: var(--color-info-surface);
 }
 
@@ -320,7 +341,7 @@
   justify-content: space-between;
   padding: clamp(1.5rem, 4vw, 3rem);
   border: 1px solid var(--color-info-border);
-  border-radius: var(--home-radius);
+  border-radius: var(--radius-surface);
   background: var(--color-surface-elevated);
 }
 
@@ -510,7 +531,7 @@
 .librarySection {
   padding: clamp(2rem, 5vw, 4rem);
   border: 1px solid var(--color-border);
-  border-radius: var(--home-radius);
+  border-radius: var(--radius-surface);
   background: var(--color-surface-elevated);
 }
 
@@ -559,7 +580,7 @@
   gap: clamp(2rem, 8vw, 8rem);
   align-items: center;
   padding: clamp(2.5rem, 6vw, 5rem);
-  border-radius: var(--home-radius);
+  border-radius: var(--radius-surface);
   color: var(--color-text-on-brand);
   background: var(--color-brand-navy);
 }
@@ -712,7 +733,7 @@
 
 @media (max-width: 47.999rem) {
   .homePage {
-    padding-top: 2.5rem;
+    padding-top: 1.5rem;
     padding-bottom: 5rem;
   }
 
@@ -728,7 +749,7 @@
   }
 
   .hero {
-    gap: var(--space-8);
+    gap: var(--space-6);
     align-items: start;
     padding-bottom: 4rem;
   }
@@ -738,10 +759,9 @@
   }
 
   .hero h1 {
-    max-width: 14ch;
+    max-width: 11ch;
     margin-top: var(--space-3);
-    font-size: 2rem;
-    line-height: 1.2;
+    font-size: clamp(2.5rem, 12vw, 3.25rem);
   }
 
   .heroActions {

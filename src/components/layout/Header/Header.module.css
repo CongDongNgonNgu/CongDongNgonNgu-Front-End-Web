@@ -233,7 +233,13 @@
 }
 
 .searchPanelInner form {
-  flex: 1;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.searchClose {
+  flex: 0 0 auto;
+  min-width: 4.5rem;
 }
 
 .searchPanelStatus {
@@ -273,16 +279,19 @@
   .mobileBrand {
     min-width: 0;
     min-height: 2.75rem;
+    gap: var(--space-2);
     justify-content: center;
-    font-size: 1.05rem;
-    font-weight: var(--font-weight-bold);
-    letter-spacing: 0.035em;
-    text-transform: uppercase;
+    font-size: 0.95rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0;
+    text-transform: none;
     white-space: nowrap;
   }
 
   .mobileBrand img {
-    display: none;
+    display: block;
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
   .mobileBrand span {
@@ -294,10 +303,28 @@
     gap: 0;
   }
 
+  .mobileHeader .iconButton {
+    border-radius: 50%;
+  }
+
+  .mobileHeader .iconButton[aria-expanded="true"] {
+    color: var(--color-brand-navy);
+    background: var(--color-surface-muted);
+  }
+
   .mobileAccountButton {
     min-width: 2.75rem;
     padding: var(--space-1);
     border: 0;
+  }
+
+  .searchPanelInner {
+    gap: var(--space-2);
+  }
+
+  .searchClose {
+    min-width: 4rem;
+    padding-inline: var(--space-3);
   }
 
   .mobileActionBar {

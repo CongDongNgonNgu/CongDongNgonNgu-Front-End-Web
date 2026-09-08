@@ -1,4 +1,5 @@
 import { Icon, type IconName } from '../components/ui/Icon/Icon';
+import heroImage from '../assets/language-community-hero-v2.jpg';
 import styles from './HomePage.module.css';
 
 type Tone = 'orange' | 'cyan' | 'green';
@@ -41,6 +42,8 @@ const contributionItems = [
 
 const worldTopics = ['Âm thanh & phát âm', 'Cách nói đời thường', 'Văn hóa & bối cảnh', 'Câu chuyện từ cộng đồng'];
 
+const heroImageAlt = 'Cộng đồng đa ngôn ngữ cùng chia sẻ ghi chú học tập';
+
 const joinClasses = (...classNames: string[]) => classNames.join(' ');
 
 export function HomePage() {
@@ -48,9 +51,10 @@ export function HomePage() {
     <div className={styles.homePage}>
       <section className={styles.hero} aria-labelledby='page-title'>
         <div className={styles.heroCopy}>
-          <h1 id='page-title'>Học ngôn ngữ cùng nhau</h1>
+          <p className={styles.kicker}>Cộng đồng ngôn ngữ</p>
+          <h1 id='page-title'>Học ngôn ngữ cùng nhau.</h1>
           <p className={styles.lede}>
-            Kết nối con người thực sự. Xây dựng môi trường ngôn ngữ thực tế qua việc chia sẻ và học hỏi lẫn nhau.
+            Một cộng đồng mở để học cùng con người, thực hành với AI và xây dựng tri thức ngôn ngữ.
           </p>
           <div className={styles.heroActions}>
             <a className={joinClasses(styles.buttonLink, styles.buttonPrimary)} href='#how-it-works'>
@@ -60,18 +64,23 @@ export function HomePage() {
               Khám phá cộng đồng
             </a>
           </div>
+          <p className={styles.heroNote}>
+            <Icon name='users' size={18} />
+            Từ người mới bắt đầu đến người muốn chia sẻ điều mình biết.
+          </p>
         </div>
         <figure className={styles.heroMedia}>
           <img
-            src='/brand/language-community-hero-v2.jpg'
-            alt='Cộng đồng đa ngôn ngữ cùng chia sẻ ghi chú học tập'
-            width='512'
-            height='286'
+            src={heroImage}
+            alt={heroImageAlt}
+            width='1200'
+            height='800'
             loading='eager'
             decoding='async'
           />
           <figcaption>
-            Cộng đồng học tập thực tế từ những con người thực tế.
+            <span>Cộng đồng học tập thực tế từ những con người thực tế.</span>
+            <Icon name='globe' size={18} />
           </figcaption>
         </figure>
       </section>

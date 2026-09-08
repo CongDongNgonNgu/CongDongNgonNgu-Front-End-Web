@@ -118,6 +118,30 @@
   box-shadow: 0 0 0 3px rgb(217 110 40 / 0.18);
 }
 
+.searchFormCompact {
+  min-height: 3rem;
+  padding-left: var(--space-3);
+  background: var(--color-surface-elevated);
+}
+
+.searchFormCompact .searchFormInput {
+  font-size: var(--font-size-sm);
+}
+
+.searchFormCompact .searchSubmit {
+  min-height: 2.5rem;
+  padding-inline: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
+}
+
+.searchFormCompact .searchSubmit:hover {
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright-hover);
+}
+
 .searchFormIcon {
   color: var(--color-text-secondary);
 }
