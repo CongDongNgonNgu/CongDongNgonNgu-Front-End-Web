@@ -1,0 +1,290 @@
+.homePage {
+  padding: clamp(3rem, 7vw, 6.5rem) 0 clamp(5rem, 10vw, 9rem);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(22rem, 1.08fr);
+  gap: clamp(2.5rem, 7vw, 8rem);
+  align-items: start;
+  padding-bottom: clamp(4rem, 9vw, 8rem);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.heroCopy {
+  max-width: 35rem;
+  padding-top: clamp(0rem, 4vw, 3rem);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  max-width: 11ch;
+  margin: var(--space-4) 0 var(--space-6);
+  color: var(--color-text-primary);
+  font-size: clamp(2.65rem, 5.5vw, 4.75rem);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.055em;
+  line-height: 1.03;
+}
+
+.lede {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  line-height: 1.6;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+}
+
+.buttonLink {
+  display: inline-flex;
+  min-height: 2.875rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  transition: background-color var(--motion-standard), transform var(--motion-standard);
+}
+
+.buttonPrimary {
+  color: var(--color-text-on-brand);
+  background: var(--color-brand-navy);
+}
+
+.buttonPrimary:hover,
+.buttonPrimary:focus-visible {
+  background: var(--color-brand-navy-hover);
+  transform: translateY(-1px);
+}
+
+.textLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-underline-offset: 0.22em;
+}
+
+.heroMedia {
+  min-width: 0;
+  margin: 0;
+}
+
+.heroMedia img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--radius-surface);
+  object-fit: cover;
+}
+
+.heroMedia figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.section {
+  padding-top: clamp(4rem, 9vw, 8rem);
+}
+
+.sectionIntro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.7fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: end;
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionIntro h2,
+.communityInner h2 {
+  max-width: 15ch;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+
+.sectionIntro > p,
+.communityInner > p {
+  max-width: 28rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-body);
+}
+
+.stepsList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+  padding: var(--space-6) 0 0;
+  list-style: none;
+}
+
+.step {
+  min-width: 0;
+  padding-top: var(--space-5);
+  border-top: 2px solid var(--color-brand-orange);
+}
+
+.stepNumber {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+}
+
+.stepContent {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-10);
+}
+
+.stepContent > svg {
+  color: var(--color-brand-navy);
+}
+
+.stepContent h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stepContent p {
+  max-width: 18rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-body);
+}
+
+.languagesLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  padding-top: var(--space-6);
+}
+
+.languageNote {
+  max-width: 18rem;
+  margin: 0;
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.languageList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.languageList li {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.communityInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.7fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: end;
+  padding: var(--space-8) 0;
+  border-top: 2px solid var(--color-brand-green);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.communityInner .eyebrow {
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 47.999rem) {
+  .homePage {
+    padding-top: 3rem;
+  }
+
+  .hero,
+  .sectionIntro,
+  .languagesLayout,
+  .communityInner {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .hero {
+    padding-bottom: 4rem;
+  }
+
+  .hero h1 {
+    max-width: 10ch;
+    font-size: clamp(2.65rem, 13vw, 4rem);
+  }
+
+  .stepsList {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  .stepContent {
+    padding-top: 0;
+  }
+
+  .stepContent p {
+    max-width: 30rem;
+  }
+
+  .languageList {
+    grid-template-columns: 1fr;
+  }
+}

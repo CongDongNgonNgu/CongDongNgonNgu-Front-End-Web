@@ -13,12 +13,14 @@ describe("App", () => {
 
     expect(screen.getByRole("banner")).toHaveTextContent("Cộng đồng ngôn ngữ");
     expect(screen.getByRole("heading", { name: /học ngôn ngữ cùng nhau/i })).toBeVisible();
+    expect(screen.getByRole("img", { name: /bốn người cùng chia sẻ/i })).toHaveAttribute("src", "/brand/language-community-hero-v1.jpg");
     expect(screen.getByRole("link", { name: /bỏ qua đến nội dung chính/i })).toHaveAttribute("href", "#main-content");
     expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
-    expect(screen.getByRole("contentinfo")).toHaveTextContent("PHASE 01 / GLOBAL SHELL");
+    expect(screen.getByRole("contentinfo")).toHaveTextContent("Cùng nhau học hỏi và chia sẻ ngôn ngữ");
+    expect(screen.queryByText(/phase 01|global shell|đang xây nền|trạng thái hệ thống|sắp có/i)).not.toBeInTheDocument();
   });
 
-  it("keeps only the home destination active in Phase 01", () => {
+  it("keeps the public shell free of unavailable destinations and placeholder icons", () => {
     render(<App />);
 
     const links = screen.getAllByRole("link");
@@ -27,7 +29,10 @@ describe("App", () => {
     expect(hrefs).toContain("/");
     expect(hrefs).not.toContain("#");
     expect(hrefs).not.toContain("/courses");
-    expect(screen.getAllByText("Sắp có").length).toBeGreaterThan(4);
+    expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
+    for (const glyph of ["⌂", "⌕", "•", "≡", "◉", "◌", "✦", "◇"]) {
+      expect(screen.queryByText(glyph)).not.toBeInTheDocument();
+    }
   });
 
   it("shows a bounded not-found page for unavailable routes", () => {
