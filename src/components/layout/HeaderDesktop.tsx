@@ -36,7 +36,7 @@ export function HeaderDesktop({
   return (
     <div className="desktop-header">
       <div className="shell-width header-inner">
-        <Link className="brand" to="/" aria-label="Cộng đồng ngôn ngữ, Trang chủ">
+        <Link className="brand" to="/">
           <img className="brand-mark" src="/brand/congdongngonngu-mark.png" alt="" width="512" height="512" />
           <span className="brand-wordmark">
             <span className="brand-name">Cộng đồng ngôn ngữ</span>

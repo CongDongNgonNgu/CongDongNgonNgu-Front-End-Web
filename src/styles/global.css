@@ -262,7 +262,7 @@ h3 { margin-bottom: 0; font-size: var(--font-size-lg); letter-spacing: -0.025em;
 .state-panel__heading h3 { font-size: var(--font-size-md); }
 .state-panel--future { border-top: 3px solid var(--color-brand-green); }
 .state-confirmation { margin: var(--space-3) 0 0; padding: var(--space-4); color: var(--color-success-strong); background: var(--color-success-surface); border-left: 3px solid var(--color-brand-green); line-height: var(--leading-body); }
-.future-state__label { margin: 0; color: var(--color-brand-green); font-weight: var(--font-weight-bold); }
+.future-state__label { margin: 0; color: var(--color-success-strong); font-weight: var(--font-weight-bold); }
 .future-state__copy { margin: 0; color: var(--color-text-secondary); line-height: var(--leading-body); }
 
 .skeleton-group { display: grid; gap: var(--space-3); padding-top: var(--space-2); }
@@ -360,7 +360,7 @@ h3 { margin-bottom: 0; font-size: var(--font-size-lg); letter-spacing: -0.025em;
   .desktop-header { display: none; }
   .mobile-header { display: block; }
   .mobile-header__inner { justify-content: space-between; gap: var(--space-2); }
-  .mobile-brand { gap: var(--space-2); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); white-space: nowrap; }
+  .mobile-brand { min-height: 2.75rem; gap: var(--space-2); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); white-space: nowrap; }
   .mobile-brand img { width: 2rem; height: 2rem; object-fit: contain; }
   .mobile-header__actions { display: flex; align-items: center; gap: 0; }
   .mobile-account-button { min-width: 2.75rem; padding: var(--space-1); border: 0; }

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { additionalNavigation, futureLabel, headerNavigation, type NavigationItem } from "../navigation/navigation";
 import { Badge } from "../ui/Surface";
@@ -42,6 +42,15 @@ export function Header({ isAuthenticated = false }: HeaderProps) {
     setAccountOpen(false);
   }, []);
   const submitSearch = useCallback(() => setSearchSubmitted(true), []);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [searchOpen]);
 
   return (
     <header className="site-header">

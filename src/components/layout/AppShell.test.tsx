@@ -36,6 +36,8 @@ describe("AppShell", () => {
     await user.type(screen.getByPlaceholderText("Tìm kiếm trong cộng đồng"), "ngôn ngữ");
     await user.click(screen.getByRole("button", { name: "Tìm" }));
     expect(screen.getByRole("status")).toHaveTextContent(/tìm kiếm sẽ khả dụng/i);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: /tìm kiếm trong cộng đồng/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
     expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Phòng nói");

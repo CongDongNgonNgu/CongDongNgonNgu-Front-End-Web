@@ -3,7 +3,7 @@ import { futureLabel, mobileNavigation, type NavigationItem } from "../navigatio
 
 function FutureNavButton({ item }: { item: NavigationItem }) {
   return (
-    <button className="mobile-bottom-nav__item mobile-bottom-nav__item--disabled" type="button" disabled aria-label={`${item.label}, ${futureLabel.toLowerCase()}`}>
+    <button className="mobile-bottom-nav__item mobile-bottom-nav__item--disabled" type="button" disabled>
       <span className="mobile-bottom-nav__glyph" aria-hidden="true">{item.glyph}</span>
       <span className="mobile-bottom-nav__label">{item.shortLabel}</span>
       <span className="mobile-bottom-nav__status">{futureLabel}</span>
