@@ -9,9 +9,11 @@ import {
   Compass,
   Globe2,
   Home,
+  Info,
   Inbox,
   Languages,
   Library,
+  Lock,
   LoaderCircle,
   Menu,
   MessageCircle,
@@ -27,6 +29,8 @@ import {
 import styles from "./Icon.module.css";
 
 export type IconName =
+  | 'lock'
+  | 'info'
   | "alert-circle"
   | "arrow-left-right"
   | "bell"
@@ -64,6 +68,8 @@ const icons: Record<IconName, LucideIcon> = {
   inbox: Inbox,
   languages: Languages,
   library: Library,
+  lock: Lock,
+  info: Info,
   "loader-circle": LoaderCircle,
   menu: Menu,
   "message-circle": MessageCircle,

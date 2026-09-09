@@ -25,6 +25,14 @@ const footerGroups: Array<{ title: string; items: FooterItem[] }> = [
   },
 ];
 
+const compactFooterItems: FooterItem[] = [
+  { label: "Về chúng tôi", href: "#about" },
+  { label: "Quy tắc cộng đồng", href: "#community" },
+  { label: "Bảo mật", href: "#privacy" },
+  { label: "Điều khoản", href: "#terms" },
+  { label: "Hỗ trợ", href: "#support" },
+];
+
 function FooterLink({ item }: { item: FooterItem }) {
   if (item.href.startsWith("#")) return <a href={item.href}>{item.label}</a>;
   return <Link to={item.href}>{item.label}</Link>;
@@ -41,9 +49,14 @@ function FooterGroup({ title, items }: { title: string; items: FooterItem[] }) {
   );
 }
 
-export function Footer() {
+export function Footer({ compact = false, compactTone = 'light' }: { compact?: boolean; compactTone?: 'light' | 'dark' }) {
+  const footerClasses = [
+    styles.siteFooter,
+    compact ? styles.compactFooter : '',
+    compact && compactTone === 'dark' ? styles.compactFooterDark : '',
+  ].filter(Boolean).join(' ');
   return (
-    <footer className={styles.siteFooter} role="contentinfo">
+    <footer className={footerClasses} role="contentinfo">
       <div className="shell-width">
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
@@ -53,6 +66,9 @@ export function Footer() {
             </Link>
             <p>Cùng nhau học hỏi và chia sẻ ngôn ngữ, với sự tò mò và tôn trọng khác biệt.</p>
           </div>
+          <nav className={styles.compactLinks} aria-label="Liên kết chân trang">
+            {compactFooterItems.map((item) => <FooterLink key={item.label} item={item} />)}
+          </nav>
           <div className={styles.footerGroups}>
             {footerGroups.map((group) => <FooterGroup key={group.title} {...group} />)}
           </div>

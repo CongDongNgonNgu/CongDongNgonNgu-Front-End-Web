@@ -7,6 +7,12 @@ import { AuthBody } from '../AuthBody';
 import { useAuth } from '../AuthProvider';
 import styles from '../AuthBody.module.css';
 
+function maskEmail(value: string): string {
+  const [local, domain] = value.split('@');
+  if (!local || !domain) return value;
+  return `${local.slice(0, 2)}***@${domain}`;
+}
+
 export function VerifyEmailPage() {
   const { api } = useAuth();
   const [searchParams] = useSearchParams();
@@ -55,14 +61,29 @@ export function VerifyEmailPage() {
 
   return (
     <AuthBody
-      eyebrow='Xác minh email / 04'
-      title={state === 'verified' ? 'Bạn đã sẵn sàng.' : 'Thêm một bước nhỏ.'}
-      description='Xác minh email giúp bảo vệ tài khoản và mở khóa những cuộc gặp gỡ đầu tiên trong cộng đồng.'
-      asideTitle='Tin cậy bắt đầu từ điều rõ ràng'
-      asideText='Liên kết xác minh chỉ dùng một lần, hết hạn sau một khoảng thời gian ngắn.'
+      eyebrow='Email verification flow'
+      title={state === 'verified' ? 'Email đã được xác minh' : 'Xác thực địa chỉ email để tiếp tục'}
+      description='Một liên kết xác nhận bảo mật đã được gửi tới hòm thư của bạn. Vui lòng kiểm tra hộp thư đến và thư mục Spam nếu cần để kích hoạt toàn bộ tính năng trao đổi ngôn ngữ.'
+      editorialEyebrow='Bảo vệ tài khoản'
+      editorialTitle='Tin cậy bắt đầu từ điều rõ ràng'
+      editorialDescription='Xác minh email giúp bảo vệ tài khoản và mở khóa những cuộc gặp gỡ đầu tiên trong cộng đồng.'
+      editorialItems={[
+        { icon: 'lock', title: 'Liên kết chỉ dùng một lần', description: 'Liên kết xác minh có thời hạn để bảo vệ dữ liệu trao đổi của bạn.' },
+        { icon: 'check-circle', title: 'Minh bạch và an toàn', description: 'Email hiển thị trong giao diện luôn được che chắn khi cần thiết.' },
+        { icon: 'circle-help', title: 'Luôn có hỗ trợ', description: 'Bạn có thể gửi lại email hoặc quay lại đăng nhập bất cứ lúc nào.' },
+      ]}
+      editorialPrompt={<p>Đã xác minh? <Link className={styles.textLink} to='/login'>Đi tới đăng nhập →</Link></p>}
+      mobileReassuranceTitle='Bảo vệ quyền riêng tư'
+      mobileReassuranceText='Liên kết xác thực chỉ có hiệu lực trong 24 giờ và chỉ được sử dụng một lần.'
     >
       <div className={styles.authState}>
         {state === 'checking' ? <p className={styles.statusMessage} role='status'>Đang kiểm tra liên kết xác minh…</p> : null}
+        {state !== 'checking' && state !== 'verified' && email ? (
+          <div className={styles.maskedEmail}>
+            <span>Địa chỉ nhận liên kết</span>
+            <strong>{maskEmail(email)}</strong>
+          </div>
+        ) : null}
         {message && state !== 'checking' ? (
           <p className={state === 'verified' ? styles.statusMessage : styles.errorMessage} role={state === 'verified' ? 'status' : 'alert'}>
             {message}
@@ -73,15 +94,17 @@ export function VerifyEmailPage() {
         ) : (
           <form ref={formRef} className={styles.authForm} onSubmit={resend} noValidate>
             <TextInput
-              label='Email đăng ký'
+              label='Địa chỉ email nhận liên kết'
               type='email'
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete='email'
               inputMode='email'
+              placeholder='nguoidung@vidu.vn'
+              hint='Liên kết xác minh có hiệu lực trong 24 giờ và chỉ dùng một lần.'
               required
             />
-            <Button type='submit' fullWidth loading={loading}>Gửi lại email xác minh</Button>
+            <Button type='submit' variant='secondary' fullWidth loading={loading}>Gửi lại email xác minh →</Button>
             <Link className={styles.textLink} to='/login'>Quay lại đăng nhập</Link>
           </form>
         )}

@@ -4,7 +4,7 @@ import styles from "./FormControls.module.css";
 interface FieldShellProps {
   label: string;
   id?: string;
-  hint?: string;
+  hint?: ReactNode;
   error?: string;
   required?: boolean;
   children: ReactNode;

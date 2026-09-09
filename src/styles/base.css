@@ -23,6 +23,28 @@ a {
   flex-direction: column;
 }
 
+.app-shell.auth-shell-login,
+.app-shell.auth-shell-register,
+.app-shell.auth-shell-flow {
+  --color-surface: #f8faf6;
+  --color-surface-elevated: #ffffff;
+  --color-surface-muted: #f2f4f0;
+  --color-text-primary: #002b4d;
+  --color-text-secondary: #43474e;
+  --color-text-on-brand: #ffffff;
+  --color-brand-navy: #002b4d;
+  --color-brand-orange: #9c4500;
+  --color-brand-orange-readable: #9c4500;
+  --color-brand-orange-hover: #713000;
+  --color-border: #c3c6cf;
+  --color-border-strong: #9fa8b0;
+  --color-focus: #9c4500;
+  --color-danger: #93000a;
+  --color-danger-strong: #93000a;
+  --color-danger-surface: #ffdad6;
+  --color-danger-border: #e9b6b1;
+}
+
 .shell-width {
   width: min(calc(100% - 2 * var(--gutter-mobile)), var(--container-max));
   margin-inline: auto;
@@ -31,6 +53,11 @@ a {
 .site-main {
   flex: 1;
   padding-block: 0;
+}
+
+.auth-site-main {
+  width: 100%;
+  background: var(--color-surface);
 }
 
 .site-main:focus {
@@ -71,6 +98,34 @@ body.drawer-open {
 
   .site-main {
     padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  .auth-site-main {
+    padding-bottom: 0;
+  }
+
+  .app-shell.auth-shell-login {
+    --color-brand-orange: #fd8a42;
+    --color-brand-orange-hover: #ed702f;
+  }
+
+  .app-shell.auth-shell-register {
+    --color-surface: #f4f6f2;
+    --color-surface-elevated: #fbfcf9;
+    --color-surface-muted: #e7ece8;
+    --color-text-primary: #18324c;
+    --color-text-secondary: #5f6e78;
+    --color-brand-navy: #1e4165;
+    --color-brand-orange: #d96e28;
+    --color-brand-orange-readable: #a64b14;
+    --color-brand-orange-hover: #b9561b;
+    --color-border: #d7ded8;
+    --color-border-strong: #aebdb5;
+    --color-focus: #d96e28;
+    --color-danger: #b42318;
+    --color-danger-strong: #8d241a;
+    --color-danger-surface: #f8dcd7;
+    --color-danger-border: #eab7af;
   }
 }
 

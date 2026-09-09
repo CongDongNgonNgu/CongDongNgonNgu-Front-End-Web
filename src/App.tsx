@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { AuthProvider, useAuth } from './features/auth/AuthProvider';
 import { AuthCallbackPage } from './features/auth/pages/AuthCallbackPage';
@@ -12,8 +12,17 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 function RoutedApp() {
   const { status, logout } = useAuth();
+  const { pathname } = useLocation();
+  const authLayout = pathname === '/login'
+    || pathname === '/register'
+    || pathname === '/verify-email'
+    || pathname === '/forgot-password'
+    || pathname === '/reset-password'
+    || pathname === '/auth/callback';
+  const authSurface = pathname === '/login' ? 'login' : pathname === '/register' ? 'register' : 'flow';
+  const authFooterTone = pathname === '/register' ? 'dark' : 'light';
   return (
-    <AppShell isAuthenticated={status === 'authenticated'} onLogout={logout}>
+    <AppShell isAuthenticated={status === 'authenticated'} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/login' element={<LoginPage />} />

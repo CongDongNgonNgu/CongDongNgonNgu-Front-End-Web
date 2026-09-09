@@ -7,6 +7,10 @@ import { AuthProvider, useAuth } from '../AuthProvider';
 import type { AuthUser } from '../auth.types';
 import { LoginPage } from './LoginPage';
 import { RegisterPage } from './RegisterPage';
+import { ForgotPasswordPage } from './ForgotPasswordPage';
+import { ResetPasswordPage } from './ResetPasswordPage';
+import { VerifyEmailPage } from './VerifyEmailPage';
+import { AuthCallbackPage } from './AuthCallbackPage';
 
 afterEach(() => {
   cleanup();
@@ -99,9 +103,10 @@ describe('auth pages', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('heading', { name: 'Mừng bạn trở lại.' })).toBeVisible();
-    expect(screen.getByLabelText(/^Email/)).toHaveAttribute('autocomplete', 'email');
+    expect(screen.getByRole('heading', { name: 'Tiếp tục hành trình kết nối ngôn ngữ' })).toBeVisible();
+    expect(screen.getByLabelText(/địa chỉ email/i)).toHaveAttribute('autocomplete', 'email');
     expect(screen.getByLabelText(/^Mật khẩu/)).toHaveAttribute('autocomplete', 'current-password');
+    expect(screen.getByText(/Bằng việc đăng nhập/)).toBeVisible();
     await waitFor(() => expect(screen.getByRole('button', { name: /Google/i })).toBeDisabled());
   });
 
@@ -131,9 +136,9 @@ describe('auth pages', () => {
       </MemoryRouter>,
     );
 
-    await user.type(screen.getByLabelText(/^Email/), 'learner@example.com');
+    await user.type(screen.getByLabelText(/địa chỉ email/i), 'learner@example.com');
     await user.type(screen.getByLabelText(/^Mật khẩu/), 'Correct horse battery staple');
-    await user.click(screen.getByRole('button', { name: 'Đăng nhập' }));
+    await user.click(screen.getByRole('button', { name: /Đăng nhập vào tài khoản/ }));
     await waitFor(() => expect(login).toHaveBeenCalledWith({
       email: 'learner@example.com',
       password: 'Correct horse battery staple',
@@ -152,8 +157,8 @@ describe('auth pages', () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Đăng nhập' }));
-    expect(screen.getByLabelText(/^Email/)).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: /Đăng nhập vào tài khoản/ }));
+    expect(screen.getByLabelText(/địa chỉ email/i)).toHaveFocus();
     expect(screen.getByRole('alert')).toHaveTextContent('Vui lòng nhập email hợp lệ.');
   });
 
@@ -169,11 +174,113 @@ describe('auth pages', () => {
       </MemoryRouter>,
     );
     await user.type(screen.getByLabelText(/^Tên hiển thị/), 'Người học');
-    await user.type(screen.getByLabelText(/^Email/), 'learner@example.com');
+    await user.type(screen.getByLabelText(/địa chỉ email/i), 'learner@example.com');
     await user.type(screen.getByLabelText(/^Mật khẩu/), 'Correct horse battery staple');
-    await user.type(screen.getByLabelText(/^Nhập lại mật khẩu/), 'Different password 2026');
-    await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
+    await user.type(screen.getByLabelText(/^Xác nhận mật khẩu/), 'Different password 2026');
+    await user.click(screen.getByRole('button', { name: /Tạo tài khoản thành viên/ }));
     expect(screen.getByRole('alert')).toHaveTextContent('Hai mật khẩu chưa khớp.');
     expect(register).not.toHaveBeenCalled();
+  });
+
+  it('renders the canonical Login editorial hierarchy and trust copy', () => {
+    const api = createApi();
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/login' element={<LoginPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Tiếp tục hành trình kết nối ngôn ngữ' })).toBeVisible();
+    expect(screen.getByText('Học tập cùng con người thực')).toBeVisible();
+    expect(screen.getByText('Tài nguyên mở, vì cộng đồng')).toBeVisible();
+    expect(screen.getByText('Tôn trọng và đồng cảm')).toBeVisible();
+    expect(screen.getByText('Không gian học tập tôn trọng & an toàn')).toBeVisible();
+  });
+
+  it('renders the canonical Register information and consent hierarchy', () => {
+    const api = createApi();
+    render(
+      <MemoryRouter initialEntries={['/register']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/register' element={<RegisterPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Cùng nhau học hỏi, lưu giữ và lan tỏa ngôn ngữ' })).toBeVisible();
+    expect(screen.getByText('Lưu ý xác thực hòm thư')).toBeVisible();
+    expect(screen.getByText('Quy chuẩn mật khẩu dễ nhớ & an toàn:')).toBeVisible();
+    expect(screen.getByRole('checkbox', { name: /Tôi đã đọc và đồng ý/i })).toBeVisible();
+    expect(screen.getByText('Tôn trọng & bảo mật quyền riêng tư')).toBeVisible();
+  });
+
+  it('renders the canonical recovery request state and transitions to the safe sent state', async () => {
+    const user = userEvent.setup();
+    const api = createApi();
+    vi.spyOn(api, 'forgotPassword').mockResolvedValue({ sent: true });
+    render(
+      <MemoryRouter initialEntries={['/forgot-password']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/forgot-password' element={<ForgotPasswordPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Khôi phục mật khẩu' })).toBeVisible();
+    expect(screen.getByText('Bước 1/5')).toBeVisible();
+    await user.type(screen.getByLabelText(/Địa chỉ email liên kết/i), 'learner@example.com');
+    await user.click(screen.getByRole('button', { name: /Gửi liên kết khôi phục/i }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Kiểm tra hòm thư của bạn' })).toBeVisible());
+    expect(screen.getByText('Bước 2/5')).toBeVisible();
+    expect(screen.getByRole('button', { name: /Gửi lại liên kết ngay/i })).toBeDisabled();
+  });
+
+  it('renders an expired reset link as a safe recovery state', () => {
+    const api = createApi();
+    render(
+      <MemoryRouter initialEntries={['/reset-password']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/reset-password' element={<ResetPasswordPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Liên kết đã hết hạn hoặc không hợp lệ' })).toBeVisible();
+    expect(screen.getByText('Bước 4/5')).toBeVisible();
+    expect(screen.getByRole('link', { name: /Yêu cầu liên kết mới/i })).toHaveAttribute('href', '/forgot-password');
+  });
+
+  it('masks the verification email in the visible recovery UI', () => {
+    const api = createApi();
+    render(
+      <MemoryRouter initialEntries={['/verify-email?email=learner@example.com']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/verify-email' element={<VerifyEmailPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Xác thực địa chỉ email để tiếp tục' })).toBeVisible();
+    expect(screen.getByText('le***@example.com')).toBeVisible();
+    expect(screen.queryByText('learner@example.com')).not.toBeInTheDocument();
+  });
+
+  it('renders OAuth collision recovery without exposing account details', () => {
+    const api = createApi();
+    const refreshAccess = vi.spyOn(api, 'refreshAccess');
+    render(
+      <MemoryRouter initialEntries={['/auth/callback?status=collision']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/auth/callback' element={<AuthCallbackPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Không thể liên kết tài khoản' })).toBeVisible();
+    expect(screen.getByRole('alert')).toHaveTextContent('Hãy đăng nhập bằng email và mật khẩu');
+    expect(screen.queryByText(/đã được đăng ký trước đó/i)).not.toBeInTheDocument();
+    expect(refreshAccess).not.toHaveBeenCalled();
   });
 });

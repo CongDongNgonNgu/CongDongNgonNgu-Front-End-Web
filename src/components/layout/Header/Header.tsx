@@ -11,6 +11,7 @@ import styles from "./Header.module.css";
 interface HeaderProps {
   isAuthenticated?: boolean;
   onLogout?: () => Promise<void> | void;
+  hideMobileActionBar?: boolean;
 }
 
 type SearchHandler = (event?: MouseEvent<HTMLButtonElement>) => void;
@@ -115,7 +116,7 @@ function MobileActionBar({ onSearch, onMenu }: { onSearch: SearchHandler; onMenu
   );
 }
 
-export function Header({ isAuthenticated = false, onLogout }: HeaderProps) {
+export function Header({ isAuthenticated = false, onLogout, hideMobileActionBar = false }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [searchAnnouncement, setSearchAnnouncement] = useState("");
@@ -209,7 +210,7 @@ export function Header({ isAuthenticated = false, onLogout }: HeaderProps) {
          </div>
        </Drawer>
 
-      <MobileActionBar onSearch={openSearch} onMenu={openDrawer} />
+      {hideMobileActionBar ? null : <MobileActionBar onSearch={openSearch} onMenu={openDrawer} />}
     </header>
   );
 }
