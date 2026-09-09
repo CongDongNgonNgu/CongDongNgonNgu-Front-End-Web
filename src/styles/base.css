@@ -29,6 +29,7 @@ a {
   --color-surface: #f8faf6;
   --color-surface-elevated: #ffffff;
   --color-surface-muted: #f2f4f0;
+  --color-auth-footer-surface: #f2f4f0;
   --color-text-primary: #002b4d;
   --color-text-secondary: #43474e;
   --color-text-on-brand: #ffffff;
@@ -113,6 +114,7 @@ body.drawer-open {
     --color-surface: #f4f6f2;
     --color-surface-elevated: #fbfcf9;
     --color-surface-muted: #e7ece8;
+    --color-auth-footer-surface: #f2f4f0;
     --color-text-primary: #18324c;
     --color-text-secondary: #5f6e78;
     --color-brand-navy: #1e4165;

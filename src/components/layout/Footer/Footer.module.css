@@ -195,7 +195,7 @@
   .compactFooter {
     padding: var(--space-6) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
     color: var(--color-text-secondary);
-    background: var(--color-surface-muted);
+    background: var(--color-auth-footer-surface, var(--color-surface-muted));
   }
 
   .compactFooter .footerTop {

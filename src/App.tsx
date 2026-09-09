@@ -20,7 +20,7 @@ function RoutedApp() {
     || pathname === '/reset-password'
     || pathname === '/auth/callback';
   const authSurface = pathname === '/login' ? 'login' : pathname === '/register' ? 'register' : 'flow';
-  const authFooterTone = pathname === '/register' ? 'dark' : 'light';
+  const authFooterTone = 'light';
   return (
     <AppShell isAuthenticated={status === 'authenticated'} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
       <Routes>
