@@ -2,6 +2,7 @@
   position: sticky;
   z-index: var(--z-header);
   top: 0;
+  --header-accent: var(--color-brand-orange-bright);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-elevated);
 }
@@ -17,6 +18,11 @@
   min-height: inherit;
   align-items: center;
   gap: var(--space-4);
+}
+
+.desktopHeader > :global(.shell-width),
+.mobileHeader > :global(.shell-width) {
+  min-height: inherit;
 }
 
 .headerInner {
@@ -118,7 +124,7 @@
 
 .navLinkActive {
   color: var(--color-brand-navy);
-  box-shadow: inset 0 -3px 0 var(--color-brand-orange);
+  box-shadow: inset 0 -3px 0 var(--header-accent);
 }
 
 .iconButton,
@@ -368,7 +374,7 @@
 
   .mobileAction[aria-current="page"] {
     color: var(--color-brand-navy);
-    box-shadow: inset 0 3px 0 var(--color-brand-orange);
+    box-shadow: inset 0 3px 0 var(--header-accent);
     font-weight: var(--font-weight-semibold);
   }
 }
@@ -401,15 +407,16 @@
 }
 
 .headerAuthLinkPrimary {
-  border-color: var(--color-brand-orange);
-  color: var(--color-text-on-brand);
-  background: var(--color-brand-orange);
+  border-color: var(--header-accent);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--header-accent);
 }
 
 .headerAuthLinkPrimary:hover,
 .headerAuthLinkPrimary:focus-visible {
-  border-color: var(--color-brand-orange-hover);
-  background: var(--color-brand-orange-hover);
+  border-color: var(--color-brand-orange-bright-hover);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright-hover);
 }
 
 .drawerAuth {
@@ -417,6 +424,7 @@
   gap: var(--space-2);
   margin-top: var(--space-6);
   padding-top: var(--space-5);
+  padding-inline: var(--space-2);
   border-top: 1px solid var(--color-border);
 }
 
@@ -428,7 +436,7 @@
   justify-content: center;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-pill);
   color: var(--color-brand-navy);
   background: transparent;
   font-size: var(--font-size-sm);
@@ -443,13 +451,14 @@
 }
 
 .drawerAuthButtonPrimary {
-  border-color: var(--color-brand-orange);
-  color: var(--color-text-on-brand);
-  background: var(--color-brand-orange);
+  border-color: var(--color-brand-orange-bright);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
 }
 
 .drawerAuthButtonPrimary:hover,
 .drawerAuthButtonPrimary:focus-visible {
-  border-color: var(--color-brand-orange-hover);
-  background: var(--color-brand-orange-hover);
+  border-color: var(--color-brand-orange-bright-hover);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright-hover);
 }

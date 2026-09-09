@@ -40,12 +40,12 @@
 }
 
 .button--secondary {
-  color: var(--color-text-on-brand);
-  background: var(--color-brand-orange);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
 }
 
 .button--secondary:hover:not(:disabled) {
-  background: var(--color-brand-orange-hover);
+  background: var(--color-brand-orange-bright-hover);
   transform: translateY(-1px);
 }
 

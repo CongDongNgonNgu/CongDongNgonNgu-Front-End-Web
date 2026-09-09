@@ -338,8 +338,8 @@
   justify-content: center;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-control);
-  color: var(--color-text-on-brand);
-  background: var(--color-brand-orange);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
@@ -347,8 +347,8 @@
 
 .flowButton:hover,
 .flowButton:focus-visible {
-  color: var(--color-text-on-brand);
-  background: var(--color-brand-orange-readable);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright-hover);
 }
 
 .maskedEmail {

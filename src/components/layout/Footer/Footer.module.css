@@ -4,6 +4,11 @@
   background: var(--color-brand-navy);
 }
 
+.lightFooter {
+  color: var(--color-text-primary);
+  background: var(--color-footer-surface);
+}
+
 .footerTop {
   display: grid;
   grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.5fr);
@@ -37,6 +42,10 @@
   line-height: var(--leading-body);
 }
 
+.lightFooter .footerBrand p {
+  color: var(--color-text-secondary);
+}
+
 .footerGroups {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -62,6 +71,10 @@
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   list-style: none;
+}
+
+.lightFooter .footerGroup summary {
+  color: var(--color-text-primary);
 }
 
 .footerGroup summary::-webkit-details-marker {
@@ -93,11 +106,20 @@
   text-decoration: none;
 }
 
+.lightFooter .footerGroup a {
+  color: var(--color-text-secondary);
+}
+
 .footerGroup a:hover,
 .footerGroup a:focus-visible {
   color: var(--color-text-on-brand);
   text-decoration: underline;
   text-underline-offset: 0.2em;
+}
+
+.lightFooter .footerGroup a:hover,
+.lightFooter .footerGroup a:focus-visible {
+  color: var(--color-brand-navy);
 }
 
 .footerBottom {
@@ -109,6 +131,11 @@
   border-top: 1px solid rgb(255 255 255 / 0.22);
   color: rgb(255 255 255 / 0.72);
   font-size: var(--font-size-xs);
+}
+
+.lightFooter .footerBottom {
+  border-top-color: var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 .footerBottom label {
@@ -124,6 +151,12 @@
   background: var(--color-brand-navy-hover);
 }
 
+.lightFooter .footerBottom select {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+}
+
 .shareButton {
   display: inline-flex;
   width: 2.75rem;
@@ -137,9 +170,19 @@
   background: transparent;
 }
 
+.lightFooter .shareButton {
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
 .shareButton:hover,
 .shareButton:focus-visible {
   background: rgb(255 255 255 / 0.12);
+}
+
+.lightFooter .shareButton:hover,
+.lightFooter .shareButton:focus-visible {
+  background: var(--color-surface-muted);
 }
 
 .footerBottom p {
@@ -162,7 +205,7 @@
   }
 
   .footerGroup {
-    border-bottom: 1px solid rgb(255 255 255 / 0.22);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .footerGroup summary {

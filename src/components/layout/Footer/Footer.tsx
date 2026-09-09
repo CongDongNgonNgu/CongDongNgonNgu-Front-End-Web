@@ -53,6 +53,7 @@ export function Footer({ compact = false, compactTone = 'light' }: { compact?: b
   const footerClasses = [
     styles.siteFooter,
     compact ? styles.compactFooter : '',
+    !compact || compactTone !== 'dark' ? styles.lightFooter : '',
     compact && compactTone === 'dark' ? styles.compactFooterDark : '',
   ].filter(Boolean).join(' ');
   return (

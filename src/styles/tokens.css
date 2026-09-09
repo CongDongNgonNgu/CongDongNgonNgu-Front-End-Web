@@ -6,6 +6,7 @@
   --color-surface: #f4f6f2;
   --color-surface-elevated: #fbfcf9;
   --color-surface-muted: #e7ece8;
+  --color-footer-surface: #f2f4f0;
   --color-text-primary: #18324c;
   --color-text-secondary: #5f6e78;
   --color-text-on-brand: #ffffff;
@@ -81,6 +82,7 @@
   --color-surface: #102337;
   --color-surface-elevated: #18324c;
   --color-surface-muted: #254765;
+  --color-footer-surface: #18324c;
   --color-text-primary: #f4f6f2;
   --color-text-secondary: #c9d5d0;
   --color-border: #54738d;
