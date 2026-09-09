@@ -1,6 +1,6 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { AppShell } from "./AppShell";
 
@@ -11,6 +11,31 @@ function renderShell(isAuthenticated = false) {
 }
 
 describe("AppShell", () => {
+  it("handles a rejected logout promise from shell actions", async () => {
+    const user = userEvent.setup();
+    let rejectLogout!: (reason: Error) => void;
+    const logoutPromise = new Promise<void>((_, reject) => {
+      rejectLogout = reject;
+    });
+    const catchSpy = vi.spyOn(logoutPromise, "catch");
+    const onLogout = vi.fn(() => logoutPromise);
+
+    render(
+      <MemoryRouter>
+        <AppShell isAuthenticated onLogout={onLogout}>
+          <p>Test content</p>
+        </AppShell>
+      </MemoryRouter>,
+    );
+
+    const logoutButton = screen.getAllByRole("button").find((button) => button.className.includes("headerAuthLink"));
+    expect(logoutButton).toBeDefined();
+    await user.click(logoutButton!);
+    expect(onLogout).toHaveBeenCalledTimes(1);
+    rejectLogout(new Error("network"));
+    await waitFor(() => expect(catchSpy).toHaveBeenCalledTimes(1));
+  });
+
   it("opens and closes the mobile drawer with real public destinations", async () => {
     const user = userEvent.setup();
     renderShell();

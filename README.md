@@ -1,10 +1,10 @@
 # CongDongNgonNgu Frontend
 
 This repository is the independent web foundation for CongDongNgonNgu. Phase
-00 intentionally ships a neutral responsive shell, a versioned API client,
-and a not-found boundary for all domain routes. Authentication, language
-profiles, community workflows, Firebase, PWA behavior, and production
-endpoints are deferred to their approved phases.
+02 adds a typed auth boundary and responsive Vietnamese login, registration,
+verification, recovery, reset, and OAuth callback experiences on top of the
+existing shell. Profile, community, Firebase, PWA, and production deployment
+work remain outside this phase.
 
 ## Local commands
 
@@ -15,10 +15,17 @@ npm test
 npm run build
 ```
 
-The local API base defaults to `/api/v1` and is configurable through
-`VITE_API_BASE_URL`. Vite proxies that path to the independent local backend
-at `http://localhost:3000`; no production API URL is committed. Explicit absolute API origins are validated against the independent-product
-host denylist; the same-origin default remains the safe local baseline.
+The local API base defaults to /api/v1 and is configurable through
+VITE_API_BASE_URL. Vite proxies that path to the independent local backend at
+http://localhost:3000; no production API URL is committed. Explicit absolute
+API origins are validated against the independent-product host denylist.
+
+The auth client bootstraps through refresh, keeps the short-lived access token
+in memory, sends credentials for HttpOnly refresh cookies, and mirrors the
+readable CSRF cookie on mutations. Auth routes are /login, /register,
+/verify-email, /forgot-password, /reset-password, and /auth/callback. Provider
+buttons render from backend capabilities and disabled providers do not fake
+completion.
 
 ## CI and deployment boundary
 

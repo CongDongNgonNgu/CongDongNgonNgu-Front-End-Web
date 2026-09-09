@@ -17,7 +17,7 @@ export function FieldShell({ label, id, hint, error, required, children }: Field
         {label} {required ? <span aria-hidden="true">*</span> : null}
       </label>
       {children}
-      {error ? <p className={styles.fieldError} id={`${id}-error`}>{error}</p> : null}
+      {error ? <p className={styles.fieldError} id={`${id}-error`} role='alert'>{error}</p> : null}
       {!error && hint ? <p className={styles.fieldHint} id={`${id}-hint`}>{hint}</p> : null}
     </div>
   );

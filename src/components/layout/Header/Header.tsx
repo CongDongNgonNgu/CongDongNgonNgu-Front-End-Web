@@ -10,6 +10,7 @@ import styles from "./Header.module.css";
 
 interface HeaderProps {
   isAuthenticated?: boolean;
+  onLogout?: () => Promise<void> | void;
 }
 
 type SearchHandler = (event?: MouseEvent<HTMLButtonElement>) => void;
@@ -24,6 +25,7 @@ function NavigationLink({ item, className, onClick }: { item: NavigationItem; cl
 
 function DesktopHeader({
   isAuthenticated,
+  onLogout,
   moreOpen,
   onMoreToggle,
   onSearch,
@@ -32,6 +34,7 @@ function DesktopHeader({
   accountOpen,
 }: {
   isAuthenticated: boolean;
+  onLogout?: () => Promise<void> | void;
   moreOpen: boolean;
   onMoreToggle: () => void;
   onSearch: SearchHandler;
@@ -74,6 +77,7 @@ function DesktopHeader({
                 {accountOpen ? <div className={styles.accountMenu} role="menu" aria-label="Tài khoản"><span className={styles.dropdownItem} role="menuitem"><Icon name="user-round" size={18} />Người học</span></div> : null}
               </div>
             ) : null}
+            <HeaderAuthActions isAuthenticated={isAuthenticated} onLogout={onLogout} />
           </div>
         </div>
       </div>
@@ -111,7 +115,7 @@ function MobileActionBar({ onSearch, onMenu }: { onSearch: SearchHandler; onMenu
   );
 }
 
-export function Header({ isAuthenticated = false }: HeaderProps) {
+export function Header({ isAuthenticated = false, onLogout }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [searchAnnouncement, setSearchAnnouncement] = useState("");
@@ -166,7 +170,7 @@ export function Header({ isAuthenticated = false }: HeaderProps) {
 
   return (
     <header className={styles.siteHeader} role="banner">
-      <DesktopHeader isAuthenticated={isAuthenticated} moreOpen={moreOpen} onMoreToggle={toggleMore} onSearch={openSearch} searchOpen={searchOpen} onAccountToggle={toggleAccount} accountOpen={accountOpen} />
+      <DesktopHeader isAuthenticated={isAuthenticated} onLogout={onLogout} moreOpen={moreOpen} onMoreToggle={toggleMore} onSearch={openSearch} searchOpen={searchOpen} onAccountToggle={toggleAccount} accountOpen={accountOpen} />
       <MobileHeader isAuthenticated={isAuthenticated} searchOpen={searchOpen} onSearch={openSearch} onMenu={openDrawer} />
 
       {searchOpen ? (
@@ -182,11 +186,54 @@ export function Header({ isAuthenticated = false }: HeaderProps) {
       <Drawer open={drawerOpen} title="Menu" onClose={closeDrawer} initialFocusRef={drawerCloseRef} returnFocusRef={menuButtonRef}>
         <nav className={styles.drawerNav} aria-label="Điều hướng menu di động">
           <Link className={`${styles.drawerNavItem} ${styles.drawerNavItemActive}`} to="/" onClick={closeDrawer}><Icon name="home" size={20} /><span>Trang chủ</span></Link>
-          {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={closeDrawer} />)}
-        </nav>
-      </Drawer>
+           {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={closeDrawer} />)}
+         </nav>
+         <div className={styles.drawerAuth} aria-label='Tài khoản'>
+           {isAuthenticated ? (
+             <button
+               className={styles.drawerAuthButton}
+               type='button'
+               onClick={() => {
+                 closeDrawer();
+                 runLogout(onLogout);
+               }}
+             >
+               Đăng xuất
+             </button>
+           ) : (
+             <>
+               <Link className={styles.drawerAuthButton} to='/login' onClick={closeDrawer}>Đăng nhập</Link>
+               <Link className={styles.drawerAuthButtonPrimary} to='/register' onClick={closeDrawer}>Đăng ký</Link>
+             </>
+           )}
+         </div>
+       </Drawer>
 
       <MobileActionBar onSearch={openSearch} onMenu={openDrawer} />
     </header>
   );
+}
+function HeaderAuthActions({ isAuthenticated, onLogout }: { isAuthenticated: boolean; onLogout?: () => Promise<void> | void }) {
+  if (isAuthenticated) {
+    return (
+      <button className={styles.headerAuthLink} type='button' onClick={() => runLogout(onLogout)}>
+        Đăng xuất
+      </button>
+    );
+  }
+  return (
+    <div className={styles.headerAuthLinks}>
+      <Link className={styles.headerAuthLink} to='/login'>Đăng nhập</Link>
+      <Link className={styles.headerAuthLinkPrimary} to='/register'>Đăng ký</Link>
+    </div>
+  );
+}
+
+function runLogout(onLogout?: () => Promise<void> | void): void {
+  try {
+    const pending = onLogout?.();
+    if (pending) void pending.catch(() => undefined);
+  } catch {
+    // The provider owns auth-state cleanup; the shell has no error surface.
+  }
 }
