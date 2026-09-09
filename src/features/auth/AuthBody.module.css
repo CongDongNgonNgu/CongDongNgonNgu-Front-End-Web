@@ -293,9 +293,11 @@
 
 @media (max-width: 47.999rem) {
   .authBody {
-    display: block;
+    display: flex;
+    flex-direction: column;
     min-height: auto;
     margin-block: var(--space-6);
+    margin-top: 0;
     border-inline: 0;
   }
 
@@ -309,6 +311,7 @@
   }
 
   .visualPanel {
+    order: -1;
     min-height: 18rem;
   }
 
