@@ -1,0 +1,51 @@
+.exchangeSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  align-items: stretch;
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: var(--radius-surface);
+  background: var(--color-info-surface);
+}
+
+.exchangeVisual {
+  display: flex;
+  min-height: 20rem;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--color-info-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+}
+
+.exchangeVisualTop,
+.exchangePerson,
+.exchangeDivider,
+.availabilityNote { display: flex; align-items: center; }
+
+.exchangeVisualTop { justify-content: space-between; gap: var(--space-3); color: var(--color-info-strong); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); letter-spacing: 0.08em; text-transform: uppercase; }
+.exchangePair { display: grid; gap: var(--space-5); margin: var(--space-10) 0; }
+.exchangePerson { gap: var(--space-3); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.exchangePerson:last-child { padding-top: var(--space-4); padding-bottom: 0; border-bottom: 0; }
+.exchangePerson strong, .exchangePerson span:not(.exchangeAccent) { display: block; }
+.exchangePerson strong { color: var(--color-text-primary); font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
+.exchangePerson span:not(.exchangeAccent) { margin-top: var(--space-1); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.exchangeAccent { width: 0.75rem; height: 2.75rem; flex: 0 0 auto; border-radius: var(--radius-control); background: var(--color-brand-orange); }
+.exchangePerson:last-child .exchangeAccent { background: var(--color-brand-green); }
+.exchangeDivider { justify-content: center; color: var(--color-brand-cyan); }
+.exchangeCaption { max-width: 24rem; margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.exchangeCopy { align-self: center; }
+.exchangeCopy h2 { max-width: 17ch; margin: var(--space-4) 0 0; color: var(--color-text-primary); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: var(--font-weight-medium); letter-spacing: -0.045em; line-height: 1.1; }
+.exchangeDescription { max-width: 31rem; margin: var(--space-6) 0 0; color: var(--color-info-strong); line-height: var(--leading-body); }
+.availabilityNote { gap: var(--space-2); padding: var(--space-4) 0 0; color: var(--color-info-strong); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.availabilityNote svg { flex: 0 0 auto; }
+
+@media (max-width: 47.999rem) {
+  .exchangeSection { grid-template-columns: 1fr; gap: var(--space-8); padding: var(--space-3); }
+  .exchangeVisual { min-height: 18rem; padding: var(--space-5); }
+  .exchangePair { margin: var(--space-8) 0; }
+  .exchangeCopy { padding: var(--space-3) var(--space-3) var(--space-5); }
+  .exchangeCopy h2 { max-width: 16ch; margin-top: var(--space-3); font-size: 2rem; line-height: 1.14; }
+  .availabilityNote { align-items: flex-start; }
+}

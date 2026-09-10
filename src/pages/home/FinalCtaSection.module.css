@@ -1,0 +1,11 @@
+.finalCta { max-width: 48rem; margin-inline: auto; padding-bottom: var(--space-8); text-align: center; }
+.finalCta h2 { max-width: 18ch; margin: var(--space-4) auto 0; color: var(--color-text-primary); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: var(--font-weight-medium); letter-spacing: -0.045em; line-height: 1.1; }
+.finalDescription { margin: var(--space-5) auto 0; color: var(--color-text-secondary); line-height: var(--leading-body); }
+.finalActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-4) var(--space-5); margin-top: var(--space-6); }
+
+@media (max-width: 47.999rem) {
+  .finalCta { padding-inline: var(--space-3); padding-bottom: var(--space-6); }
+  .finalCta h2 { max-width: 16ch; font-size: 2rem; line-height: 1.14; }
+  .finalActions { flex-direction: column; gap: var(--space-3); }
+  .finalActions a { width: 100%; }
+}

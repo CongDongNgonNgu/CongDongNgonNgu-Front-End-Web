@@ -1,0 +1,117 @@
+.section {
+  padding-top: clamp(4rem, 8vw, 7rem);
+}
+
+.kicker,
+.sectionLabel {
+  margin: 0;
+  color: var(--color-brand-orange-readable);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.sectionHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.68fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: end;
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionHeader h2 {
+  max-width: 17ch;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+}
+
+.sectionHeader > p {
+  max-width: 29rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-body);
+}
+
+.buttonLink,
+.textLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.buttonLink {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--motion-standard), border-color var(--motion-standard), transform var(--motion-standard);
+}
+
+.buttonPrimary {
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
+}
+
+.buttonPrimary:hover,
+.buttonPrimary:focus-visible {
+  background: var(--color-brand-orange-bright-hover);
+  transform: translateY(-1px);
+}
+
+.buttonSecondary {
+  color: var(--color-brand-navy);
+  border-color: var(--color-brand-navy);
+  background: transparent;
+}
+
+.buttonSecondary:hover,
+.buttonSecondary:focus-visible {
+  color: var(--color-brand-navy);
+  background: var(--color-surface-muted);
+  border-color: var(--color-brand-navy);
+  transform: translateY(-1px);
+}
+
+.textLink {
+  color: var(--color-brand-navy);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 0.24em;
+  transition: color var(--motion-standard), text-decoration-color var(--motion-standard);
+}
+
+.textLink:hover,
+.textLink:focus-visible {
+  color: var(--color-brand-orange-hover);
+  text-decoration-color: currentColor;
+}
+
+@media (max-width: 47.999rem) {
+  .section {
+    padding-top: 4.5rem;
+  }
+
+  .sectionHeader {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    align-items: start;
+    padding-bottom: var(--space-6);
+  }
+
+  .sectionHeader h2 {
+    max-width: 16ch;
+    font-size: 2rem;
+    line-height: 1.14;
+  }
+}
