@@ -1,0 +1,90 @@
+.authState {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.flowNotice {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-xs);
+  line-height: var(--leading-body);
+}
+
+.flowNotice strong {
+  color: var(--color-text-primary);
+}
+
+.flowErrorCard {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-control);
+  color: var(--color-danger-strong);
+  background: var(--color-danger-surface);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.flowErrorCard strong {
+  color: var(--color-danger-strong);
+}
+
+.flowIcon {
+  display: inline-flex;
+  width: 3rem;
+  height: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--color-brand-navy);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.flowStateTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  line-height: var(--leading-tight);
+}
+
+.flowButton {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-control);
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.flowButton:hover,
+.flowButton:focus-visible {
+  color: var(--color-brand-orange-on-bright);
+  background: var(--color-brand-orange-bright-hover);
+}
+
+.maskedEmail {
+  display: grid;
+  gap: 0.125rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-xs);
+}
+
+.maskedEmail strong {
+  color: var(--color-text-primary);
+}
