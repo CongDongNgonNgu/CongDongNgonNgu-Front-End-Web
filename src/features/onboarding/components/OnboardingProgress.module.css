@@ -1,0 +1,72 @@
+.flowTopline,
+.progressBar {
+  width: min(100%, var(--container-max));
+  margin-inline: auto;
+}
+
+.flowTopline {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.flowLabel,
+.flowHint,
+.progressMeta {
+  margin: 0;
+}
+
+.flowLabel {
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.flowHint {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.progressMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.progressPercent {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-regular);
+}
+
+.progressBar {
+  height: 0.25rem;
+  margin-top: var(--space-4);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+}
+
+.progressBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-brand-orange);
+  transition: width var(--motion-standard);
+}
+
+@media (max-width: 47.99rem) {
+  .flowTopline { align-items: start; }
+  .flowHint { display: none; }
+  .progressMeta { align-items: start; }
+  .progressPercent { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progressBar span { transition: none; }
+}
