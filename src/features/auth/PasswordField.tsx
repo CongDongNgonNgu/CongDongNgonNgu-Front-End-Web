@@ -1,7 +1,7 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { FieldShell } from '../../components/ui/FormControls/FieldShell';
 import formStyles from '../../components/ui/FormControls/FormControls.module.css';
-import styles from './AuthBody.module.css';
+import styles from './PasswordField.module.css';
 
 interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string;
