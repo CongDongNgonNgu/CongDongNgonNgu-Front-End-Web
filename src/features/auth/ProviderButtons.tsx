@@ -1,6 +1,6 @@
 import { Button } from '../../components/ui/Button';
 import { useAuth } from './AuthProvider';
-import styles from './AuthBody.module.css';
+import styles from './ProviderButtons.module.css';
 
 interface ProviderButtonsProps {
   mode?: 'login' | 'register';
@@ -26,7 +26,7 @@ export function ProviderButtons({ mode = 'login' }: ProviderButtonsProps) {
       >
         <span className={styles.providerButtonContent}>
           <span className={styles.googleMark} aria-hidden='true'>G</span>
-          <span>{available ? 'Tiếp tục với Google' : 'Tiếp tục với Google'}</span>
+          <span>Tiếp tục với Google</span>
           {!available ? <small className={styles.srOnly}>Chưa khả dụng</small> : null}
         </span>
       </Button>
