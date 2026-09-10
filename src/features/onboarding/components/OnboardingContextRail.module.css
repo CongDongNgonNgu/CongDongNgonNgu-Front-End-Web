@@ -1,0 +1,109 @@
+.contextRail {
+  position: sticky;
+  top: var(--space-8);
+  display: none;
+  gap: var(--space-8);
+  min-width: 0;
+  padding-top: var(--space-2);
+}
+
+.railLabel {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.roadmap {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roadmap li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: var(--space-3);
+  min-height: 4.25rem;
+  align-items: start;
+}
+
+.roadmap li:not(:last-child)::before {
+  position: absolute;
+  top: 2.25rem;
+  left: 1.05rem;
+  width: 1px;
+  height: calc(100% - 0.5rem);
+  background: var(--color-border);
+  content: '';
+}
+
+.roadmapMarker {
+  z-index: 1;
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.roadmap li > span:last-child {
+  display: grid;
+  gap: 0.2rem;
+  padding-top: var(--space-1);
+}
+
+.roadmap strong {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.roadmap small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.roadmapActive .roadmapMarker {
+  border-color: var(--color-brand-orange);
+  color: var(--color-brand-orange-readable);
+  background: var(--color-warning-surface);
+}
+
+.roadmapDone .roadmapMarker {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background: var(--color-success-surface);
+}
+
+.privacyNote {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  color: var(--color-info-strong);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-low);
+}
+
+.privacyNote > svg { margin-top: 0.1rem; }
+.privacyNote strong { display: block; color: var(--color-text-primary); font-size: var(--font-size-sm); }
+.privacyNote p,
+.privacyNote small { display: block; margin: var(--space-2) 0 0; color: var(--color-text-secondary); font-size: var(--font-size-xs); line-height: var(--leading-body); }
+.privacyNote small { color: var(--color-success-strong); }
+
+@media (min-width: 64rem) {
+  .contextRail { display: grid; }
+}
