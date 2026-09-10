@@ -76,7 +76,7 @@ export class ApiClient {
   private readonly baseUrl: string;
   private readonly fetcher: Fetcher;
 
-  constructor(baseUrl: string, fetcher: Fetcher = fetch) {
+  constructor(baseUrl: string, fetcher: Fetcher = fetch.bind(globalThis)) {
     this.baseUrl = resolveApiBaseUrl(baseUrl);
     this.fetcher = fetcher;
   }

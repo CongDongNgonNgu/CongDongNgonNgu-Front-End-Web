@@ -7,6 +7,7 @@ import {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("resolveApiBaseUrl", () => {
@@ -48,6 +49,23 @@ describe("ApiClient", () => {
       }),
     );
     const client = new ApiClient("/api/v1", fetcher);
+
+    await expect(client.get<{ status: string }>("/health")).resolves.toEqual({ status: "ok" });
+    expect(fetcher).toHaveBeenCalledWith("/api/v1/health", expect.objectContaining({ method: "GET" }));
+  });
+
+  it("binds the default fetcher to globalThis", async () => {
+    const fetcher = vi.fn(function (this: unknown) {
+      expect(this).toBe(globalThis);
+      return Promise.resolve(
+        new Response(JSON.stringify({ success: true, data: { status: "ok" }, message: "OK" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetcher);
+    const client = new ApiClient("/api/v1");
 
     await expect(client.get<{ status: string }>("/health")).resolves.toEqual({ status: "ok" });
     expect(fetcher).toHaveBeenCalledWith("/api/v1/health", expect.objectContaining({ method: "GET" }));
