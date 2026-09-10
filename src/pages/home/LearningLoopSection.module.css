@@ -1,0 +1,57 @@
+.loopList {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: var(--space-12) 0 0;
+  list-style: none;
+}
+
+.loopList::before {
+  position: absolute;
+  top: 5rem;
+  right: 4%;
+  left: 4%;
+  border-top: 1px solid var(--color-border-strong);
+  content: '';
+}
+
+.loopItem {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: 0 var(--space-4);
+  border-left: 1px solid var(--color-border);
+}
+
+.loopItem:first-child { padding-left: 0; border-left: 0; }
+
+.loopIcon {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  color: var(--color-brand-navy);
+  background: var(--color-surface);
+}
+
+.loopItem[data-tone='orange'] .loopIcon { color: var(--color-brand-orange-hover); border-color: var(--color-brand-orange); }
+.loopItem[data-tone='cyan'] .loopIcon { color: var(--color-info-strong); border-color: var(--color-brand-cyan); }
+.loopItem[data-tone='green'] .loopIcon { color: var(--color-success-strong); border-color: var(--color-brand-green); }
+
+.loopItem h3 { margin: 0; color: var(--color-text-primary); font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); line-height: 1.25; }
+.loopItem p { max-width: 10.5rem; margin: var(--space-2) 0 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+
+@media (max-width: 47.999rem) {
+  .loopList { grid-template-columns: 1fr; gap: 0; padding: var(--space-4) 0 0; }
+  .loopList::before { top: 2.75rem; right: auto; bottom: 2.5rem; left: 1.25rem; border-top: 0; border-left: 1px solid var(--color-border-strong); }
+  .loopItem, .loopItem:first-child { grid-template-columns: 2.5rem minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3) 0; border-left: 0; }
+  .loopItem p { max-width: 28rem; }
+}

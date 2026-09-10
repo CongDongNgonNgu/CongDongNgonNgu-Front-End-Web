@@ -1,0 +1,9 @@
+.membershipSection { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(2rem, 8vw, 8rem); align-items: center; padding-block: clamp(3rem, 6vw, 5rem); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.membershipSection h2 { max-width: 17ch; margin: var(--space-4) 0 0; color: var(--color-brand-navy); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: var(--font-weight-medium); letter-spacing: -0.045em; line-height: 1.1; }
+.membershipCopy > p { max-width: 35rem; margin: 0; color: var(--color-text-secondary); line-height: var(--leading-body); }
+.membershipNote { margin-top: var(--space-5) !important; padding-left: var(--space-4); border-left: 3px solid var(--color-brand-orange); color: var(--color-text-primary) !important; font-size: var(--font-size-sm); }
+
+@media (max-width: 47.999rem) {
+  .membershipSection { grid-template-columns: 1fr; gap: var(--space-6); padding-block: 3.5rem; }
+  .membershipSection h2 { max-width: 16ch; font-size: 2rem; line-height: 1.14; }
+}
