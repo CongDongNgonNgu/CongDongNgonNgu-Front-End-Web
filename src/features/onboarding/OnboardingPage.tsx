@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ApiClientError } from '../../services/api-client';
 import { ErrorState } from '../../components/ui/Feedback';
-import { Icon } from '../../components/ui/Icon/Icon';
-import { Button } from '../../components/ui/Button';
+import { ApiClientError } from '../../services/api-client';
 import { useAuth } from '../auth/AuthProvider';
+import { GoalsSkillsStep } from './components/GoalsSkillsStep';
+import { LanguageSelectionStep } from './components/LanguageSelectionStep';
+import { OnboardingActions } from './components/OnboardingActions';
+import { OnboardingContextRail } from './components/OnboardingContextRail';
+import { OnboardingProgress } from './components/OnboardingProgress';
+import { OnboardingStepHeader } from './components/OnboardingStepHeader';
+import { OptionalDetailsStep } from './components/OptionalDetailsStep';
+import { ProficiencyStep } from './components/ProficiencyStep';
+import { ONBOARDING_STEPS } from './onboarding.constants';
 import {
   buildProfileUpdate,
   createInitialDraft,
@@ -21,7 +28,7 @@ import {
 } from './onboarding-state';
 import {
   ONBOARDING_STEP_COUNT,
-  PROFICIENCY_VALUES,
+  type DeclaredProficiency,
   type LanguageCatalogItem,
   type LanguageRole,
   type OnboardingApi,
@@ -30,54 +37,6 @@ import {
 } from './onboarding.types';
 import styles from './OnboardingPage.module.css';
 
-const STEPS = [
-  { label: 'Ngôn ngữ bạn nói', eyebrow: 'Thiết lập ngôn ngữ', title: 'Bạn nói ngôn ngữ nào?', description: 'Chào mừng bạn đến với cộng đồng. Hãy cho chúng tôi biết những ngôn ngữ bạn đã quen thuộc để kết nối đúng người học và nội dung phù hợp.' },
-  { label: 'Ngôn ngữ muốn học', eyebrow: 'Mục tiêu học tập', title: 'Bạn muốn học ngôn ngữ nào?', description: 'Chọn một hoặc vài ngôn ngữ để chúng tôi gợi ý nội dung và bạn học phù hợp hơn.' },
-  { label: 'Trình độ hiện tại', eyebrow: 'Mức độ quen thuộc', title: 'Trình độ hiện tại của bạn?', description: 'Một ước lượng nhanh là đủ. Bạn có thể cập nhật lại sau khi đã học thêm.' },
-  { label: 'Mục tiêu & kỹ năng', eyebrow: 'Cách bạn muốn học', title: 'Bạn muốn học như thế nào?', description: 'Chọn điều bạn muốn đạt được và những kỹ năng bạn muốn luyện tập cùng cộng đồng.' },
-  { label: 'Lịch học linh hoạt', eyebrow: 'Thông tin thêm', title: 'Thêm một chút về lịch của bạn', description: 'Phần này hoàn toàn tùy chọn. Chia sẻ thêm để việc tìm bạn học cùng nhịp dễ dàng hơn.' },
-] as const;
-
-const GOAL_OPTIONS = [
-  { value: 'conversation', label: 'Giao tiếp tự tin', description: 'Trò chuyện tự nhiên hơn' },
-  { value: 'travel', label: 'Du lịch', description: 'Thoải mái trong những chuyến đi' },
-  { value: 'work', label: 'Công việc', description: 'Mở rộng cơ hội nghề nghiệp' },
-  { value: 'reading', label: 'Đọc nội dung', description: 'Hiểu sách, báo và văn hóa' },
-  { value: 'community', label: 'Kết bạn', description: 'Gặp gỡ những người cùng học' },
-  { value: 'exam', label: 'Thi cử', description: 'Chuẩn bị cho một kỳ thi' },
-] as const;
-
-const SKILL_OPTIONS: Array<{ value: ProfileSkill; label: string }> = [
-  { value: 'speaking', label: 'Nói' },
-  { value: 'listening', label: 'Nghe' },
-  { value: 'reading', label: 'Đọc' },
-  { value: 'writing', label: 'Viết' },
-  { value: 'grammar', label: 'Ngữ pháp' },
-  { value: 'vocabulary', label: 'Từ vựng' },
-];
-
-const TIMEZONES = [
-  { value: 'Asia/Ho_Chi_Minh', label: 'Việt Nam (UTC+07:00)' },
-  { value: 'Asia/Shanghai', label: 'Trung Quốc (UTC+08:00)' },
-  { value: 'Asia/Tokyo', label: 'Nhật Bản (UTC+09:00)' },
-  { value: 'Asia/Seoul', label: 'Hàn Quốc (UTC+09:00)' },
-  { value: 'Europe/Paris', label: 'Pháp (UTC+01:00)' },
-  { value: 'Europe/Berlin', label: 'Đức (UTC+01:00)' },
-  { value: 'America/New_York', label: 'Bờ Đông Hoa Kỳ (UTC-05:00)' },
-  { value: 'America/Los_Angeles', label: 'Bờ Tây Hoa Kỳ (UTC-08:00)' },
-];
-
-const DAYS = [
-  { value: 1, label: 'Thứ hai' },
-  { value: 2, label: 'Thứ ba' },
-  { value: 3, label: 'Thứ tư' },
-  { value: 4, label: 'Thứ năm' },
-  { value: 5, label: 'Thứ sáu' },
-  { value: 6, label: 'Thứ bảy' },
-  { value: 7, label: 'Chủ nhật' },
-];
-
-type PickerMode = 'spoken' | 'learning';
 type CatalogLoadState = 'loading' | 'ready' | 'error';
 
 interface OnboardingPageProps {
@@ -110,6 +69,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
   const [availabilityDay, setAvailabilityDay] = useState(2);
   const [availabilityStart, setAvailabilityStart] = useState('19:00');
   const [availabilityEnd, setAvailabilityEnd] = useState('20:00');
+
   const resetSearch = useCallback((): void => {
     setSearchValue('');
     setSearchOpen(false);
@@ -179,7 +139,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
     () => filterLanguages(catalog, searchValue).slice(0, 8),
     [catalog, searchValue],
   );
-  const currentStep = STEPS[draft.step] ?? STEPS[0];
+  const currentStep = ONBOARDING_STEPS[draft.step] ?? ONBOARDING_STEPS[0];
   const storageComplete = isOnboardingComplete(storage, resolvedUserId);
 
   function updateDraft(updater: (current: OnboardingDraft) => OnboardingDraft): void {
@@ -207,6 +167,12 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
     resetSearch();
   }
 
+  function handleSearchChange(value: string): void {
+    setSearchValue(value);
+    setSearchOpen(Boolean(value.trim()));
+    setActiveSearchIndex(0);
+  }
+
   function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key === 'Escape') {
       resetSearch();
@@ -229,7 +195,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
     }
   }
 
-  function setLevel(code: string, level: typeof PROFICIENCY_VALUES[number]): void {
+  function setLevel(code: string, level: DeclaredProficiency): void {
     updateDraft((current) => ({ ...current, levels: { ...current.levels, [code]: level } }));
   }
 
@@ -358,331 +324,117 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
 
   return (
     <section className={styles.onboardingPage} aria-labelledby='onboarding-title'>
-      <div className={styles.flowTopline}>
-        <div><p className={styles.flowLabel}>Thiết lập hồ sơ học tập</p><p className={styles.flowHint}>Một vài câu hỏi ngắn để cộng đồng hiểu bạn hơn.</p></div>
-        <div className={styles.progressMeta}><span>Bước {draft.step + 1}/{ONBOARDING_STEP_COUNT}</span><span className={styles.progressPercent}>{Math.round(((draft.step + 1) / ONBOARDING_STEP_COUNT) * 100)}%</span></div>
-      </div>
-      <div className={styles.progressBar} role='progressbar' aria-label='Tiến trình thiết lập hồ sơ' aria-valuemin={1} aria-valuemax={ONBOARDING_STEP_COUNT} aria-valuenow={draft.step + 1} aria-valuetext={`Bước ${draft.step + 1} trên ${ONBOARDING_STEP_COUNT}`}><span style={{ width: `${((draft.step + 1) / ONBOARDING_STEP_COUNT) * 100}%` }} /></div>
+      <OnboardingProgress step={draft.step} />
 
       <div className={styles.onboardingGrid}>
         <div className={styles.formColumn}>
-          <header className={styles.stepHeader}>
-            <p className={styles.kicker}>BƯỚC {draft.step + 1} TRÊN {ONBOARDING_STEP_COUNT} <span aria-hidden='true'>•</span> {currentStep.eyebrow.toUpperCase()}</p>
-            <h1 id='onboarding-title'>{currentStep.title}</h1>
-            <p>{currentStep.description}</p>
-            <p className={styles.reassurance}><Icon name='lock' size={16} /> Bạn có thể chỉnh sửa sau bất kỳ lúc nào trong cài đặt.</p>
-          </header>
+          <OnboardingStepHeader
+            step={draft.step}
+            eyebrow={currentStep.eyebrow}
+            title={currentStep.title}
+            description={currentStep.description}
+          />
 
           <form className={styles.onboardingForm} onSubmit={(event) => handleSubmit(event)} noValidate>
-            {draft.step === 0 ? <div className={styles.stepContent}>{renderLanguagePicker('spoken')}<div className={styles.languageGroups}>{renderLanguageGroup('native')}{renderLanguageGroup('known')}</div></div> : null}
-            {draft.step === 1 ? <div className={styles.stepContent}>{renderLanguagePicker('learning')}{renderLanguageGroup('learning')}</div> : null}
-            {draft.step === 2 ? <div className={styles.stepContent}>{renderLevels()}</div> : null}
-            {draft.step === 3 ? <div className={styles.stepContent}>{renderGoalsAndSkills()}</div> : null}
-            {draft.step === 4 ? <div className={styles.stepContent}>{renderOptionalDetails()}</div> : null}
+            {draft.step === 0 ? (
+              <LanguageSelectionStep
+                mode='spoken'
+                draft={draft}
+                catalog={catalog}
+                searchId={searchId}
+                listId={listId}
+                searchRef={searchRef}
+                searchValue={searchValue}
+                searchOpen={searchOpen}
+                activeSearchIndex={activeSearchIndex}
+                filteredSearchResults={filteredSearchResults}
+                onSearchFocus={() => setSearchOpen(Boolean(searchValue.trim()))}
+                onSearchChange={handleSearchChange}
+                onSearchKeyDown={handleSearchKeyDown}
+                onChooseLanguage={chooseSearchLanguage}
+                onRemoveRole={removeRole}
+                onToggleRole={toggleRole}
+              />
+            ) : null}
+
+            {draft.step === 1 ? (
+              <LanguageSelectionStep
+                mode='learning'
+                draft={draft}
+                catalog={catalog}
+                searchId={searchId}
+                listId={listId}
+                searchRef={searchRef}
+                searchValue={searchValue}
+                searchOpen={searchOpen}
+                activeSearchIndex={activeSearchIndex}
+                filteredSearchResults={filteredSearchResults}
+                onSearchFocus={() => setSearchOpen(Boolean(searchValue.trim()))}
+                onSearchChange={handleSearchChange}
+                onSearchKeyDown={handleSearchKeyDown}
+                onChooseLanguage={chooseSearchLanguage}
+                onRemoveRole={removeRole}
+                onToggleRole={toggleRole}
+              />
+            ) : null}
+
+            {draft.step === 2 ? (
+              <ProficiencyStep draft={draft} catalog={catalog} levelRefs={levelRefs} onSetLevel={setLevel} />
+            ) : null}
+
+            {draft.step === 3 ? (
+              <GoalsSkillsStep draft={draft} searchId={searchId} onToggleGoal={toggleGoal} onToggleSkill={toggleSkill} />
+            ) : null}
+
+            {draft.step === 4 ? (
+              <OptionalDetailsStep
+                draft={draft}
+                interestValue={interestValue}
+                availabilityDay={availabilityDay}
+                availabilityStart={availabilityStart}
+                availabilityEnd={availabilityEnd}
+                onInterestChange={setInterestValue}
+                onAddInterest={addInterest}
+                onRemoveInterest={(interest) => updateDraft((current) => ({
+                  ...current,
+                  interests: current.interests.filter((item) => item !== interest),
+                }))}
+                onTimezoneChange={(timezone) => updateDraft((current) => ({ ...current, timezone }))}
+                onAvailabilityDayChange={setAvailabilityDay}
+                onAvailabilityStartChange={setAvailabilityStart}
+                onAvailabilityEndChange={setAvailabilityEnd}
+                onAddAvailability={addAvailability}
+                onRemoveAvailability={(index) => updateDraft((current) => ({
+                  ...current,
+                  availability: current.availability.filter((_, itemIndex) => itemIndex !== index),
+                }))}
+              />
+            ) : null}
+
             {stepError ? <p className={styles.formError} role='alert'>{stepError}</p> : null}
             {saveError ? <p className={styles.formError} role='alert'>{saveError}</p> : null}
-            <div className={styles.actionBar}>
-              {draft.step === 4 ? <button className={styles.skipButton} type='button' onClick={(event) => handleSubmit(event, true)}>Bỏ qua bước này</button> : <span className={styles.actionNote}>Bạn có thể chỉnh sửa sau</span>}
-              <div className={styles.actionButtons}><Button variant='quiet' type='button' onClick={handleBack} disabled={saving || draft.step === 0}>Quay lại</Button><Button variant='secondary' size='lg' type='submit' loading={saving}>{draft.step === 4 ? 'Hoàn tất thiết lập' : 'Tiếp tục'} <Icon name='chevron-down' size={18} className={styles.forwardIcon} /></Button></div>
-            </div>
+
+            <OnboardingActions
+              step={draft.step}
+              saving={saving}
+              onBack={handleBack}
+              onSkip={(event) => handleSubmit(event, true)}
+            />
           </form>
         </div>
 
-        <aside className={styles.contextRail} aria-label='Tiến trình thiết lập'>
-          <nav aria-label='Các bước thiết lập'><p className={styles.railLabel}>Lộ trình của bạn</p><ol className={styles.roadmap}>{STEPS.map((step, index) => <li className={index === draft.step ? styles.roadmapActive : index < draft.step ? styles.roadmapDone : ''} key={step.label} aria-current={index === draft.step ? 'step' : undefined}><span className={styles.roadmapMarker} aria-hidden='true'>{index < draft.step ? <Icon name='check-circle' size={18} /> : index + 1}</span><span><strong>{step.label}</strong><small>{index === draft.step ? 'Đang thực hiện' : index < draft.step ? 'Đã hoàn thành' : 'Chưa thực hiện'}</small></span></li>)}</ol></nav>
-          <div className={styles.privacyNote}><Icon name='lock' size={18} /><div><strong>Quyền riêng tư & linh hoạt</strong><p>Thông tin bạn chọn chỉ dùng để gợi ý chủ đề và tìm bạn học cùng nhịp độ.</p><small>Bạn có thể chỉnh sửa sau bất kỳ lúc nào.</small></div></div>
-        </aside>
+        <OnboardingContextRail step={draft.step} />
       </div>
     </section>
   );
-
-  function renderLanguagePicker(mode: PickerMode) {
-    const learningMode = mode === 'learning';
-    const chipCodes = learningMode ? draft.learningCodes : unique([...draft.nativeCodes, ...draft.knownCodes]);
-    return (
-      <div className={styles.pickerSection}>
-        <label className={styles.fieldLabel} htmlFor={searchId}>Tìm và thêm ngôn ngữ</label>
-        <div className={styles.comboboxShell}>
-          <Icon name='search' size={20} />
-          <input
-            ref={searchRef}
-            id={searchId}
-            className={styles.comboboxInput}
-            role='combobox'
-            aria-expanded={searchOpen}
-            aria-controls={searchOpen ? listId : undefined}
-            aria-autocomplete='list'
-            autoComplete='off'
-            value={searchValue}
-            placeholder='Nhập tên ngôn ngữ (ví dụ: Tiếng Việt, English, 日本語...)'
-            onFocus={() => setSearchOpen(Boolean(searchValue.trim()))}
-            onChange={(event) => {
-              setSearchValue(event.target.value);
-              setSearchOpen(Boolean(event.target.value.trim()));
-              setActiveSearchIndex(0);
-            }}
-            onKeyDown={handleSearchKeyDown}
-          />
-        </div>
-        {searchOpen && searchValue.trim() ? (
-          <ul className={styles.searchResults} id={listId} role='listbox' aria-label='Kết quả ngôn ngữ'>
-            {filteredSearchResults.length > 0 ? filteredSearchResults.map((language, index) => {
-              const selected = learningMode
-                ? draft.learningCodes.includes(language.code)
-                : draft.nativeCodes.includes(language.code) || draft.knownCodes.includes(language.code);
-              return (
-                <li key={language.code}>
-                  <button
-                    className={index === activeSearchIndex ? styles.searchResultActive : styles.searchResult}
-                    type='button'
-                    role='option'
-                    aria-selected={selected}
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => chooseSearchLanguage(language.code)}
-                  >
-                    <span><strong>{language.nativeName}</strong><small>{language.vietnameseName} · {language.englishName}</small></span>
-                    <span className={styles.searchResultAction}>{selected ? 'Đã chọn' : 'Thêm'}</span>
-                  </button>
-                </li>
-              );
-            }) : <li className={styles.noResults}>Không tìm thấy ngôn ngữ phù hợp.</li>}
-          </ul>
-        ) : null}
-        <div className={styles.selectedLanguages} aria-live='polite'>
-          <span className={styles.selectedLabel}>{learningMode ? 'Đã chọn để học:' : 'Đã chọn cho hồ sơ của bạn:'}</span>
-          {chipCodes.length > 0 ? chipCodes.flatMap((code) => {
-            const language = findLanguage(code);
-            const roles = learningMode ? ['learning' as const] : [
-              ...(draft.nativeCodes.includes(code) ? ['native' as const] : []),
-              ...(draft.knownCodes.includes(code) ? ['known' as const] : []),
-            ];
-            return roles.map((role) => (
-              <span className={`${styles.languageChip} ${role === 'native' ? styles.languageChipNative : role === 'learning' ? styles.languageChipLearning : styles.languageChipKnown}`} key={`${code}-${role}`}>
-                <span className={styles.chipDot} aria-hidden='true' />
-                <span>{language.nativeName} ({roleLabel(role)})</span>
-                <button type='button' aria-label={`Xóa ${language.nativeName} (${roleLabel(role)})`} onClick={() => removeRole(code, role)}><Icon name='x' size={16} /></button>
-              </span>
-            ));
-          }) : <span className={styles.emptySelection}>Chưa có lựa chọn nào</span>}
-        </div>
-      </div>
-    );
-  }
-
-  function renderLanguageGroup(role: LanguageRole) {
-    const selectedCodes = role === 'native' ? draft.nativeCodes : role === 'known' ? draft.knownCodes : draft.learningCodes;
-    const title = role === 'native'
-      ? 'Ngôn ngữ bản ngữ (Tiếng mẹ đẻ)'
-      : role === 'known'
-        ? 'Ngôn ngữ bạn đã biết hoặc có thể giao tiếp cơ bản'
-        : 'Ngôn ngữ bạn muốn học';
-    const helper = role === 'native'
-      ? 'Ngôn ngữ bạn dùng tự nhiên nhất từ nhỏ. Bạn có thể chọn nhiều hơn một.'
-      : role === 'known'
-        ? 'Chọn các ngôn ngữ bạn có thể đọc hiểu hoặc trò chuyện hàng ngày.'
-        : 'Chọn những ngôn ngữ bạn muốn khám phá cùng cộng đồng.';
-    const actionLabel = role === 'native' ? 'ngôn ngữ bản ngữ' : role === 'known' ? 'ngôn ngữ đã biết' : 'ngôn ngữ muốn học';
-    return (
-      <fieldset className={styles.languageGroup}>
-        <legend>{title}</legend>
-        <p className={styles.groupHelper}>{helper}</p>
-        <div className={styles.choiceGrid} role='group' aria-label={title}>
-          {catalog.map((language) => {
-            const selected = selectedCodes.includes(language.code);
-            const languageLabelId = `${searchId}-${role}-${language.code}-label`;
-            const languageActionId = `${searchId}-${role}-${language.code}-action`;
-            return (
-              <button
-                className={`${styles.languageChoice} ${selected ? styles.languageChoiceSelected : ''}`}
-                type='button'
-                key={language.code}
-                aria-pressed={selected}
-                aria-labelledby={languageLabelId}
-                aria-describedby={languageActionId}
-                onClick={() => toggleRole(language.code, role)}
-              >
-                <span id={languageLabelId}><strong>{language.nativeName}</strong><small>{language.englishName}</small></span>
-                <span id={languageActionId} className={styles.srOnly}>{selected ? 'Đã chọn' : 'Chọn'} làm {actionLabel}</span>
-                <span className={styles.checkIndicator} aria-hidden='true'>{selected ? <Icon name='check-circle' size={18} /> : null}</span>
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
-    );
-  }
-
-  function renderLevels() {
-    const codes = unique([...draft.knownCodes, ...draft.learningCodes])
-      .filter((code) => !draft.nativeCodes.includes(code));
-    return (
-      <section className={styles.levelSection} aria-labelledby='level-section-title'>
-        <div className={styles.sectionIntro}>
-          <p className={styles.sectionEyebrow}>MỘT ƯỚC LƯỢNG NHANH</p>
-          <h2 id='level-section-title'>Bạn đang ở đâu với từng ngôn ngữ?</h2>
-          <p>Chọn mức gần nhất với cảm nhận hiện tại của bạn. Không có câu trả lời đúng hay sai.</p>
-        </div>
-        {codes.length > 0 ? (
-          <div className={styles.levelList}>
-            {codes.map((code) => {
-              const language = findLanguage(code);
-              return (
-                <div
-                  className={styles.levelItem}
-                  key={code}
-                  ref={(element) => { levelRefs.current[code] = element; }}
-                  role='radiogroup'
-                  aria-label={`${language.nativeName} · ${language.englishName}`}
-                  tabIndex={-1}
-                >
-                  <div className={styles.levelLanguage}>
-                    <strong>{language.nativeName}</strong>
-                    <span>{language.englishName}</span>
-                    <small>{draft.learningCodes.includes(code) ? 'Đang học' : 'Đã biết'}</small>
-                  </div>
-                  <div className={styles.levelOptions}>
-                    {PROFICIENCY_VALUES.filter((level) => level !== 'NATIVE').map((level) => (
-                      <label className={`${styles.levelOption} ${draft.levels[code] === level ? styles.levelOptionSelected : ''}`} key={level}>
-                        <input type='radio' name={`level-${code}`} value={level} checked={draft.levels[code] === level} onChange={() => setLevel(code, level)} />
-                        <span>{level}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className={styles.nativeLevelNote}><Icon name='check-circle' size={20} /> Ngôn ngữ bạn chọn đã là bản ngữ, nên không cần khai báo thêm trình độ.</p>
-        )}
-      </section>
-    );
-  }
-
-  function renderGoalsAndSkills() {
-    return (
-      <section className={styles.goalsSection} aria-labelledby='goals-section-title'>
-        <div className={styles.sectionIntro}>
-          <p className={styles.sectionEyebrow}>CÁ NHÂN HÓA GỢI Ý</p>
-          <h2 id='goals-section-title'>Điều gì đưa bạn đến đây?</h2>
-          <p>Chọn ít nhất một mục tiêu và một kỹ năng. Bạn có thể thay đổi những lựa chọn này sau.</p>
-        </div>
-        <fieldset className={styles.optionFieldset}>
-          <legend>Mục tiêu của bạn</legend>
-          <div className={styles.goalGrid}>
-            {GOAL_OPTIONS.map((goal) => {
-              const selected = draft.goals.includes(goal.value);
-              const goalLabelId = `${searchId}-goal-${goal.value}-label`;
-              const goalActionId = `${searchId}-goal-${goal.value}-action`;
-              return (
-                <button
-                  className={`${styles.goalChoice} ${selected ? styles.goalChoiceSelected : ''}`}
-                  type='button'
-                  key={goal.value}
-                  aria-pressed={selected}
-                  aria-labelledby={goalLabelId}
-                  aria-describedby={goalActionId}
-                  data-onboarding-error-target={selected ? undefined : 'true'}
-                  onClick={() => toggleGoal(goal.value)}
-                >
-                  <span id={goalLabelId}><strong>{goal.label}</strong><small>{goal.description}</small></span>
-                  <span id={goalActionId} className={styles.srOnly}>{selected ? 'Đã chọn' : 'Chọn'} mục tiêu</span>
-                  <span className={styles.checkIndicator} aria-hidden='true'>{selected ? <Icon name='check-circle' size={18} /> : null}</span>
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-        <fieldset className={styles.optionFieldset}>
-          <legend>Kỹ năng bạn muốn luyện tập</legend>
-          <div className={styles.skillGrid}>
-            {SKILL_OPTIONS.map((skill) => {
-              const selected = draft.skills.includes(skill.value);
-              const skillLabelId = `${searchId}-skill-${skill.value}-label`;
-              const skillActionId = `${searchId}-skill-${skill.value}-action`;
-              return (
-                <button
-                  className={`${styles.skillChoice} ${selected ? styles.skillChoiceSelected : ''}`}
-                  type='button'
-                  key={skill.value}
-                  aria-pressed={selected}
-                  aria-labelledby={skillLabelId}
-                  aria-describedby={skillActionId}
-                  data-onboarding-error-target={selected ? undefined : 'true'}
-                  onClick={() => toggleSkill(skill.value)}
-                >
-                  <span id={skillLabelId}>{skill.label}</span>
-                  <span id={skillActionId} className={styles.srOnly}>{selected ? 'Đã chọn' : 'Chọn'} kỹ năng</span>
-                  {selected ? <Icon name='check-circle' size={18} /> : null}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-      </section>
-    );
-  }
-
-  function renderOptionalDetails() {
-    return (
-      <section className={styles.optionalSection} aria-labelledby='optional-section-title'>
-        <div className={styles.sectionIntro}>
-          <p className={styles.sectionEyebrow}>KHÔNG BẮT BUỘC</p>
-          <h2 id='optional-section-title'>Chọn thêm nếu bạn muốn</h2>
-          <p>Bỏ qua phần này cũng được. Những thông tin này giúp chúng tôi gợi ý cuộc trò chuyện đúng lúc hơn.</p>
-        </div>
-        <div className={styles.optionalBlock}>
-          <label className={styles.fieldLabel} htmlFor='interest-input'>Chủ đề bạn quan tâm</label>
-          <div className={styles.inlineInput}>
-            <input id='interest-input' value={interestValue} maxLength={64} placeholder='Ví dụ: âm nhạc, ẩm thực, sách...' onChange={(event) => setInterestValue(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addInterest(); } }} />
-            <Button variant='quiet' type='button' onClick={addInterest}>Thêm</Button>
-          </div>
-          <div className={styles.interestList} aria-live='polite'>
-            {draft.interests.map((interest) => <span className={styles.interestChip} key={interest}>{interest}<button type='button' aria-label={`Xóa sở thích ${interest}`} onClick={() => updateDraft((current) => ({ ...current, interests: current.interests.filter((item) => item !== interest) }))}><Icon name='x' size={16} /></button></span>)}
-          </div>
-        </div>
-        <div className={styles.optionalBlock}>
-          <label className={styles.fieldLabel} htmlFor='timezone-select'>Múi giờ của bạn</label>
-          <select id='timezone-select' value={draft.timezone} onChange={(event) => updateDraft((current) => ({ ...current, timezone: event.target.value }))}>
-            <option value=''>Chưa chọn</option>
-            {TIMEZONES.map((timezone) => <option value={timezone.value} key={timezone.value}>{timezone.label}</option>)}
-          </select>
-          <p className={styles.fieldHint}>Chúng tôi chỉ dùng múi giờ để hiển thị thời gian phù hợp.</p>
-        </div>
-        <div className={styles.optionalBlock}>
-          <div className={styles.fieldLabel}>Khung giờ bạn có thể trò chuyện</div>
-          <div className={styles.availabilityFields}>
-            <select aria-label='Ngày trong tuần' value={availabilityDay} onChange={(event) => setAvailabilityDay(Number(event.target.value))}>{DAYS.map((day) => <option key={day.value} value={day.value}>{day.label}</option>)}</select>
-            <input aria-label='Giờ bắt đầu' type='time' value={availabilityStart} onChange={(event) => setAvailabilityStart(event.target.value)} />
-            <span aria-hidden='true'>đến</span>
-            <input aria-label='Giờ kết thúc' type='time' value={availabilityEnd} onChange={(event) => setAvailabilityEnd(event.target.value)} />
-            <Button variant='quiet' type='button' onClick={addAvailability}>Thêm giờ</Button>
-          </div>
-          <ul className={styles.availabilityList}>
-            {draft.availability.map((window, index) => <li key={`${window.dayOfWeek}-${window.startTime}-${index}`}><span>{DAYS.find((day) => day.value === window.dayOfWeek)?.label}: {window.startTime}–{window.endTime}</span><button type='button' aria-label={`Xóa khung giờ ${index + 1}`} onClick={() => updateDraft((current) => ({ ...current, availability: current.availability.filter((_, itemIndex) => itemIndex !== index) }))}><Icon name='x' size={16} /></button></li>)}
-          </ul>
-        </div>
-      </section>
-    );
-  }
-
-  function findLanguage(code: string): LanguageCatalogItem {
-    return catalog.find((language) => language.code === code) ?? {
-      code,
-      slug: code,
-      nativeName: code,
-      englishName: code,
-      vietnameseName: code,
-      direction: 'ltr',
-      active: true,
-      launch: false,
-      sortOrder: Number.MAX_SAFE_INTEGER,
-    };
-  }
 }
 
 function OnboardingLoading() {
-  return <section className={styles.loadingFrame} aria-busy='true' aria-label='Đang tải thiết lập onboarding'><div className={styles.loadingLines}><span /><span /><span /><span /></div></section>;
+  return (
+    <section className={styles.loadingFrame} aria-busy='true' aria-label='Đang tải thiết lập onboarding'>
+      <div className={styles.loadingLines}><span /><span /><span /><span /></div>
+    </section>
+  );
 }
 
 function getClientStorage(): Storage | null {
@@ -702,12 +454,6 @@ function hasDraftContent(draft: OnboardingDraft): boolean {
 
 function unique<T>(values: readonly T[]): T[] {
   return [...new Set(values)];
-}
-
-function roleLabel(role: LanguageRole): string {
-  if (role === 'native') return 'Bản ngữ';
-  if (role === 'known') return 'Đã biết';
-  return 'Đang học';
 }
 
 function timeToMinutes(value: string): number {
