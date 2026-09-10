@@ -18,7 +18,13 @@ interface HeaderDrawerProps {
 
 export function HeaderDrawer({ open, isAuthenticated, onLogout, onClose, initialFocusRef, returnFocusRef }: HeaderDrawerProps) {
   return (
-    <Drawer open={open} title='Menu' onClose={onClose} initialFocusRef={initialFocusRef} returnFocusRef={returnFocusRef}>
+    <Drawer
+      open={open}
+      title='Menu'
+      onClose={onClose}
+      initialFocusRef={initialFocusRef as RefObject<HTMLElement>}
+      returnFocusRef={returnFocusRef as RefObject<HTMLElement>}
+    >
       <nav className={styles.drawerNav} aria-label='Điều hướng menu di động'>
         <Link className={`${styles.drawerNavItem} ${styles.drawerNavItemActive}`} to='/' onClick={onClose}><Icon name='home' size={20} /><span>Trang chủ</span></Link>
         {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={onClose} />)}
