@@ -7,7 +7,8 @@ import { AuthBody } from '../AuthBody';
 import { PasswordField } from '../PasswordField';
 import { ProviderButtons } from '../ProviderButtons';
 import { useAuth } from '../AuthProvider';
-import styles from '../AuthBody.module.css';
+import formStyles from '../AuthForm.module.css';
+import feedbackStyles from '../AuthFeedback.module.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -59,10 +60,10 @@ export function LoginPage() {
         { icon: 'book-open', title: 'Tài nguyên mở, vì cộng đồng', description: 'Mọi đóng góp về từ vựng, ngữ cảnh và câu thoại đều được lưu trữ minh bạch để hỗ trợ người đi sau.' },
         { icon: 'users', title: 'Tôn trọng và đồng cảm', description: 'Mỗi ngôn ngữ là một nhịp điệu riêng, kết nối dựa trên sự tò mò và thấu hiểu văn hóa.' },
       ]}
-      editorialPrompt={<p>Chưa có tài khoản? <Link className={styles.textLink} to='/register'>Tham gia hoàn toàn miễn phí. Tạo tài khoản mới →</Link></p>}
+      editorialPrompt={<p>Chưa có tài khoản? <Link className={formStyles.textLink} to='/register'>Tham gia hoàn toàn miễn phí. Tạo tài khoản mới →</Link></p>}
     >
-      <form ref={formRef} className={styles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'login-error' : undefined}>
-        {error ? <p className={styles.errorMessage} id='login-error' role='alert'>{error}</p> : null}
+      <form ref={formRef} className={formStyles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'login-error' : undefined}>
+        {error ? <p className={feedbackStyles.errorMessage} id='login-error' role='alert'>{error}</p> : null}
         <TextInput
           label='Địa chỉ email'
           type='email'
@@ -83,22 +84,22 @@ export function LoginPage() {
           required
           error={fieldError && email.includes('@') && !password ? fieldError : undefined}
         />
-        <div className={styles.passwordLinks}>
-          <Link className={styles.textLink} to='/forgot-password'>Quên mật khẩu?</Link>
+        <div className={formStyles.passwordLinks}>
+          <Link className={formStyles.textLink} to='/forgot-password'>Quên mật khẩu?</Link>
         </div>
-        <label className={styles.authConsent}>
+        <label className={formStyles.authConsent}>
           <input type='checkbox' checked={remember} onChange={(event) => setRemember(event.target.checked)} />
           <span>Ghi nhớ đăng nhập trên thiết bị này</span>
         </label>
-        <div className={styles.formActions}>
+        <div className={formStyles.formActions}>
           <Button type='submit' variant='secondary' fullWidth loading={loading}>Đăng nhập vào tài khoản →</Button>
           <ProviderButtons mode='login' />
         </div>
-        <div className={styles.authLinks}>
+        <div className={formStyles.authLinks}>
           <span>Bạn là thành viên mới?</span>
-          <Link className={styles.textLink} to='/register'>Đăng ký tài khoản miễn phí</Link>
+          <Link className={formStyles.textLink} to='/register'>Đăng ký tài khoản miễn phí</Link>
         </div>
-        <p className={styles.legalNote}>Bằng việc đăng nhập, bạn đồng ý với <a className={styles.textLink} href='#rules'>Quy tắc cộng đồng</a> và <a className={styles.textLink} href='#privacy'>Chính sách bảo mật</a> của CongDongNgonNgu.vn.</p>
+        <p className={formStyles.legalNote}>Bằng việc đăng nhập, bạn đồng ý với <a className={formStyles.textLink} href='#rules'>Quy tắc cộng đồng</a> và <a className={formStyles.textLink} href='#privacy'>Chính sách bảo mật</a> của CongDongNgonNgu.vn.</p>
       </form>
     </AuthBody>
   );
