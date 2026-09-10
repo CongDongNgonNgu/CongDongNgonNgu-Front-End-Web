@@ -8,6 +8,7 @@ import { RegisterPage } from './features/auth/pages/RegisterPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
+import { OwnPassportPage, PublicPassportPage } from './features/passport/PassportPages';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -34,6 +35,8 @@ function RoutedApp() {
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/auth/callback' element={<AuthCallbackPage />} />
         <Route path='/onboarding' element={<OnboardingPage />} />
+        <Route path='/profile' element={<OwnPassportPage />} />
+        <Route path='/profiles/:userId' element={<PublicPassportPage />} />
         <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </AppShell>

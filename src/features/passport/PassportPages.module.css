@@ -1,0 +1,740 @@
+.passportPage {
+  min-width: 0;
+  padding: 2rem 0 4rem;
+}
+
+.passportHero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: clamp(1.5rem, 3vw, 2rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-low);
+}
+
+.identityBlock {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.identityBlock h1 {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-primary);
+  font-size: clamp(1.85rem, 3vw, 2.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.identityBlock > span {
+  width: 5rem;
+  height: 5rem;
+  font-size: var(--font-size-xl);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--color-brand-orange-readable);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.identitySubtitle {
+  max-width: 34rem;
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-body);
+}
+
+.heroActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.quietLink {
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-underline-offset: 0.2em;
+}
+
+.passportLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  align-items: start;
+  gap: var(--space-8);
+  padding-top: var(--space-8);
+}
+
+.passportPrimary,
+.passportRail {
+  min-width: 0;
+}
+
+.passportRail {
+  display: grid;
+  align-self: start;
+  position: sticky;
+  top: 6.5rem;
+  gap: var(--space-6);
+}
+
+.railCard {
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-low);
+}
+
+.railCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.railCardHeader h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.railCardHeader > svg {
+  flex: 0 0 auto;
+  color: var(--color-brand-green);
+}
+
+.railHighlight {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.railHighlight span,
+.railHighlight small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--leading-body);
+}
+
+.railHighlight strong {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.railAvailabilityList {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  list-style: none;
+}
+
+.railAvailabilityList li {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.railText {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--leading-body);
+}
+
+.passportRail .railCard {
+  align-self: start;
+}
+
+.contentCard {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-low);
+}
+
+.passportSection {
+  min-width: 0;
+}
+
+.passportPrimary > .passportSection + .passportSection {
+  margin-top: var(--space-8);
+}
+
+.sectionTools {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sectionCount {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-brand-navy);
+  background: var(--color-surface);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.sectionHeader,
+.editorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.sectionHeader h2,
+.editorHeader h2 {
+  max-width: 38rem;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-primary);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.sectionTools > svg {
+  flex: 0 0 auto;
+  color: var(--color-brand-orange-readable);
+}
+
+.languageGroups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+.languageGroup:last-child {
+  grid-column: 1 / -1;
+}
+
+.languageGroup {
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+}
+
+.groupHeading {
+  min-height: 5.5rem;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.groupHeading h3,
+.collectionBlock h3,
+.availabilityEditor h3,
+.editorLanguageHeading h3,
+.editorChoiceGrid h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  line-height: 1.35;
+}
+
+.groupHeading p,
+.editorLanguageHeading p,
+.fieldHint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: var(--leading-body);
+}
+
+.languageList {
+  display: grid;
+}
+
+.languageRow {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.languageRow:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.languageName {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+}
+
+.languageName strong {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  overflow-wrap: anywhere;
+}
+
+.languageName span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+.languageMeta,
+.editorChips,
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.groupEmpty,
+.mutedText {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.collectionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.collectionBlock {
+  min-width: 0;
+}
+
+.chipList {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.displayChip {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.interestDisplay {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+}
+
+.editorFrame {
+  margin: 0 0 5rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-low);
+}
+
+.editorHeader {
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.editorForm {
+  display: grid;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.editorFieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.editorFieldset legend {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.editorLanguageList {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.editorLanguage {
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+}
+
+.editorLanguageHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.removeButton {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+.removeButton:hover,
+.removeButton:focus-visible {
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-surface);
+}
+
+.roleChoices,
+.choiceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.checkboxLabel {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.checkboxLabel input {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-brand-navy);
+}
+
+.editorControls,
+.editorChoiceGrid,
+.availabilityAddRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.editorChoiceGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.editorChoiceGrid h3 {
+  margin-bottom: var(--space-2);
+}
+
+.choiceList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-4);
+  margin-top: 0;
+}
+
+.fieldLabel {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.fieldLabel input,
+.fieldLabel select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  font: inherit;
+  font-size: var(--font-size-sm);
+}
+
+.fieldLabel input::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.inlineField {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.inlineField input {
+  min-width: 0;
+  flex: 1;
+}
+
+.editorChips {
+  margin-top: var(--space-3);
+}
+
+.availabilityEditor {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.availabilityEditList {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.availabilityEditList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 2.75rem;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.availabilityAddRow {
+  grid-template-columns: 1.2fr 1fr 1fr auto;
+  align-items: end;
+}
+
+.formError {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-control);
+  color: var(--color-danger-strong);
+  background: var(--color-danger-surface);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.editorActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.stateFrame {
+  display: grid;
+  min-height: 24rem;
+  place-items: center;
+  padding: 3rem var(--gutter-mobile);
+}
+
+.stateFrame > * {
+  width: min(100%, 32rem);
+}
+
+.loadingState {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.loadingState span {
+  display: block;
+  height: 1rem;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+.loadingState span:nth-child(2) { width: 78%; }
+.loadingState span:nth-child(3) { width: 92%; }
+.loadingState span:nth-child(4) { width: 64%; }
+
+.screenReaderOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes pulse {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 63.999rem) {
+  .passportLayout {
+    grid-template-columns: minmax(0, 2fr) minmax(14rem, 1fr);
+    gap: var(--space-8);
+  }
+
+  .languageGroups,
+  .collectionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .languageGroup:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 47.999rem) {
+  .passportPage {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-12);
+  }
+
+  .passportHero {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .identityBlock {
+    align-items: flex-start;
+  }
+
+  .identityBlock h1 {
+    font-size: clamp(1.85rem, 10vw, 2.5rem);
+  }
+
+  .heroActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .heroActions > * {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .passportLayout {
+    display: block;
+    padding-top: var(--space-8);
+  }
+
+  .passportRail {
+    position: static;
+    margin-top: var(--space-8);
+  }
+
+  .languageGroups,
+  .collectionGrid,
+  .editorChoiceGrid,
+  .editorControls,
+  .availabilityAddRow {
+    grid-template-columns: 1fr;
+  }
+
+  .languageGroup:last-child {
+    grid-column: auto;
+  }
+
+  .sectionHeader h2,
+  .editorHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .sectionTools > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .contentCard {
+    padding: var(--space-5);
+  }
+
+  .editorFrame {
+    margin-bottom: var(--space-8);
+    padding: var(--space-5);
+  }
+
+  .editorHeader {
+    align-items: flex-start;
+  }
+
+  .choiceList {
+    grid-template-columns: 1fr;
+  }
+
+  .inlineField {
+    flex-direction: column;
+  }
+
+  .editorActions {
+    justify-content: stretch;
+  }
+
+  .editorActions > * {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loadingState span {
+    animation: none;
+  }
+}

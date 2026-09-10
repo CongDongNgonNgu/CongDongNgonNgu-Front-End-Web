@@ -90,4 +90,22 @@ describe('AuthApi', () => {
       'https://auth.example.test/api/v1/auth/oauth/google/start?mode=login',
     );
   });
+
+  it('reads a public profile through the profile projection endpoint', async () => {
+    const publicProfile = {
+      scope: 'public' as const,
+      user: { id: 'user-2', displayName: 'Public learner' },
+      languages: [],
+      goals: [],
+      skills: [],
+      interests: [],
+    };
+    const request = vi.spyOn(apiClient, 'request').mockResolvedValue(publicProfile);
+    const api = new AuthApi();
+
+    await expect(api.getPublicProfile('user-2')).resolves.toEqual(publicProfile);
+    expect(request).toHaveBeenCalledWith('/profiles/user-2', expect.objectContaining({
+      credentials: 'include',
+    }));
+  });
 });

@@ -31,7 +31,10 @@ export function HeaderDrawer({ open, isAuthenticated, onLogout, onClose, initial
       </nav>
       <div className={styles.drawerAuth} aria-label='Tài khoản'>
         {isAuthenticated ? (
-          <button className={styles.drawerAuthButton} type='button' onClick={() => { onClose(); runLogout(onLogout); }}>Đăng xuất</button>
+          <>
+            <Link className={styles.drawerAuthButton} to='/profile' onClick={onClose}>Hộ chiếu ngôn ngữ</Link>
+            <button className={styles.drawerAuthButton} type='button' onClick={() => { onClose(); runLogout(onLogout); }}>Đăng xuất</button>
+          </>
         ) : (
           <>
             <Link className={styles.drawerAuthButton} to='/login' onClick={onClose}>Đăng nhập</Link>

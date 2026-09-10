@@ -27,9 +27,10 @@ export interface ProfileLanguageInput {
   roles: LanguageRole[];
   declaredProficiency: DeclaredProficiency;
   isPrimaryLearningTarget?: boolean;
+  visibility?: 'PUBLIC' | 'PRIVATE';
 }
 
-export interface ProfileLanguageResponse extends ProfileLanguageInput {
+export interface ProfileLanguageResponse extends Omit<ProfileLanguageInput, 'languageCode'> {
   code: string;
   slug: string;
   nativeName: string;
@@ -59,6 +60,7 @@ export interface OwnProfile {
 }
 
 export interface ProfileUpdateInput {
+  displayName?: string;
   languages: ProfileLanguageInput[];
   goals: string[];
   skills: ProfileSkill[];

@@ -7,6 +7,7 @@ import type {
   SimpleAuthResult,
 } from './auth.types';
 import type { LanguageCatalogItem, OwnProfile, ProfileUpdateInput } from '../onboarding/onboarding.types';
+import type { PublicProfile } from '../passport/passport.types';
 
 type JsonValue = object;
 
@@ -84,6 +85,10 @@ export class AuthApi {
 
   async updateProfile(input: ProfileUpdateInput): Promise<OwnProfile> {
     return this.requestWithAuth<OwnProfile>('/profile', jsonRequest('PATCH', input));
+  }
+
+  async getPublicProfile(userId: string): Promise<PublicProfile> {
+    return this.request<PublicProfile>('/profiles/' + encodeURIComponent(userId));
   }
 
   async logout(): Promise<void> {
