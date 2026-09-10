@@ -5,7 +5,9 @@ import { TextInput } from '../../../components/ui/FormControls/TextInput';
 import { authErrorMessage } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { useAuth } from '../AuthProvider';
-import styles from '../AuthBody.module.css';
+import formStyles from '../AuthForm.module.css';
+import feedbackStyles from '../AuthFeedback.module.css';
+import flowStyles from '../AuthFlow.module.css';
 
 function maskEmail(value: string): string {
   const [local, domain] = value.split('@');
@@ -18,9 +20,7 @@ export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
-  const [state, setState] = useState<'checking' | 'verified' | 'invalid' | 'idle'>(
-    token ? 'checking' : 'idle',
-  );
+  const [state, setState] = useState<'checking' | 'verified' | 'invalid' | 'idle'>(token ? 'checking' : 'idle');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const attemptedToken = useRef<string | null>(null);
@@ -72,27 +72,25 @@ export function VerifyEmailPage() {
         { icon: 'check-circle', title: 'Minh bạch và an toàn', description: 'Email hiển thị trong giao diện luôn được che chắn khi cần thiết.' },
         { icon: 'circle-help', title: 'Luôn có hỗ trợ', description: 'Bạn có thể gửi lại email hoặc quay lại đăng nhập bất cứ lúc nào.' },
       ]}
-      editorialPrompt={<p>Đã xác minh? <Link className={styles.textLink} to='/login'>Đi tới đăng nhập →</Link></p>}
+      editorialPrompt={<p>Đã xác minh? <Link className={formStyles.textLink} to='/login'>Đi tới đăng nhập →</Link></p>}
       mobileReassuranceTitle='Bảo vệ quyền riêng tư'
       mobileReassuranceText='Liên kết xác thực chỉ có hiệu lực trong 24 giờ và chỉ được sử dụng một lần.'
     >
-      <div className={styles.authState}>
-        {state === 'checking' ? <p className={styles.statusMessage} role='status'>Đang kiểm tra liên kết xác minh…</p> : null}
+      <div className={flowStyles.authState}>
+        {state === 'checking' ? <p className={feedbackStyles.statusMessage} role='status'>Đang kiểm tra liên kết xác minh…</p> : null}
         {state !== 'checking' && state !== 'verified' && email ? (
-          <div className={styles.maskedEmail}>
+          <div className={flowStyles.maskedEmail}>
             <span>Địa chỉ nhận liên kết</span>
             <strong>{maskEmail(email)}</strong>
           </div>
         ) : null}
         {message && state !== 'checking' ? (
-          <p className={state === 'verified' ? styles.statusMessage : styles.errorMessage} role={state === 'verified' ? 'status' : 'alert'}>
-            {message}
-          </p>
+          <p className={state === 'verified' ? feedbackStyles.statusMessage : feedbackStyles.errorMessage} role={state === 'verified' ? 'status' : 'alert'}>{message}</p>
         ) : null}
         {state === 'verified' ? (
-          <Link className={styles.textLink} to='/login'>Đi tới đăng nhập</Link>
+          <Link className={formStyles.textLink} to='/login'>Đi tới đăng nhập</Link>
         ) : (
-          <form ref={formRef} className={styles.authForm} onSubmit={resend} noValidate>
+          <form ref={formRef} className={formStyles.authForm} onSubmit={resend} noValidate>
             <TextInput
               label='Địa chỉ email nhận liên kết'
               type='email'
@@ -105,7 +103,7 @@ export function VerifyEmailPage() {
               required
             />
             <Button type='submit' variant='secondary' fullWidth loading={loading}>Gửi lại email xác minh →</Button>
-            <Link className={styles.textLink} to='/login'>Quay lại đăng nhập</Link>
+            <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập</Link>
           </form>
         )}
       </div>
