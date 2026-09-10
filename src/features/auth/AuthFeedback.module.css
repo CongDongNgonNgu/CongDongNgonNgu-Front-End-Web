@@ -1,0 +1,40 @@
+.statusMessage,
+.errorMessage,
+.authInfo {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.statusMessage {
+  color: var(--color-success-strong);
+  border-color: var(--color-success-border);
+  background: var(--color-success-surface);
+}
+
+.errorMessage {
+  color: var(--color-danger-strong);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-surface);
+}
+
+.authInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--color-info-strong);
+  border-color: var(--color-info-border);
+  background: var(--color-surface-elevated);
+}
+
+.authInfoCopy {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.authInfo strong {
+  color: var(--color-text-primary);
+}
