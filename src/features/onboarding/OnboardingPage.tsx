@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ErrorState } from '../../components/ui/Feedback';
 import { ApiClientError } from '../../services/api-client';
@@ -11,33 +11,27 @@ import { OnboardingProgress } from './components/OnboardingProgress';
 import { OnboardingStepHeader } from './components/OnboardingStepHeader';
 import { OptionalDetailsStep } from './components/OptionalDetailsStep';
 import { ProficiencyStep } from './components/ProficiencyStep';
+import { useLanguagePicker } from './hooks/useLanguagePicker';
+import { useOnboardingHistory } from './hooks/useOnboardingHistory';
+import { useOnboardingSession } from './hooks/useOnboardingSession';
 import { ONBOARDING_STEPS } from './onboarding.constants';
 import {
   buildProfileUpdate,
-  createInitialDraft,
-  draftFromProfile,
-  filterLanguages,
   isOnboardingComplete,
-  isProfileOnboardingComplete,
   markOnboardingComplete,
-  readOnboardingDraft,
-  sanitizeLanguageCatalog,
   toggleCode,
   validateDraftForStep,
-  writeOnboardingDraft,
 } from './onboarding-state';
 import {
   ONBOARDING_STEP_COUNT,
   type DeclaredProficiency,
-  type LanguageCatalogItem,
   type LanguageRole,
   type OnboardingApi,
   type OnboardingDraft,
   type ProfileSkill,
 } from './onboarding.types';
+import { getClientStorage, timeToMinutes, unique } from './onboarding.utils';
 import styles from './OnboardingPage.module.css';
-
-type CatalogLoadState = 'loading' | 'ready' | 'error';
 
 interface OnboardingPageProps {
   api?: OnboardingApi;
@@ -50,150 +44,71 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
   const location = useLocation();
   const onboardingApi = providedApi ?? auth.api;
   const resolvedUserId = providedUserId ?? auth.user?.id ?? '';
-  const storage = getClientStorage();
-  const searchId = useId();
-  const listId = `${searchId}-language-options`;
-  const searchRef = useRef<HTMLInputElement>(null);
-  const levelRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [draft, setDraft] = useState<OnboardingDraft>(createInitialDraft);
-  const [catalog, setCatalog] = useState<LanguageCatalogItem[]>([]);
-  const [loadState, setLoadState] = useState<CatalogLoadState>('loading');
-  const [loadError, setLoadError] = useState('');
+  const storage = useMemo(getClientStorage, []);
   const [stepError, setStepError] = useState('');
-  const [searchValue, setSearchValue] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [interestValue, setInterestValue] = useState('');
   const [availabilityDay, setAvailabilityDay] = useState(2);
   const [availabilityStart, setAvailabilityStart] = useState('19:00');
   const [availabilityEnd, setAvailabilityEnd] = useState('20:00');
+  const levelRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const resetSearch = useCallback((): void => {
-    setSearchValue('');
-    setSearchOpen(false);
-    setActiveSearchIndex(0);
-  }, []);
+  const completeNavigation = useCallback(() => {
+    navigate('/', { replace: true, state: { from: location.pathname } });
+  }, [location.pathname, navigate]);
 
-  const loadData = useCallback(() => {
-    if (!resolvedUserId) return;
-    const savedDraft = readOnboardingDraft(storage, resolvedUserId);
-    setDraft(savedDraft);
-    setLoadState('loading');
-    setLoadError('');
-    Promise.all([onboardingApi.getLanguages(), onboardingApi.getProfile()])
-      .then(([rawCatalog, profile]) => {
-        const nextCatalog = sanitizeLanguageCatalog(rawCatalog);
-        if (nextCatalog.length === 0) throw new Error('The language catalog is unavailable.');
-        if (!hasDraftContent(savedDraft)) {
-          if (isProfileOnboardingComplete(profile)) {
-            markOnboardingComplete(storage, resolvedUserId);
-            navigate('/', { replace: true, state: { from: location.pathname } });
-            return;
-          }
-          setDraft(draftFromProfile(profile));
-        }
-        setCatalog(nextCatalog);
-        setLoadState('ready');
-      })
-      .catch((error: unknown) => {
-        setLoadState('error');
-        setLoadError(error instanceof Error ? error.message : 'Unable to load onboarding data.');
-      });
-  }, [location.pathname, navigate, onboardingApi, resolvedUserId, storage]);
+  const {
+    catalog,
+    draft,
+    loadData,
+    loadError,
+    loadState,
+    setDraft,
+  } = useOnboardingSession({
+    api: onboardingApi,
+    userId: resolvedUserId,
+    storage,
+    onProfileComplete: completeNavigation,
+  });
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  useEffect(() => {
-    if (resolvedUserId && loadState === 'ready') writeOnboardingDraft(storage, resolvedUserId, draft);
-  }, [draft, loadState, resolvedUserId, storage]);
-
-  useEffect(() => {
-    if (loadState !== 'ready') return;
-    const currentState = window.history.state;
-    if (typeof currentState?.onboardingDepth === 'number') return;
-    window.history.replaceState(
-      { ...currentState, onboardingFlow: true, onboardingStep: draft.step, onboardingDepth: 0 },
-      '',
-      window.location.href,
-    );
-  }, [draft.step, loadState]);
-
-  useEffect(() => {
-    const onPopState = (event: PopStateEvent) => {
-      const previousStep = event.state?.onboardingStep;
-      if (typeof previousStep === 'number' && previousStep >= 0 && previousStep < ONBOARDING_STEP_COUNT) {
-        setDraft((current) => ({ ...current, step: previousStep }));
-        setStepError('');
-        resetSearch();
-      }
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, [resetSearch]);
-
-  const filteredSearchResults = useMemo(
-    () => filterLanguages(catalog, searchValue).slice(0, 8),
-    [catalog, searchValue],
-  );
-  const currentStep = ONBOARDING_STEPS[draft.step] ?? ONBOARDING_STEPS[0];
-  const storageComplete = isOnboardingComplete(storage, resolvedUserId);
-
-  function updateDraft(updater: (current: OnboardingDraft) => OnboardingDraft): void {
+  const updateDraft = useCallback((updater: (current: OnboardingDraft) => OnboardingDraft): void => {
     setDraft((current) => updater(current));
     setStepError('');
     setSaveError('');
-  }
+  }, [setDraft]);
 
-  function toggleRole(code: string, role: LanguageRole): void {
+  const toggleRole = useCallback((code: string, role: LanguageRole): void => {
     updateDraft((current) => {
       const field = role === 'native' ? 'nativeCodes' : role === 'known' ? 'knownCodes' : 'learningCodes';
       return { ...current, [field]: toggleCode(current[field], code) };
     });
-  }
+  }, [updateDraft]);
 
-  function removeRole(code: string, role: LanguageRole): void {
+  const removeRole = useCallback((code: string, role: LanguageRole): void => {
     updateDraft((current) => {
       const field = role === 'native' ? 'nativeCodes' : role === 'known' ? 'knownCodes' : 'learningCodes';
       return { ...current, [field]: current[field].filter((item) => item !== code) };
     });
-  }
+  }, [updateDraft]);
 
-  function chooseSearchLanguage(code: string): void {
-    toggleRole(code, draft.step === 1 ? 'learning' : 'known');
-    resetSearch();
-  }
+  const languagePicker = useLanguagePicker({ catalog, step: draft.step, onToggleRole: toggleRole });
+  const changeStep = useCallback((step: number) => {
+    setDraft((current) => ({ ...current, step }));
+  }, [setDraft]);
+  const clearStepError = useCallback(() => setStepError(''), []);
+  const exitOnboarding = useCallback(() => navigate('/'), [navigate]);
+  const onboardingHistory = useOnboardingHistory({
+    step: draft.step,
+    ready: loadState === 'ready',
+    onStepChange: changeStep,
+    onClearError: clearStepError,
+    onResetSearch: languagePicker.resetSearch,
+    onExit: exitOnboarding,
+  });
 
-  function handleSearchChange(value: string): void {
-    setSearchValue(value);
-    setSearchOpen(Boolean(value.trim()));
-    setActiveSearchIndex(0);
-  }
-
-  function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
-    if (event.key === 'Escape') {
-      resetSearch();
-      return;
-    }
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      setSearchOpen(true);
-      setActiveSearchIndex((index) => Math.min(index + 1, Math.max(filteredSearchResults.length - 1, 0)));
-      return;
-    }
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      setActiveSearchIndex((index) => Math.max(index - 1, 0));
-      return;
-    }
-    if (event.key === 'Enter' && searchOpen && filteredSearchResults[activeSearchIndex]) {
-      event.preventDefault();
-      chooseSearchLanguage(filteredSearchResults[activeSearchIndex].code);
-    }
-  }
+  const currentStep = ONBOARDING_STEPS[draft.step] ?? ONBOARDING_STEPS[0];
+  const storageComplete = isOnboardingComplete(storage, resolvedUserId);
 
   function setLevel(code: string, level: DeclaredProficiency): void {
     updateDraft((current) => ({ ...current, levels: { ...current.levels, [code]: level } }));
@@ -233,13 +148,27 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
     try {
       await onboardingApi.updateProfile(buildProfileUpdate(draft));
       markOnboardingComplete(storage, resolvedUserId);
-      navigate('/', { replace: true, state: { from: location.pathname } });
+      completeNavigation();
     } catch (error: unknown) {
       if (error instanceof ApiClientError && error.status === 401) void auth.refresh().catch(() => undefined);
       setSaveError('Chưa thể lưu thiết lập lúc này. Kiểm tra kết nối và thử lại.');
     } finally {
       setSaving(false);
     }
+  }
+
+  function focusFirstInvalid(errors: ReturnType<typeof validateDraftForStep>): void {
+    if (errors.spokenLanguages || errors.learningLanguages) {
+      languagePicker.searchRef.current?.focus();
+      return;
+    }
+    if (errors.levels) {
+      const firstMissing = unique([...draft.knownCodes, ...draft.learningCodes])
+        .find((code) => !draft.nativeCodes.includes(code) && !draft.levels[code]);
+      if (firstMissing) levelRefs.current[firstMissing]?.focus();
+      return;
+    }
+    document.querySelector<HTMLElement>('[data-onboarding-error-target=true]')?.focus();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>, skipOptional = false): void {
@@ -253,55 +182,10 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
       return;
     }
     if (draft.step < ONBOARDING_STEP_COUNT - 1 && !skipOptional) {
-      const nextStep = draft.step + 1;
-      const currentDepth = typeof window.history.state?.onboardingDepth === 'number'
-        ? window.history.state.onboardingDepth
-        : 0;
-      window.history.pushState(
-        { ...window.history.state, onboardingFlow: true, onboardingStep: nextStep, onboardingDepth: currentDepth + 1 },
-        '',
-        window.location.href,
-      );
-      setDraft((current) => ({ ...current, step: nextStep }));
-      setStepError('');
-      resetSearch();
+      onboardingHistory.advance();
       return;
     }
     void finish();
-  }
-
-  function focusFirstInvalid(errors: ReturnType<typeof validateDraftForStep>): void {
-    if (errors.spokenLanguages || errors.learningLanguages) {
-      searchRef.current?.focus();
-      return;
-    }
-    if (errors.levels) {
-      const firstMissing = unique([...draft.knownCodes, ...draft.learningCodes])
-        .find((code) => !draft.nativeCodes.includes(code) && !draft.levels[code]);
-      if (firstMissing) levelRefs.current[firstMissing]?.focus();
-      return;
-    }
-    document.querySelector<HTMLElement>('[data-onboarding-error-target=true]')?.focus();
-  }
-
-  function handleBack(): void {
-    if (draft.step === 0) {
-      navigate('/');
-      return;
-    }
-    if (typeof window.history.state?.onboardingDepth === 'number' && window.history.state.onboardingDepth > 0) {
-      window.history.back();
-      return;
-    }
-    const previousStep = draft.step - 1;
-    window.history.replaceState(
-      { ...window.history.state, onboardingFlow: true, onboardingStep: previousStep, onboardingDepth: 0 },
-      '',
-      window.location.href,
-    );
-    setDraft((current) => ({ ...current, step: previousStep }));
-    setStepError('');
-    resetSearch();
   }
 
   if (storageComplete) return <Navigate to='/' replace state={{ from: location.pathname }} />;
@@ -322,6 +206,8 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
     );
   }
 
+  const languageStepMode = draft.step === 1 ? 'learning' : 'spoken';
+
   return (
     <section className={styles.onboardingPage} aria-labelledby='onboarding-title'>
       <OnboardingProgress step={draft.step} />
@@ -336,43 +222,22 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
           />
 
           <form className={styles.onboardingForm} onSubmit={(event) => handleSubmit(event)} noValidate>
-            {draft.step === 0 ? (
+            {draft.step <= 1 ? (
               <LanguageSelectionStep
-                mode='spoken'
+                mode={languageStepMode}
                 draft={draft}
                 catalog={catalog}
-                searchId={searchId}
-                listId={listId}
-                searchRef={searchRef}
-                searchValue={searchValue}
-                searchOpen={searchOpen}
-                activeSearchIndex={activeSearchIndex}
-                filteredSearchResults={filteredSearchResults}
-                onSearchFocus={() => setSearchOpen(Boolean(searchValue.trim()))}
-                onSearchChange={handleSearchChange}
-                onSearchKeyDown={handleSearchKeyDown}
-                onChooseLanguage={chooseSearchLanguage}
-                onRemoveRole={removeRole}
-                onToggleRole={toggleRole}
-              />
-            ) : null}
-
-            {draft.step === 1 ? (
-              <LanguageSelectionStep
-                mode='learning'
-                draft={draft}
-                catalog={catalog}
-                searchId={searchId}
-                listId={listId}
-                searchRef={searchRef}
-                searchValue={searchValue}
-                searchOpen={searchOpen}
-                activeSearchIndex={activeSearchIndex}
-                filteredSearchResults={filteredSearchResults}
-                onSearchFocus={() => setSearchOpen(Boolean(searchValue.trim()))}
-                onSearchChange={handleSearchChange}
-                onSearchKeyDown={handleSearchKeyDown}
-                onChooseLanguage={chooseSearchLanguage}
+                searchId={languagePicker.searchId}
+                listId={languagePicker.listId}
+                searchRef={languagePicker.searchRef}
+                searchValue={languagePicker.searchValue}
+                searchOpen={languagePicker.searchOpen}
+                activeSearchIndex={languagePicker.activeSearchIndex}
+                filteredSearchResults={languagePicker.filteredSearchResults}
+                onSearchFocus={languagePicker.handleSearchFocus}
+                onSearchChange={languagePicker.handleSearchChange}
+                onSearchKeyDown={languagePicker.handleSearchKeyDown}
+                onChooseLanguage={languagePicker.chooseSearchLanguage}
                 onRemoveRole={removeRole}
                 onToggleRole={toggleRole}
               />
@@ -383,7 +248,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
             ) : null}
 
             {draft.step === 3 ? (
-              <GoalsSkillsStep draft={draft} searchId={searchId} onToggleGoal={toggleGoal} onToggleSkill={toggleSkill} />
+              <GoalsSkillsStep draft={draft} searchId={languagePicker.searchId} onToggleGoal={toggleGoal} onToggleSkill={toggleSkill} />
             ) : null}
 
             {draft.step === 4 ? (
@@ -417,7 +282,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
             <OnboardingActions
               step={draft.step}
               saving={saving}
-              onBack={handleBack}
+              onBack={onboardingHistory.back}
               onSkip={(event) => handleSubmit(event, true)}
             />
           </form>
@@ -435,28 +300,4 @@ function OnboardingLoading() {
       <div className={styles.loadingLines}><span /><span /><span /><span /></div>
     </section>
   );
-}
-
-function getClientStorage(): Storage | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-}
-
-function hasDraftContent(draft: OnboardingDraft): boolean {
-  return draft.step > 0 || draft.nativeCodes.length > 0 || draft.knownCodes.length > 0 || draft.learningCodes.length > 0
-    || Object.keys(draft.levels).length > 0 || draft.goals.length > 0 || draft.skills.length > 0 || draft.interests.length > 0
-    || Boolean(draft.timezone) || draft.availability.length > 0;
-}
-
-function unique<T>(values: readonly T[]): T[] {
-  return [...new Set(values)];
-}
-
-function timeToMinutes(value: string): number {
-  const [hour, minute] = value.split(':').map(Number);
-  return hour * 60 + minute;
 }
