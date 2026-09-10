@@ -1,0 +1,10 @@
+.searchPanel { position: absolute; z-index: 25; top: 100%; right: 0; left: 0; border-bottom: 1px solid var(--color-border); background: var(--color-surface-elevated); box-shadow: var(--shadow-medium); }
+.searchPanelInner { display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-3); }
+.searchPanelInner form { min-width: 0; flex: 1 1 auto; }
+.searchClose { flex: 0 0 auto; min-width: 4.5rem; }
+.searchPanelStatus { padding-bottom: var(--space-3); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+
+@media (max-width: 47.999rem) {
+  .searchPanelInner { gap: var(--space-2); }
+  .searchClose { min-width: 4rem; padding-inline: var(--space-3); }
+}
