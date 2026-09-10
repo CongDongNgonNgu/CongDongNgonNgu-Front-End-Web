@@ -3,7 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authErrorMessage } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { useAuth } from '../AuthProvider';
-import styles from '../AuthBody.module.css';
+import formStyles from '../AuthForm.module.css';
+import feedbackStyles from '../AuthFeedback.module.css';
+import flowStyles from '../AuthFlow.module.css';
 
 const recoveryStatuses = new Set(['error', 'provider-disabled', 'session-expired', 'expired', 'collision', 'oauth-collision', 'linking']);
 
@@ -85,20 +87,20 @@ export function AuthCallbackPage() {
         { icon: 'check-circle', title: 'Tiếp tục an toàn', description: 'Bạn luôn có thể quay lại đăng nhập bằng một phương thức khác.' },
         { icon: 'circle-help', title: 'Cần hỗ trợ?', description: 'Đội ngũ cộng đồng sẵn sàng hướng dẫn bạn khôi phục quyền truy cập.' },
       ]}
-      editorialPrompt={<p><Link className={styles.textLink} to='/login'>Quay lại đăng nhập →</Link></p>}
+      editorialPrompt={<p><Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập →</Link></p>}
       mobileReassuranceTitle='An toàn phiên đăng nhập'
       mobileReassuranceText='Chúng tôi không hiển thị chi tiết nhạy cảm trong thông báo xác thực để bảo vệ quyền riêng tư của bạn.'
     >
       {hasError ? (
-        <div className={styles.authState}>
-          <div className={styles.flowErrorCard} role='alert'>
+        <div className={flowStyles.authState}>
+          <div className={flowStyles.flowErrorCard} role='alert'>
             <strong>{copy.title}</strong>
             <span>{error || copy.message}</span>
           </div>
-          <Link className={styles.flowButton} to='/login'>Quay lại đăng nhập →</Link>
+          <Link className={flowStyles.flowButton} to='/login'>Quay lại đăng nhập →</Link>
         </div>
       ) : (
-        <p className={styles.statusMessage} role='status'>Đang xác nhận…</p>
+        <p className={feedbackStyles.statusMessage} role='status'>Đang xác nhận…</p>
       )}
     </AuthBody>
   );
