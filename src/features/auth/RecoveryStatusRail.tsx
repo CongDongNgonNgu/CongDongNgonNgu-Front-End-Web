@@ -1,4 +1,4 @@
-import styles from './AuthBody.module.css';
+import styles from './RecoveryStatusRail.module.css';
 
 const steps = [
   '1. Yêu cầu',
