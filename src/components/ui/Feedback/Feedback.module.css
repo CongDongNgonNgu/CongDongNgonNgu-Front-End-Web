@@ -38,7 +38,7 @@
   border-radius: 50%;
 }
 
-.feedbackState h3 {
+.feedbackState h2 {
   margin: 0;
   font-size: var(--font-size-md);
 }

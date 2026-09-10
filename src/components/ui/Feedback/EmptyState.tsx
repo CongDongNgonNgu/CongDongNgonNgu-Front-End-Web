@@ -11,7 +11,7 @@ export function EmptyState({ title, description, icon = "inbox" }: EmptyStatePro
   return (
     <div className={`${styles.feedbackState} ${styles.feedbackStateEmpty}`} role="status">
       <span className={styles.feedbackIcon} aria-hidden="true"><Icon name={icon} size={20} /></span>
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       <p>{description}</p>
     </div>
   );

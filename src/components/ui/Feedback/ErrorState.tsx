@@ -14,7 +14,7 @@ export function ErrorState({ title, description, onRetry, retryLabel = "Thá»­ lá
   return (
     <div className={`${styles.feedbackState} ${styles.feedbackStateError}`} role="alert">
       <span className={styles.feedbackIcon} aria-hidden="true"><Icon name="alert-circle" size={20} /></span>
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       <p>{description}</p>
       <Button onClick={onRetry} loading={retrying}>{retryLabel}</Button>
     </div>
