@@ -6,7 +6,9 @@ import { authErrorMessage } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { useAuth } from '../AuthProvider';
 import { RecoveryStatusRail } from '../RecoveryStatusRail';
-import styles from '../AuthBody.module.css';
+import formStyles from '../AuthForm.module.css';
+import feedbackStyles from '../AuthFeedback.module.css';
+import flowStyles from '../AuthFlow.module.css';
 
 export function ForgotPasswordPage() {
   const { api } = useAuth();
@@ -48,27 +50,27 @@ export function ForgotPasswordPage() {
         { icon: 'check-circle', title: 'Liên kết giới hạn thời gian', description: 'Liên kết khôi phục chỉ có hiệu lực trong thời gian ngắn và chỉ dùng một lần.' },
         { icon: 'circle-help', title: 'Hỗ trợ thân thiện', description: 'Nếu không nhận được thư, hãy kiểm tra hộp thư rác hoặc liên hệ đội ngũ cộng đồng.' },
       ]}
-      editorialPrompt={<p>Nhớ mật khẩu? <Link className={styles.textLink} to='/login'>Quay lại đăng nhập →</Link></p>}
+      editorialPrompt={<p>Nhớ mật khẩu? <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập →</Link></p>}
       recoveryRail={<RecoveryStatusRail activeStep={sent ? 2 : 1} />}
       mobileReassuranceTitle='Bảo vệ quyền riêng tư'
       mobileReassuranceText='CongDongNgonNgu.vn không bao giờ yêu cầu bạn cung cấp mật khẩu qua điện thoại, tin nhắn SMS hoặc biểu mẫu ngoài hệ thống.'
     >
-      <div className={styles.authState}>
+      <div className={flowStyles.authState}>
         {sent ? (
           <>
-            <span className={styles.flowIcon} aria-hidden='true'>✓</span>
-            <h3 className={styles.flowStateTitle}>Kiểm tra hòm thư của bạn</h3>
-            <p className={styles.statusMessage} role='status'>Nếu địa chỉ email tồn tại trên hệ thống, một liên kết khôi phục an toàn đã được gửi đến hộp thư của bạn.</p>
-            <div className={styles.flowNotice}>
+            <span className={flowStyles.flowIcon} aria-hidden='true'>✓</span>
+            <h3 className={flowStyles.flowStateTitle}>Kiểm tra hòm thư của bạn</h3>
+            <p className={feedbackStyles.statusMessage} role='status'>Nếu địa chỉ email tồn tại trên hệ thống, một liên kết khôi phục an toàn đã được gửi đến hộp thư của bạn.</p>
+            <div className={flowStyles.flowNotice}>
               <strong>Chưa thấy email?</strong>
               <span>Vui lòng kiểm tra thư mục Spam/Quảng cáo hoặc hòm thư lọc tự động trước khi gửi lại.</span>
             </div>
             <Button type='button' variant='quiet' fullWidth disabled>Gửi lại liên kết ngay</Button>
-            <Link className={styles.textLink} to='/login'>Quay lại đăng nhập</Link>
+            <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập</Link>
           </>
         ) : (
-          <form ref={formRef} className={styles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'forgot-error' : undefined}>
-            {error ? <p className={styles.errorMessage} id='forgot-error' role='alert'>{error}</p> : null}
+          <form ref={formRef} className={formStyles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'forgot-error' : undefined}>
+            {error ? <p className={feedbackStyles.errorMessage} id='forgot-error' role='alert'>{error}</p> : null}
             <TextInput
               label='Địa chỉ email liên kết'
               type='email'
@@ -80,9 +82,9 @@ export function ForgotPasswordPage() {
               hint='Chúng tôi sẽ gửi một liên kết bảo mật có thời hạn 30 phút đến hòm thư này.'
               required
             />
-            <div className={styles.formActions}>
+            <div className={formStyles.formActions}>
               <Button type='submit' variant='secondary' fullWidth loading={loading}>Gửi liên kết khôi phục →</Button>
-              <Link className={styles.textLink} to='/login'>Tôi nhớ mật khẩu rồi</Link>
+              <Link className={formStyles.textLink} to='/login'>Tôi nhớ mật khẩu rồi</Link>
             </div>
           </form>
         )}
