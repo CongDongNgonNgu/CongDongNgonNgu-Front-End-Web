@@ -77,7 +77,7 @@ describe("AppShell", () => {
   it("renders the logged-in account variant without unavailable badges", () => {
     renderShell(true);
 
-    expect(screen.getAllByRole("button", { name: "Tài khoản" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: /Tài khoản/i }).length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: /đăng nhập, sắp có/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
   });

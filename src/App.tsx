@@ -7,6 +7,7 @@ import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
+import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -18,7 +19,8 @@ function RoutedApp() {
     || pathname === '/verify-email'
     || pathname === '/forgot-password'
     || pathname === '/reset-password'
-    || pathname === '/auth/callback';
+    || pathname === '/auth/callback'
+    || pathname === '/onboarding';
   const authSurface = pathname === '/login' ? 'login' : pathname === '/register' ? 'register' : 'flow';
   const authFooterTone = 'light';
   return (
@@ -31,6 +33,7 @@ function RoutedApp() {
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/auth/callback' element={<AuthCallbackPage />} />
+        <Route path='/onboarding' element={<OnboardingPage />} />
         <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </AppShell>

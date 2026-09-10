@@ -6,8 +6,9 @@ import type {
   RegistrationResult,
   SimpleAuthResult,
 } from './auth.types';
+import type { LanguageCatalogItem, OwnProfile, ProfileUpdateInput } from '../onboarding/onboarding.types';
 
-type JsonValue = Record<string, unknown>;
+type JsonValue = object;
 
 export class AuthApi {
   private accessToken: string | null = null;
@@ -69,6 +70,20 @@ export class AuthApi {
 
   async getMe(): Promise<AuthUser> {
     return this.requestWithAuth<AuthUser>('/auth/me');
+  }
+
+  async getLanguages(search?: string): Promise<LanguageCatalogItem[]> {
+    const params = new URLSearchParams({ limit: '50' });
+    if (search?.trim()) params.set('search', search.trim());
+    return this.request<LanguageCatalogItem[]>('/languages?' + params.toString());
+  }
+
+  async getProfile(): Promise<OwnProfile> {
+    return this.requestWithAuth<OwnProfile>('/profile');
+  }
+
+  async updateProfile(input: ProfileUpdateInput): Promise<OwnProfile> {
+    return this.requestWithAuth<OwnProfile>('/profile', jsonRequest('PATCH', input));
   }
 
   async logout(): Promise<void> {

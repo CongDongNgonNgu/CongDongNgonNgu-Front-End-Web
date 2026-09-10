@@ -98,7 +98,7 @@ function MobileHeader({ isAuthenticated, searchOpen, onSearch, onMenu }: { isAut
           </Link>
           <div className={styles.mobileHeaderActions}>
             <button className={styles.iconButton} type="button" onClick={onSearch} aria-label="Tìm kiếm" aria-expanded={searchOpen} aria-controls="global-search-panel"><Icon name="search" size={20} /></button>
-            {isAuthenticated ? <Button variant="quiet" size="sm" className={styles.mobileAccountButton} onClick={onMenu} aria-label="Tài khoản" aria-haspopup="dialog"><Avatar name="Người học" size="sm" /></Button> : null}
+            {isAuthenticated ? <Button variant="quiet" size="sm" className={styles.mobileAccountButton} onClick={onMenu} aria-label="NH, Tài khoản" aria-haspopup="dialog"><Avatar name="Người học" size="sm" /></Button> : null}
           </div>
         </div>
       </div>
