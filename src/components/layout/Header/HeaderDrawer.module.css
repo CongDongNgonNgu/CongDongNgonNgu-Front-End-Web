@@ -1,0 +1,9 @@
+.drawerNav { display: grid; gap: var(--space-2); }
+.drawerNavItem { display: flex; min-height: 3rem; align-items: center; gap: var(--space-3); margin-inline: var(--space-2); padding: var(--space-3) var(--space-4); border-radius: var(--radius-pill); color: var(--color-text-secondary); text-decoration: none; transition: background-color var(--motion-standard), color var(--motion-standard), transform var(--motion-standard); }
+.drawerNavItem:hover, .drawerNavItem:focus-visible { color: var(--color-text-primary); background: var(--color-surface-muted); transform: translateX(2px); }
+.drawerNavItemActive { color: var(--color-brand-orange-on-bright); background: var(--color-brand-orange-bright); box-shadow: none; font-weight: var(--font-weight-semibold); }
+.drawerAuth { display: grid; gap: var(--space-2); margin-top: var(--space-6); padding-top: var(--space-5); padding-inline: var(--space-2); border-top: 1px solid var(--color-border); }
+.drawerAuthButton, .drawerAuthButtonPrimary { display: flex; min-height: 2.75rem; align-items: center; justify-content: center; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-pill); color: var(--color-brand-navy); background: transparent; font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-decoration: none; }
+.drawerAuthButton:hover, .drawerAuthButton:focus-visible { border-color: var(--color-border-strong); background: var(--color-surface-muted); }
+.drawerAuthButtonPrimary { border-color: var(--color-brand-orange-bright); color: var(--color-brand-orange-on-bright); background: var(--color-brand-orange-bright); }
+.drawerAuthButtonPrimary:hover, .drawerAuthButtonPrimary:focus-visible { border-color: var(--color-brand-orange-bright-hover); color: var(--color-brand-orange-on-bright); background: var(--color-brand-orange-bright-hover); }

@@ -1,0 +1,23 @@
+.desktopHeader { min-height: 4.5rem; }
+.desktopHeader > :global(.shell-width) { min-height: inherit; }
+.headerInner { display: flex; min-height: inherit; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.brand { display: inline-flex; min-width: 0; flex: 0 1 20rem; align-items: center; gap: var(--space-3); color: var(--color-text-primary); text-decoration: none; }
+.brandMark { display: block; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; object-fit: contain; }
+.brandWordmark { display: grid; min-width: 0; gap: 0.125rem; }
+.brandName { overflow: hidden; font-size: 0.95rem; font-weight: var(--font-weight-semibold); letter-spacing: -0.015em; text-overflow: ellipsis; white-space: nowrap; }
+.brandTagline { color: var(--color-text-secondary); font-size: 0.6875rem; font-weight: var(--font-weight-regular); letter-spacing: 0.02em; white-space: nowrap; }
+.desktopNav { min-width: 0; margin-inline: auto; }
+.desktopNavList { display: flex; align-items: center; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.navLinkActive, .accountTrigger { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: var(--space-2); border: 1px solid transparent; color: var(--color-text-secondary); background: transparent; text-decoration: none; }
+.navLinkActive { padding: 0 var(--space-3); border-radius: var(--radius-control); color: var(--color-brand-navy); box-shadow: inset 0 -3px 0 var(--header-accent); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); white-space: nowrap; }
+.navLinkActive:hover, .navLinkActive:focus-visible, .accountTrigger:hover, .accountTrigger:focus-visible { color: var(--color-brand-navy); background: var(--color-surface-muted); }
+.headerActions { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.accountTrigger { min-width: 2.75rem; padding: var(--space-2); border-radius: var(--radius-control); cursor: pointer; font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
+.accountMenuWrap { position: relative; }
+.accountMenu, .dropdownItem { display: flex; align-items: center; gap: var(--space-2); }
+.accountMenu { position: absolute; z-index: 30; top: calc(100% + var(--space-2)); right: 0; min-width: 11rem; padding: var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); box-shadow: var(--shadow-medium); }
+.dropdownItem { min-height: 2.75rem; padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); color: var(--color-text-secondary); font-size: var(--font-size-sm); text-decoration: none; }
+.dropdownItem:hover, .dropdownItem:focus-visible { color: var(--color-brand-navy); background: var(--color-surface-muted); }
+
+@media (max-width: 64rem) { .brandTagline { display: none; } }
+@media (max-width: 47.999rem) { .desktopHeader { display: none; } }
