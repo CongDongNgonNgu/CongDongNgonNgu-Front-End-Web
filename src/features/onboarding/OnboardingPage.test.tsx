@@ -96,6 +96,31 @@ describe('OnboardingPage', () => {
     expect(getLanguageChoice('Tiếng Việt', /Ngôn ngữ bản ngữ/)).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('keeps long language labels selectable', async () => {
+    const api = createApi();
+    const longNativeName = 'Ti\u1ebfng c\u1ed9ng \u0111\u1ed3ng ng\u00f4n ng\u1eef qu\u1ed1c t\u1ebf r\u1ea5t d\u00e0i';
+    vi.spyOn(api, 'getLanguages').mockResolvedValue([
+      ...languages,
+      {
+        ...languages[0],
+        code: 'xx',
+        slug: 'long-language',
+        nativeName: longNativeName,
+        englishName: 'International Community Language',
+        vietnameseName: longNativeName,
+        sortOrder: 90,
+      },
+    ]);
+    const ui = userEvent.setup();
+    renderPage(api);
+    await waitForReady();
+
+    const choice = getLanguageChoice(longNativeName, /Ngôn ngữ bản ngữ/);
+    expect(choice).toBeVisible();
+    await ui.click(choice);
+    expect(choice).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('focuses the first invalid field and preserves progress when navigating back', async () => {
     const api = createApi();
     const ui = userEvent.setup();
