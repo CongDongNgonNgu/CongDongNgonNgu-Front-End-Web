@@ -41,6 +41,12 @@ const overview: LanguageHubOverview = {
     { key: 'vocabulary', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
     { key: 'grammar', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
     { key: 'sentences', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
+    { key: 'pronunciation', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
+    { key: 'resources', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
+    { key: 'community', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
+    { key: 'questions', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
+    { key: 'practice', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
+    { key: 'exchange', status: 'NOT_IMPLEMENTED', isNavigable: false, href: null },
   ],
   filters: {
     levels: ['B2'],
@@ -80,6 +86,8 @@ describe('LanguageHubPage', () => {
     expect(screen.getAllByText('Chưa khả dụng')).toHaveLength(3);
     expect(screen.getByRole('button', { name: /Từ vựng/ })).toBeDisabled();
     expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', '/languages/english');
+    expect(screen.getByRole('heading', { name: 'Tài nguyên học tập cho English' })).toBeVisible();
+    expect(screen.getByText('Chưa có tài nguyên học tập')).toBeVisible();
     expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 

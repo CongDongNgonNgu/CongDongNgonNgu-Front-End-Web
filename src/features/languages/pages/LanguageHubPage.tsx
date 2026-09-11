@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedbac
 import { Icon } from '../../../components/ui/Icon/Icon';
 import { ApiClientError } from '../../../services/api-client';
 import { languageApi } from '../api/language-api';
+import { LanguageResourcePreview } from '../components/LanguageResourcePreview';
 import { buildLanguageHubSearch, normalizeLanguageHubTopic, parseLanguageHubSearch } from '../domain/language-filters';
 import { CEFR_LEVELS, type CefrLevel, type HubSectionAvailability, type LanguageCatalogItem, type LanguageHubFilters, type LanguageHubOverview } from '../languages.types';
 import styles from './LanguageHubPage.module.css';
@@ -157,6 +158,11 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
           </section>
         </aside>
       </section>
+
+      <LanguageResourcePreview
+        languageName={state.language.nativeName}
+        sections={state.overview.sections}
+      />
 
       <aside className={styles.bottomCallout} aria-label='Đóng góp cho ngôn ngữ'>
         <div><p className={styles.eyebrow}>CÙNG XÂY DỰNG</p><h2>Bạn muốn đóng góp cho {state.language.nativeName}?</h2></div>

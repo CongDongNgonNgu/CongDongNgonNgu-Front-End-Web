@@ -31,11 +31,28 @@ export type HubSectionKey =
   | 'practice'
   | 'exchange';
 
+export type LanguageResourceType = Extract<HubSectionKey, 'vocabulary' | 'grammar' | 'sentences' | 'pronunciation' | 'resources'>;
+
 export interface HubSectionAvailability {
   key: HubSectionKey;
   status: 'AVAILABLE' | 'EMPTY' | 'NOT_IMPLEMENTED' | 'DISABLED';
   isNavigable: boolean;
   href: string | null;
+}
+
+/**
+ * Local display shape for the future Phase 08 resource contract.
+ * The production Hub currently receives no resource records. A future API
+ * adapter can map its response to this shape without changing the preview UI.
+ */
+export interface LanguageResourcePreviewItem {
+  id: string;
+  type: LanguageResourceType;
+  title: string;
+  shortDescription: string;
+  level?: CefrLevel;
+  topic?: string;
+  href?: string | null;
 }
 
 export interface LanguageHubFilters {
