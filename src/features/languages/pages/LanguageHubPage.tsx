@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedbac
 import { Icon } from '../../../components/ui/Icon/Icon';
 import { ApiClientError } from '../../../services/api-client';
 import { languageApi } from '../api/language-api';
+import { LanguageFutureEntrypoints } from '../components/LanguageFutureEntrypoints';
 import { LanguageResourcePreview } from '../components/LanguageResourcePreview';
 import { buildLanguageHubSearch, normalizeLanguageHubTopic, parseLanguageHubSearch } from '../domain/language-filters';
 import { CEFR_LEVELS, type CefrLevel, type HubSectionAvailability, type LanguageCatalogItem, type LanguageHubFilters, type LanguageHubOverview } from '../languages.types';
@@ -160,6 +161,11 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
       </section>
 
       <LanguageResourcePreview
+        languageName={state.language.nativeName}
+        sections={state.overview.sections}
+      />
+
+      <LanguageFutureEntrypoints
         languageName={state.language.nativeName}
         sections={state.overview.sections}
       />

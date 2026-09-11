@@ -129,11 +129,11 @@ function ResourcePreviewList({ items, sections }: { items: readonly LanguageReso
             </>
           );
           const capability = getCapability(sections, item.type);
-          const canNavigate = isNavigableCapability(capability) && isSafeInternalHref(item.href);
+          const href = isNavigableCapability(capability) && isSafeInternalHref(item.href) ? item.href : null;
 
           return (
             <li key={item.id} className={styles.resourceItem}>
-              {canNavigate ? <Link className={styles.resourceLink} to={item.href}>{contents}</Link> : <article className={styles.resourceArticle}>{contents}</article>}
+              {href ? <Link className={styles.resourceLink} to={href}>{contents}</Link> : <article className={styles.resourceArticle}>{contents}</article>}
             </li>
           );
         })}

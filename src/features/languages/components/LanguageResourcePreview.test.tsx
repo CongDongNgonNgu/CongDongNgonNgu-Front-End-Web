@@ -78,6 +78,33 @@ describe('LanguageResourcePreview', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Chưa có tài nguyên học tập');
   });
 
+  it('keeps an unsafe external href as a non-link preview', () => {
+    const items: LanguageResourcePreviewItem[] = [
+      {
+        id: 'external-fixture',
+        type: 'grammar',
+        title: 'Reviewed grammar collection',
+        shortDescription: 'The preview remains visible without exposing an unsafe destination.',
+        href: 'https://example.com/not-a-hub-route',
+      },
+    ];
+
+    render(
+      <MemoryRouter>
+        <LanguageResourcePreview
+          languageName='English'
+          sections={resourceSections({
+            grammar: { key: 'grammar', status: 'AVAILABLE', isNavigable: true, href: '/languages/:slug/grammar' },
+          })}
+          items={items}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Reviewed grammar collection')).toBeVisible();
+    expect(screen.queryByRole('link', { name: /Reviewed grammar collection/ })).not.toBeInTheDocument();
+  });
+
   it('keeps long and non-Latin language names and resource labels readable', () => {
     const items: LanguageResourcePreviewItem[] = [
       {

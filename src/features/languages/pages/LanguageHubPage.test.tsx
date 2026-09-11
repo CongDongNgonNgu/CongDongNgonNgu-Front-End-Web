@@ -24,6 +24,87 @@ const english: LanguageCatalogItem = {
   sortOrder: 20,
 };
 
+const launchLanguages: LanguageCatalogItem[] = [
+  {
+    code: 'vi',
+    slug: 'vietnamese',
+    nativeName: 'Tiếng Việt',
+    englishName: 'Vietnamese',
+    vietnameseName: 'Tiếng Việt',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 10,
+  },
+  english,
+  {
+    code: 'zh',
+    slug: 'chinese',
+    nativeName: '中文',
+    englishName: 'Chinese',
+    vietnameseName: 'Tiếng Trung',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 30,
+  },
+  {
+    code: 'ja',
+    slug: 'japanese',
+    nativeName: '日本語',
+    englishName: 'Japanese',
+    vietnameseName: 'Tiếng Nhật',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 40,
+  },
+  {
+    code: 'ko',
+    slug: 'korean',
+    nativeName: '한국어',
+    englishName: 'Korean',
+    vietnameseName: 'Tiếng Hàn',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 50,
+  },
+  {
+    code: 'fr',
+    slug: 'french',
+    nativeName: 'Français',
+    englishName: 'French',
+    vietnameseName: 'Tiếng Pháp',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 60,
+  },
+  {
+    code: 'de',
+    slug: 'german',
+    nativeName: 'Deutsch',
+    englishName: 'German',
+    vietnameseName: 'Tiếng Đức',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 70,
+  },
+  {
+    code: 'es',
+    slug: 'spanish',
+    nativeName: 'Español',
+    englishName: 'Spanish',
+    vietnameseName: 'Tiếng Tây Ban Nha',
+    direction: 'ltr',
+    active: true,
+    launch: true,
+    sortOrder: 80,
+  },
+];
+
 const overview: LanguageHubOverview = {
   language: english,
   seo: {
@@ -57,6 +138,19 @@ const overview: LanguageHubOverview = {
   },
 };
 
+function overviewFor(language: LanguageCatalogItem): LanguageHubOverview {
+  return {
+    ...overview,
+    language,
+    seo: {
+      ...overview.seo,
+      title: `${language.nativeName} | CongDongNgonNgu.vn`,
+      canonicalPath: `/languages/${language.slug}`,
+    },
+    sections: overview.sections.map((section) => section.key === 'overview' ? { ...section, href: `/languages/${language.slug}` } : section),
+  };
+}
+
 function LocationProbe() {
   const location = useLocation();
   return <output aria-label='location'>{location.search}</output>;
@@ -88,6 +182,9 @@ describe('LanguageHubPage', () => {
     expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', '/languages/english');
     expect(screen.getByRole('heading', { name: 'Tài nguyên học tập cho English' })).toBeVisible();
     expect(screen.getByText('Chưa có tài nguyên học tập')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Không gian tương lai cho English' })).toBeVisible();
+    expect(screen.getAllByText('Cộng đồng').some((node) => node.closest('[aria-disabled=true]'))).toBe(true);
+    expect(screen.queryByRole('link', { name: /Cộng đồng/ })).not.toBeInTheDocument();
     expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 
@@ -121,5 +218,21 @@ describe('LanguageHubPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Không tìm thấy ngôn ngữ' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Quay lại khám phá' })).toHaveAttribute('href', '/languages');
+  });
+
+  it.each(launchLanguages.map((language) => [language.slug, language] as const))('reconciles the same truthful Hub surfaces for %s', async (_slug, language) => {
+    const api: LanguageHubApi = {
+      getLanguage: vi.fn().mockResolvedValue(language),
+      getOverview: vi.fn().mockResolvedValue(overviewFor(language)),
+    };
+    renderPage(api, `/languages/${language.slug}`);
+
+    expect(await screen.findByRole('heading', { name: language.nativeName })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', `/languages/${language.slug}`);
+    expect(screen.getByRole('heading', { name: `Tài nguyên học tập cho ${language.nativeName}` })).toBeVisible();
+    expect(screen.getByRole('heading', { name: `Không gian tương lai cho ${language.nativeName}` })).toBeVisible();
+    expect(screen.getByRole('button', { name: /Từ vựng/ })).toBeDisabled();
+    expect(screen.queryByRole('link', { name: /Cộng đồng/ })).not.toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 });
