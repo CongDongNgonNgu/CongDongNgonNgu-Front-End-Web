@@ -9,6 +9,8 @@ import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { OwnPassportPage, PublicPassportPage } from './features/passport/PassportPages';
+import { LanguageExplorerPage } from './features/languages/pages/LanguageExplorerPage';
+import { LanguageHubPage } from './features/languages/pages/LanguageHubPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -28,6 +30,8 @@ function RoutedApp() {
     <AppShell isAuthenticated={status === 'authenticated'} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
       <Routes>
         <Route path='/' element={<HomePage />} />
+        <Route path='/languages' element={<LanguageExplorerPage />} />
+        <Route path='/languages/:slug' element={<LanguageHubPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/verify-email' element={<VerifyEmailPage />} />
