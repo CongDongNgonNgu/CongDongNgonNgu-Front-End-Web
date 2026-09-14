@@ -39,6 +39,19 @@ describe('AuthApi', () => {
     expect(request).toHaveBeenCalledOnce();
   });
 
+  it('hydrates the user after a refresh response without a user payload', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ accessToken: 'access-token', expiresIn: 900 })
+      .mockResolvedValueOnce(session.user);
+    const api = new AuthApi();
+
+    await expect(api.refreshAccess()).resolves.toEqual(session);
+    expect(request).toHaveBeenNthCalledWith(2, '/auth/me', expect.objectContaining({
+      credentials: 'include',
+      headers: expect.any(Headers),
+    }));
+  });
+
   it('retries one protected request after an expired access token', async () => {
     const request = vi.spyOn(apiClient, 'request')
       .mockRejectedValueOnce(new ApiClientError('expired', 401, 'AUTH_SESSION_EXPIRED'))

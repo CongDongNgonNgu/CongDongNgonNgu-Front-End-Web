@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedback';
 import { Icon } from '../../../components/ui/Icon/Icon';
@@ -45,7 +45,8 @@ export function CommunityPageView({
   authenticated,
   onAuthRequired,
 }: CommunityPageViewProps) {
-  const [languageCode, setLanguageCode] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const languageCode = searchParams.get('languageCode') ?? '';
   const [languages, setLanguages] = useState<LanguageCatalogItem[]>([]);
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
   const [languageError, setLanguageError] = useState<unknown>(null);
@@ -93,6 +94,13 @@ export function CommunityPageView({
     setComposerOpen(true);
   };
 
+  const handleLanguageChange = (nextLanguageCode: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextLanguageCode) nextParams.set('languageCode', nextLanguageCode);
+    else nextParams.delete('languageCode');
+    setSearchParams(nextParams, { replace: true });
+  };
+
   const selectedLanguage = languages.find((language) => language.code === languageCode);
 
   return (
@@ -135,7 +143,7 @@ export function CommunityPageView({
                 <select
                   id='community-language-filter'
                   value={languageCode}
-                  onChange={(event) => setLanguageCode(event.target.value)}
+                  onChange={(event) => handleLanguageChange(event.target.value)}
                   disabled={isLoadingLanguages && languages.length === 0}
                 >
                   <option value=''>Tất cả ngôn ngữ</option>

@@ -1,6 +1,6 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CommunityPageView, type CommunityPageApi } from './CommunityPage';
 import type { CommunityPost } from '../community.types';
@@ -79,15 +79,26 @@ function createApi(responses: Array<{ items: CommunityPost[]; nextCursor: string
   };
 }
 
-function renderPage(api: CommunityPageApi, authenticated = false, onAuthRequired = vi.fn()) {
+function LocationSearch() {
+  const location = useLocation();
+  return <output aria-label='location-search'>{location.search}</output>;
+}
+
+function renderPage(
+  api: CommunityPageApi,
+  authenticated = false,
+  onAuthRequired = vi.fn(),
+  initialEntries = ['/community'],
+) {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <CommunityPageView
         api={api}
         catalogApi={{ listLanguages: vi.fn().mockResolvedValue(languages) }}
         authenticated={authenticated}
         onAuthRequired={onAuthRequired}
       />
+      <LocationSearch />
     </MemoryRouter>,
   );
 }
@@ -132,6 +143,22 @@ describe('CommunityPageView', () => {
       { languageCode: 'ja', limit: 20, cursor: 'opaque-next' },
       false,
     ));
+  });
+
+  it('hydrates the language filter from and persists it to the URL', async () => {
+    const api = createApi([
+      { items: [post('one', { targetLanguage: { ...post('one').targetLanguage, code: 'ja', nativeName: '日本語', englishName: 'Japanese' } })], nextCursor: null },
+      { items: [post('two')], nextCursor: null },
+    ]);
+    const user = userEvent.setup();
+    renderPage(api, false, vi.fn(), ['/community?languageCode=ja']);
+
+    const filter = await screen.findByRole('combobox');
+    expect(filter).toHaveValue('ja');
+    expect(api.listPosts).toHaveBeenCalledWith({ languageCode: 'ja', limit: 20 }, false);
+
+    await user.selectOptions(filter, 'en');
+    await waitFor(() => expect(screen.getByLabelText('location-search')).toHaveTextContent('?languageCode=en'));
   });
 
   it('uses authenticated post actions and only updates the confirmed helpful count', async () => {

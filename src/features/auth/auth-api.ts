@@ -10,6 +10,8 @@ import type { LanguageCatalogItem, OwnProfile, ProfileUpdateInput } from '../onb
 import type { PublicProfile } from '../passport/passport.types';
 
 type JsonValue = object;
+type RefreshResponse = Pick<AuthSession, 'accessToken' | 'expiresIn'> &
+  Partial<Pick<AuthSession, 'user'>>;
 
 export class AuthApi {
   private accessToken: string | null = null;
@@ -113,10 +115,11 @@ export class AuthApi {
       if (!existing) throw new ApiClientError('Session expired', 401, 'AUTH_SESSION_EXPIRED');
       return existing;
     }
-    this.refreshPromise = this.request<AuthSession>('/auth/refresh', { method: 'POST' })
-      .then((session) => {
+    this.refreshPromise = this.request<RefreshResponse>('/auth/refresh', { method: 'POST' })
+      .then(async (session) => {
         this.accessToken = session.accessToken;
-        return session;
+        const user = session.user ?? await this.requestWithAuth<AuthUser>('/auth/me', {}, false);
+        return { ...session, user };
       })
       .catch(() => {
         this.accessToken = null;

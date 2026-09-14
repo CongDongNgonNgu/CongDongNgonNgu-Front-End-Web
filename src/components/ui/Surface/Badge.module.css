@@ -12,7 +12,7 @@
   white-space: nowrap;
 }
 
-.badge--neutral { color: var(--color-text-secondary); background: var(--color-surface-muted); border-color: var(--color-border); }
+.badge--neutral { color: var(--color-text-primary); background: var(--color-surface-muted); border-color: var(--color-border); }
 .badge--info { color: var(--color-info-strong); background: var(--color-info-surface); border-color: var(--color-info-border); }
 .badge--success { color: var(--color-success-strong); background: var(--color-success-soft); border-color: var(--color-success-border); }
 .badge--warning { color: var(--color-warning-strong); background: var(--color-warning-surface); border-color: var(--color-warning-border); }
