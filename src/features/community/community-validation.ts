@@ -9,6 +9,7 @@ import {
 } from './community.types';
 
 export const MAX_COMMUNITY_CONTENT_CODE_POINTS = 20_000;
+export const MAX_COMMUNITY_COMMENT_CONTENT_CODE_POINTS = 5_000;
 export const MAX_COMMUNITY_TOPIC_CODE_POINTS = 80;
 export const MAX_COMMUNITY_REPORT_DETAILS_CODE_POINTS = 1_000;
 
@@ -17,6 +18,7 @@ export type ComposerValidationErrors = Partial<
 >;
 
 export type ReportValidationErrors = Partial<Record<'category' | 'details', string>>;
+export type CommentValidationErrors = Partial<Record<'content', string>>;
 
 export function countUnicodeCodePoints(value: string): number {
   return Array.from(value).length;
@@ -52,6 +54,17 @@ export function validateComposerInput(input: CommunityComposerInput): ComposerVa
     errors.visibility = 'Vui lòng chọn quyền hiển thị hợp lệ.';
   }
 
+  return errors;
+}
+
+export function validateCommentInput(input: { content: string }): CommentValidationErrors {
+  const errors: CommentValidationErrors = {};
+  const contentLength = countUnicodeCodePoints(input.content);
+  if (!input.content.trim()) {
+    errors.content = 'Bình luận không thể chỉ chứa khoảng trắng.';
+  } else if (contentLength > MAX_COMMUNITY_COMMENT_CONTENT_CODE_POINTS) {
+    errors.content = 'Bình luận không được vượt quá 5.000 ký tự.';
+  }
   return errors;
 }
 

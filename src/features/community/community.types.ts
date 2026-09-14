@@ -79,6 +79,15 @@ export interface CommunityCreatePostInput {
   visibility?: CommunityVisibility;
 }
 
+export interface CommunityPostUpdateInput {
+  postType?: CommunityPostType;
+  languageCode?: string;
+  content?: string;
+  cefrLevel?: CommunityCefrLevel | null;
+  topic?: string | null;
+  visibility?: CommunityVisibility;
+}
+
 export interface CommunityComposerInput {
   postType: string;
   languageCode: string;
@@ -86,6 +95,46 @@ export interface CommunityComposerInput {
   cefrLevel: string;
   topic: string;
   visibility: CommunityVisibility;
+}
+
+export interface CommunityComment {
+  id: string;
+  author: CommunityAuthor | null;
+  parentCommentId: string | null;
+  depth: 0 | 1;
+  content: string | null;
+  createdAt: string;
+  updatedAt: string;
+  editedAt: string | null;
+  isDeleted: boolean;
+}
+
+export interface CommunityCommentThread extends CommunityComment {
+  replies: CommunityComment[];
+  hasMoreReplies: boolean;
+}
+
+export interface CommunityCommentListResponse {
+  items: CommunityCommentThread[];
+  nextCursor: string | null;
+}
+
+export interface CommunityCommentQuery {
+  limit?: number;
+  cursor?: string;
+}
+
+export interface CommunityCreateCommentInput {
+  content: string;
+  parentCommentId?: string;
+}
+
+export interface CommunityUpdateCommentInput {
+  content: string;
+}
+
+export interface CommunityDeleteResponse {
+  deleted: true;
 }
 
 export interface CommunityReactionResponse {

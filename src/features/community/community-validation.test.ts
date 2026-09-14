@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCreatePostPayload,
   countUnicodeCodePoints,
+  validateCommentInput,
   validateComposerInput,
 } from './community-validation';
 
@@ -56,5 +57,16 @@ describe('community composer validation', () => {
       topic: '  workplace  ',
       visibility: 'PUBLIC',
     });
+  });
+
+  it('blocks whitespace-only comments and enforces the backend 5,000-code-point limit', () => {
+    expect(validateCommentInput({ content: ' \n\t' })).toEqual({
+      content: 'Bình luận không thể chỉ chứa khoảng trắng.',
+    });
+
+    const valid = { content: '😀'.repeat(5_000) };
+    expect(validateCommentInput(valid)).toEqual({});
+    expect(validateCommentInput({ content: `${valid.content}😀` }).content)
+      .toContain('5.000');
   });
 });

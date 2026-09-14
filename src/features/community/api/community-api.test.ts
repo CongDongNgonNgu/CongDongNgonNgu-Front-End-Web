@@ -81,4 +81,83 @@ describe('CommunityApi', () => {
       }),
     );
   });
+
+  it('uses the public or protected detail and comment reads without changing the route contract', async () => {
+    const client = createClient();
+    client.requestPublic.mockResolvedValue({});
+    client.requestProtected.mockResolvedValue({});
+    const api = new CommunityApi(client);
+
+    await api.getPost('post-1');
+    await api.getPost('post-1', true);
+    await api.listComments('post-1', { limit: 20, cursor: 'opaque cursor' });
+    await api.listComments('post-1', {}, true);
+
+    expect(client.requestPublic).toHaveBeenNthCalledWith(1, '/community/posts/post-1');
+    expect(client.requestProtected).toHaveBeenNthCalledWith(1, '/community/posts/post-1');
+    expect(client.requestPublic).toHaveBeenNthCalledWith(
+      2,
+      '/community/posts/post-1/comments?limit=20&cursor=opaque+cursor',
+    );
+    expect(client.requestProtected).toHaveBeenNthCalledWith(2, '/community/posts/post-1/comments');
+  });
+
+  it('maps post, comment, reply and comment-report mutations to backend-supported fields', async () => {
+    const client = createClient();
+    client.requestProtected.mockResolvedValue({});
+    const api = new CommunityApi(client);
+
+    await api.updatePost('post-1', {
+      postType: 'QUESTION',
+      languageCode: 'ja',
+      content: 'Updated content',
+      cefrLevel: null,
+      topic: null,
+      visibility: 'PUBLIC',
+    });
+    await api.deletePost('post-1');
+    await api.createComment('post-1', { content: 'Top-level' });
+    await api.createComment('post-1', { content: 'Reply', parentCommentId: 'comment-1' });
+    await api.updateComment('comment-1', { content: 'Edited comment' });
+    await api.deleteComment('comment-1');
+    await api.reportComment('comment-1', { category: 'OTHER', details: 'Context' });
+
+    expect(client.requestProtected).toHaveBeenNthCalledWith(
+      1,
+      '/community/posts/post-1',
+      expect.objectContaining({ method: 'PATCH', body: JSON.stringify({
+        postType: 'QUESTION',
+        languageCode: 'ja',
+        content: 'Updated content',
+        cefrLevel: null,
+        topic: null,
+        visibility: 'PUBLIC',
+      }) }),
+    );
+    expect(client.requestProtected).toHaveBeenNthCalledWith(2, '/community/posts/post-1', { method: 'DELETE' });
+    expect(client.requestProtected).toHaveBeenNthCalledWith(
+      3,
+      '/community/posts/post-1/comments',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ content: 'Top-level' }) }),
+    );
+    expect(client.requestProtected).toHaveBeenNthCalledWith(
+      4,
+      '/community/posts/post-1/comments',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ content: 'Reply', parentCommentId: 'comment-1' }) }),
+    );
+    expect(client.requestProtected).toHaveBeenNthCalledWith(
+      5,
+      '/community/comments/comment-1',
+      expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ content: 'Edited comment' }) }),
+    );
+    expect(client.requestProtected).toHaveBeenNthCalledWith(6, '/community/comments/comment-1', { method: 'DELETE' });
+    expect(client.requestProtected).toHaveBeenNthCalledWith(
+      7,
+      '/community/reports',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ targetType: 'COMMENT', targetId: 'comment-1', category: 'OTHER', details: 'Context' }),
+      }),
+    );
+  });
 });

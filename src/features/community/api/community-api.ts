@@ -1,15 +1,22 @@
 import { authApi } from '../../auth/auth-api';
 import type {
   CommunityCreatePostInput,
+  CommunityCreateCommentInput,
+  CommunityComment,
+  CommunityCommentListResponse,
+  CommunityCommentQuery,
+  CommunityDeleteResponse,
   CommunityPost,
   CommunityPostListResponse,
   CommunityPostQuery,
+  CommunityPostUpdateInput,
   CommunityReactionResponse,
   CommunityReportInput,
   CommunityReportResponse,
   CommunityRequestClient,
   CommunitySaveResponse,
   CommunityShareResponse,
+  CommunityUpdateCommentInput,
 } from '../community.types';
 
 function withQuery(path: string, params: URLSearchParams): string {
@@ -55,6 +62,64 @@ export class CommunityApi {
     return this.client.requestProtected<CommunityPost>('/community/posts', jsonRequest('POST', input));
   }
 
+  getPost(postId: string, authenticated = false): Promise<CommunityPost> {
+    const path = `/community/posts/${encodeURIComponent(postId)}`;
+    return authenticated
+      ? this.client.requestProtected<CommunityPost>(path)
+      : this.client.requestPublic<CommunityPost>(path);
+  }
+
+  listComments(
+    postId: string,
+    query: CommunityCommentQuery = {},
+    authenticated = false,
+  ): Promise<CommunityCommentListResponse> {
+    const params = new URLSearchParams();
+    if (query.limit !== undefined) {
+      params.set('limit', String(Math.min(Math.max(query.limit, 1), 20)));
+    }
+    if (query.cursor) params.set('cursor', query.cursor);
+    const path = withQuery(`/community/posts/${encodeURIComponent(postId)}/comments`, params);
+    return authenticated
+      ? this.client.requestProtected<CommunityCommentListResponse>(path)
+      : this.client.requestPublic<CommunityCommentListResponse>(path);
+  }
+
+  updatePost(postId: string, input: CommunityPostUpdateInput): Promise<CommunityPost> {
+    return this.client.requestProtected<CommunityPost>(
+      `/community/posts/${encodeURIComponent(postId)}`,
+      jsonRequest('PATCH', input),
+    );
+  }
+
+  deletePost(postId: string): Promise<CommunityDeleteResponse> {
+    return this.client.requestProtected<CommunityDeleteResponse>(
+      `/community/posts/${encodeURIComponent(postId)}`,
+      { method: 'DELETE' },
+    );
+  }
+
+  createComment(postId: string, input: CommunityCreateCommentInput): Promise<CommunityComment> {
+    return this.client.requestProtected<CommunityComment>(
+      `/community/posts/${encodeURIComponent(postId)}/comments`,
+      jsonRequest('POST', input),
+    );
+  }
+
+  updateComment(commentId: string, input: CommunityUpdateCommentInput): Promise<CommunityComment> {
+    return this.client.requestProtected<CommunityComment>(
+      `/community/comments/${encodeURIComponent(commentId)}`,
+      jsonRequest('PATCH', input),
+    );
+  }
+
+  deleteComment(commentId: string): Promise<CommunityDeleteResponse> {
+    return this.client.requestProtected<CommunityDeleteResponse>(
+      `/community/comments/${encodeURIComponent(commentId)}`,
+      { method: 'DELETE' },
+    );
+  }
+
   addHelpful(postId: string): Promise<CommunityReactionResponse> {
     return this.client.requestProtected<CommunityReactionResponse>(
       `/community/posts/${encodeURIComponent(postId)}/reactions`,
@@ -90,20 +155,21 @@ export class CommunityApi {
   }
 
   reportPost(postId: string, input: CommunityReportInput): Promise<CommunityReportResponse> {
-    const body: Record<string, string> = {
-      targetType: 'POST',
-      targetId: postId,
-      category: input.category,
-    };
+    return this.reportTarget('POST', postId, input);
+  }
 
-    if (input.details?.trim()) {
-      body.details = input.details;
-    }
+  reportComment(commentId: string, input: CommunityReportInput): Promise<CommunityReportResponse> {
+    return this.reportTarget('COMMENT', commentId, input);
+  }
 
-    return this.client.requestProtected<CommunityReportResponse>(
-      '/community/reports',
-      jsonRequest('POST', body),
-    );
+  private reportTarget(
+    targetType: 'POST' | 'COMMENT',
+    targetId: string,
+    input: CommunityReportInput,
+  ): Promise<CommunityReportResponse> {
+    const body: Record<string, string> = { targetType, targetId, category: input.category };
+    if (input.details?.trim()) body.details = input.details;
+    return this.client.requestProtected<CommunityReportResponse>('/community/reports', jsonRequest('POST', body));
   }
 }
 
