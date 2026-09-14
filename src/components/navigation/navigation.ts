@@ -20,6 +20,6 @@ export const headerNavigation: NavigationItem[] = [
 
 export const additionalNavigation: NavigationItem[] = [
   { id: "languages", label: "Ngôn ngữ", shortLabel: "Ngôn ngữ", icon: "languages", href: "#languages" },
-  { id: "community", label: "Cộng đồng", shortLabel: "Cộng đồng", icon: "users", href: "#community" },
+  { id: "community", label: "Cộng đồng", shortLabel: "Cộng đồng", icon: "users", href: "/community" },
   { id: "how-it-works", label: "Cách bắt đầu", shortLabel: "Cách bắt đầu", icon: "book-open", href: "#how-it-works" },
 ];

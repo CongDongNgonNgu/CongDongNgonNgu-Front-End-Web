@@ -1,12 +1,15 @@
 import {
   AlertCircle,
   ArrowLeftRight,
+  Bookmark,
   Bell,
   BookOpen,
+  Check,
   CheckCircle2,
   ChevronDown,
   CircleHelp,
   Compass,
+  Flag,
   Globe2,
   Home,
   Info,
@@ -17,9 +20,11 @@ import {
   LoaderCircle,
   Menu,
   MessageCircle,
+  MoreHorizontal,
   Search,
   Share2,
   Sparkles,
+  ThumbsUp,
   Users,
   UserRound,
   X,
@@ -29,6 +34,11 @@ import {
 import styles from "./Icon.module.css";
 
 export type IconName =
+  | 'bookmark'
+  | 'check'
+  | 'flag'
+  | 'more-horizontal'
+  | 'thumbs-up'
   | 'lock'
   | 'info'
   | "alert-circle"
@@ -55,6 +65,11 @@ export type IconName =
   | "x";
 
 const icons: Record<IconName, LucideIcon> = {
+  bookmark: Bookmark,
+  check: Check,
+  flag: Flag,
+  'more-horizontal': MoreHorizontal,
+  'thumbs-up': ThumbsUp,
   "alert-circle": AlertCircle,
   "arrow-left-right": ArrowLeftRight,
   bell: Bell,

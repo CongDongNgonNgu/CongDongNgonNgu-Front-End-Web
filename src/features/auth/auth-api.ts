@@ -91,6 +91,14 @@ export class AuthApi {
     return this.request<PublicProfile>('/profiles/' + encodeURIComponent(userId));
   }
 
+  requestPublic<T>(path: string, init: RequestInit = {}): Promise<T> {
+    return this.request<T>(path, init);
+  }
+
+  requestProtected<T>(path: string, init: RequestInit = {}): Promise<T> {
+    return this.requestWithAuth<T>(path, init);
+  }
+
   async logout(): Promise<void> {
     try {
       await this.requestWithAuth<SimpleAuthResult>('/auth/logout', { method: 'POST' }, false);

@@ -46,7 +46,7 @@ describe("AppShell", () => {
     expect(drawer).toBeVisible();
     expect(within(drawer).getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
     expect(within(drawer).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("href", "#languages");
-    expect(within(drawer).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("href", "#community");
+    expect(within(drawer).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("href", "/community");
     expect(within(drawer).getByRole("link", { name: "Cách bắt đầu" })).toHaveAttribute("href", "#how-it-works");
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
     expect(document.activeElement).toHaveAttribute("aria-label", "Đóng menu");

@@ -15,9 +15,13 @@ export function Dialog({ open, title, onClose, children, labelledBy }: DialogPro
   const generatedTitleId = useId();
   const titleId = labelledBy ?? generatedTitleId;
   const dialogRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    if (!returnFocusRef.current) {
+      returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    }
     dialogRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -25,6 +29,36 @@ export function Dialog({ open, title, onClose, children, labelledBy }: DialogPro
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleTabKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=-1])',
+      ));
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleTabKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleTabKeyDown);
+      returnFocusRef.current?.focus();
+      returnFocusRef.current = null;
+    };
+  }, [open]);
 
   if (!open) return null;
 

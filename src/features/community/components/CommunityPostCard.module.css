@@ -1,0 +1,124 @@
+.card {
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.author {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+}
+
+.author strong {
+  overflow-wrap: anywhere;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.headerBadges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.topic {
+  margin: 0;
+  color: var(--color-brand-orange-readable);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.content {
+  overflow-wrap: anywhere;
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.footer {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.actionActive {
+  color: var(--color-brand-navy);
+  border-color: var(--color-brand-cyan);
+  background: var(--color-surface-active);
+}
+
+.actionError,
+.shareConfirmation {
+  margin: 0;
+  color: var(--color-danger-strong);
+  font-size: var(--font-size-xs);
+}
+
+.shareConfirmation {
+  color: var(--color-success-strong);
+}
+
+.shareConfirmation a {
+  color: inherit;
+  font-weight: var(--font-weight-semibold);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 35rem) {
+  .header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .headerBadges {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+
+  .actions > * {
+    flex: 1 1 auto;
+  }
+}

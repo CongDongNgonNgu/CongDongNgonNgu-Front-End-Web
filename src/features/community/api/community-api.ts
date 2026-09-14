@@ -1,0 +1,110 @@
+import { authApi } from '../../auth/auth-api';
+import type {
+  CommunityCreatePostInput,
+  CommunityPost,
+  CommunityPostListResponse,
+  CommunityPostQuery,
+  CommunityReactionResponse,
+  CommunityReportInput,
+  CommunityReportResponse,
+  CommunityRequestClient,
+  CommunitySaveResponse,
+  CommunityShareResponse,
+} from '../community.types';
+
+function withQuery(path: string, params: URLSearchParams): string {
+  const query = params.toString();
+  return query ? `${path}?${query}` : path;
+}
+
+function jsonRequest(method: string, body?: unknown): RequestInit {
+  return {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  };
+}
+
+export class CommunityApi {
+  constructor(private readonly client: CommunityRequestClient = authApi) {}
+
+  listPosts(query: CommunityPostQuery = {}, authenticated = false): Promise<CommunityPostListResponse> {
+    const params = new URLSearchParams();
+
+    if (query.languageCode) {
+      params.set('languageCode', query.languageCode);
+    }
+
+    if (query.limit !== undefined) {
+      params.set('limit', String(Math.min(Math.max(query.limit, 1), 50)));
+    }
+
+    if (query.cursor) {
+      params.set('cursor', query.cursor);
+    }
+
+    const path = withQuery('/community/posts', params);
+    return authenticated
+      ? this.client.requestProtected<CommunityPostListResponse>(path)
+      : this.client.requestPublic<CommunityPostListResponse>(path);
+  }
+
+  createPost(input: CommunityCreatePostInput): Promise<CommunityPost> {
+    return this.client.requestProtected<CommunityPost>('/community/posts', jsonRequest('POST', input));
+  }
+
+  addHelpful(postId: string): Promise<CommunityReactionResponse> {
+    return this.client.requestProtected<CommunityReactionResponse>(
+      `/community/posts/${encodeURIComponent(postId)}/reactions`,
+      jsonRequest('POST', { type: 'HELPFUL' }),
+    );
+  }
+
+  removeHelpful(postId: string): Promise<CommunityReactionResponse> {
+    return this.client.requestProtected<CommunityReactionResponse>(
+      `/community/posts/${encodeURIComponent(postId)}/reactions/HELPFUL`,
+      { method: 'DELETE' },
+    );
+  }
+
+  savePost(postId: string): Promise<CommunitySaveResponse> {
+    return this.client.requestProtected<CommunitySaveResponse>(
+      `/community/posts/${encodeURIComponent(postId)}/save`,
+      jsonRequest('POST'),
+    );
+  }
+
+  unsavePost(postId: string): Promise<CommunitySaveResponse> {
+    return this.client.requestProtected<CommunitySaveResponse>(
+      `/community/posts/${encodeURIComponent(postId)}/save`,
+      { method: 'DELETE' },
+    );
+  }
+
+  getShareLink(postId: string): Promise<CommunityShareResponse> {
+    return this.client.requestPublic<CommunityShareResponse>(
+      `/community/posts/${encodeURIComponent(postId)}/share`,
+    );
+  }
+
+  reportPost(postId: string, input: CommunityReportInput): Promise<CommunityReportResponse> {
+    const body: Record<string, string> = {
+      targetType: 'POST',
+      targetId: postId,
+      category: input.category,
+    };
+
+    if (input.details?.trim()) {
+      body.details = input.details;
+    }
+
+    return this.client.requestProtected<CommunityReportResponse>(
+      '/community/reports',
+      jsonRequest('POST', body),
+    );
+  }
+}
+
+export const communityApi = new CommunityApi();
