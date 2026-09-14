@@ -79,8 +79,8 @@ describe('CommunityComposer', () => {
     await user.selectOptions(screen.getByLabelText(/^Loại bài viết/), 'QUESTION');
     await user.selectOptions(screen.getByLabelText(/^Ngôn ngữ mục tiêu/), 'en');
     await user.type(screen.getByLabelText(/^Nội dung/), '<script>alert(1)</script>');
-    await user.selectOptions(screen.getByLabelText('Trình độ CEFR'), 'A2');
-    await user.type(screen.getByLabelText('Chủ đề'), 'work');
+    await user.selectOptions(screen.getByLabelText(/CEFR/), 'A2');
+    await user.type(screen.getByLabelText(/^Chủ đề/), 'work');
     await user.click(screen.getByRole('button', { name: 'Đăng bài' }));
 
     await waitFor(() => expect(api.createPost).toHaveBeenCalledWith({
@@ -103,5 +103,35 @@ describe('CommunityComposer', () => {
 
     await user.click(screen.getByRole('button', { name: 'Đăng bài' }));
     expect(onAuthRequired).toHaveBeenCalledOnce();
+  });
+
+  it('matches the canonical composer structure for metadata, visibility, and actions', () => {
+    renderComposer();
+
+    expect(screen.getByRole('heading', { name: 'Chia sẻ bài viết' })).toBeVisible();
+    expect(screen.getByText(/Không gian đóng góp tri thức/)).toBeVisible();
+    expect(screen.getByText('Thông tin học tập (không bắt buộc)')).toBeVisible();
+    expect(screen.getByRole('group', { name: 'Phạm vi hiển thị' })).toBeVisible();
+    expect(screen.getByRole('radio', { name: /Công khai với cộng đồng/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Chỉ lưu vào nhật ký cá nhân/ })).toBeInTheDocument();
+    expect(screen.getByRole('dialog').querySelector('form')).toHaveAttribute('id', 'community-composer-form');
+  });
+
+  it('submits the supported private visibility value', async () => {
+    const user = userEvent.setup();
+    const { api } = renderComposer();
+
+    await user.selectOptions(screen.getByLabelText(/^Loại bài viết/), 'QUESTION');
+    await user.selectOptions(screen.getByLabelText(/^Ngôn ngữ mục tiêu/), 'en');
+    await user.type(screen.getByLabelText(/^Nội dung/), 'A private language-learning note.');
+    await user.click(screen.getByRole('radio', { name: /Chỉ lưu vào nhật ký cá nhân/ }));
+    await user.click(screen.getByRole('button', { name: 'Đăng bài' }));
+
+    await waitFor(() => expect(api.createPost).toHaveBeenCalledWith({
+      postType: 'QUESTION',
+      languageCode: 'en',
+      content: 'A private language-learning note.',
+      visibility: 'PRIVATE',
+    }));
   });
 });

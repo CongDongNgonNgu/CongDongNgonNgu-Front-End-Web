@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiClientError } from '../../../services/api-client';
 import { Button } from '../../../components/ui/Button';
 import { Dialog } from '../../../components/ui/Overlays';
@@ -62,12 +62,16 @@ export function CommunityComposer({
   const [errors, setErrors] = useState<ComposerValidationErrors>({});
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const metadataRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setInput(blankInput(initialLanguageCode));
     setErrors({});
     setSubmitError('');
+    if (metadataRef.current) {
+      metadataRef.current.open = typeof window === 'undefined' || window.innerWidth > 560;
+    }
   }, [initialLanguageCode, open]);
 
   const update = (field: keyof CommunityComposerInput, value: string) => {
@@ -106,11 +110,27 @@ export function CommunityComposer({
   };
 
   return (
-    <Dialog open={open} title='Tạo bài viết cộng đồng' onClose={isSubmitting ? () => undefined : onClose}>
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <p className={styles.intro}>
-          Chia sẻ một câu hỏi, tài nguyên hoặc khoảnh khắc học ngôn ngữ với cộng đồng.
-        </p>
+    <Dialog
+      open={open}
+      title='Chia sẻ bài viết'
+      description={(
+        <>
+          <span className={styles.desktopDescription}>
+            Không gian đóng góp tri thức và thảo luận mở bằng văn bản thuần dành cho người học ngôn ngữ. Nội dung tôn trọng sự chân thực và văn hóa giao lưu.
+          </span>
+          <span className={styles.mobileDescription}>Văn bản học thuật &amp; đàm thoại bản xứ</span>
+        </>
+      )}
+      variant='composer'
+      onClose={isSubmitting ? () => undefined : onClose}
+      footer={(
+        <div className={styles.actions}>
+          <Button variant='quiet' type='button' onClick={onClose} disabled={isSubmitting}>Hủy</Button>
+          <Button className={styles.publishAction} type='submit' form='community-composer-form' loading={isSubmitting}>Đăng bài</Button>
+        </div>
+      )}
+    >
+      <form id='community-composer-form' className={styles.form} onSubmit={handleSubmit} noValidate>
 
         <div className={styles.fieldGrid}>
           <SelectControl
@@ -158,46 +178,74 @@ export function CommunityComposer({
           {countUnicodeCodePoints(input.content).toLocaleString('vi-VN')} / 20.000 ký tự
         </p>
 
-        <div className={styles.fieldGrid}>
-          <SelectControl
-            id='community-cefr'
-            label='Trình độ CEFR'
-            value={input.cefrLevel}
-            onChange={(event) => update('cefrLevel', event.target.value)}
-            error={errors.cefrLevel}
-            hint='Không bắt buộc'
-          >
-            <option value=''>Chưa chọn</option>
-            {COMMUNITY_CEFR_LEVELS.map((level) => <option key={level} value={level}>{level}</option>)}
-          </SelectControl>
-
-          <TextInput
-            id='community-topic'
-            label='Chủ đề'
-            value={input.topic}
-            onChange={(event) => update('topic', event.target.value)}
-            error={errors.topic}
-            hint={countUnicodeCodePoints(input.topic) + ' / 80 ký tự · Không bắt buộc'}
-          />
-        </div>
-
-        <SelectControl
-          id='community-visibility'
-          label='Quyền hiển thị'
-          value={input.visibility}
-          onChange={(event) => update('visibility', event.target.value)}
-          error={errors.visibility}
-          required
+        <details
+          ref={metadataRef}
+          className={styles.optionalMetadata}
         >
-          <option value='PUBLIC'>Công khai</option>
-        </SelectControl>
+          <summary>
+            <span>Thông tin học tập (không bắt buộc)</span>
+            <span className={styles.metadataSummaryHint}>Bổ trợ ngữ cảnh</span>
+          </summary>
+          <div className={styles.metadataFields}>
+            <div className={styles.fieldGrid}>
+              <SelectControl
+                id='community-cefr'
+                label='Khung tham chiếu trình độ (CEFR)'
+                value={input.cefrLevel}
+                onChange={(event) => update('cefrLevel', event.target.value)}
+                error={errors.cefrLevel}
+                hint='Không bắt buộc'
+              >
+                <option value=''>Không xác định</option>
+                {COMMUNITY_CEFR_LEVELS.map((level) => <option key={level} value={level}>{level}</option>)}
+              </SelectControl>
+
+              <TextInput
+                id='community-topic'
+                label='Chủ đề / Ngữ cảnh thảo luận'
+                value={input.topic}
+                onChange={(event) => update('topic', event.target.value)}
+                error={errors.topic}
+                hint={countUnicodeCodePoints(input.topic) + ' / 80 ký tự · Không bắt buộc'}
+              />
+            </div>
+          </div>
+        </details>
+
+        <fieldset className={styles.visibilityGroup} aria-invalid={Boolean(errors.visibility)} aria-describedby={errors.visibility ? 'community-visibility-error' : undefined}>
+          <legend>Phạm vi hiển thị</legend>
+          <div className={styles.visibilityOptions}>
+            <label className={[styles.visibilityOption, input.visibility === 'PUBLIC' ? styles.visibilityOptionSelected : ''].filter(Boolean).join(' ')}>
+              <input
+                type='radio'
+                name='community-visibility'
+                value='PUBLIC'
+                checked={input.visibility === 'PUBLIC'}
+                onChange={(event) => update('visibility', event.target.value)}
+              />
+              <span className={styles.visibilityCopy}>
+                <strong>Công khai với cộng đồng (PUBLIC)</strong>
+                <span>Hiển thị trên bảng tin chung để nhận phản hồi từ mọi thành viên.</span>
+              </span>
+            </label>
+            <label className={[styles.visibilityOption, input.visibility === 'PRIVATE' ? styles.visibilityOptionSelected : ''].filter(Boolean).join(' ')}>
+              <input
+                type='radio'
+                name='community-visibility'
+                value='PRIVATE'
+                checked={input.visibility === 'PRIVATE'}
+                onChange={(event) => update('visibility', event.target.value)}
+              />
+              <span className={styles.visibilityCopy}>
+                <strong>Chỉ lưu vào nhật ký cá nhân (PRIVATE)</strong>
+                <span>Chỉ bạn mới có quyền xem lại ghi chép này trong hồ sơ.</span>
+              </span>
+            </label>
+          </div>
+          {errors.visibility ? <p id='community-visibility-error' className={styles.visibilityError} role='alert'>{errors.visibility}</p> : null}
+        </fieldset>
 
         {submitError ? <p className={styles.submitError} role='alert'>{submitError}</p> : null}
-
-        <div className={styles.actions}>
-          <Button variant='quiet' type='button' onClick={onClose} disabled={isSubmitting}>Hủy</Button>
-          <Button type='submit' loading={isSubmitting}>Đăng bài</Button>
-        </div>
       </form>
     </Dialog>
   );

@@ -9,9 +9,12 @@ interface DialogProps {
   onClose: () => void;
   children: ReactNode;
   labelledBy?: string;
+  description?: ReactNode;
+  footer?: ReactNode;
+  variant?: 'default' | 'composer';
 }
 
-export function Dialog({ open, title, onClose, children, labelledBy }: DialogProps) {
+export function Dialog({ open, title, onClose, children, labelledBy, description, footer, variant = 'default' }: DialogProps) {
   const generatedTitleId = useId();
   const titleId = labelledBy ?? generatedTitleId;
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -19,6 +22,8 @@ export function Dialog({ open, title, onClose, children, labelledBy }: DialogPro
 
   useEffect(() => {
     if (!open) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     if (!returnFocusRef.current) {
       returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     }
@@ -27,7 +32,10 @@ export function Dialog({ open, title, onClose, children, labelledBy }: DialogPro
       if (event.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+    };
   }, [open, onClose]);
 
   useEffect(() => {
@@ -63,13 +71,17 @@ export function Dialog({ open, title, onClose, children, labelledBy }: DialogPro
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} ref={dialogRef}>
+    <div className={[styles.overlay, variant === 'composer' ? styles.overlayComposer : ''].filter(Boolean).join(' ')} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <div className={[styles.dialog, variant === 'composer' ? styles.dialogComposer : ''].filter(Boolean).join(' ')} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} ref={dialogRef}>
         <div className={styles.dialogHeader}>
-          <h2 id={titleId}>{title}</h2>
-          <Button variant="quiet" size="sm" onClick={onClose} aria-label="Đóng hộp thoại"><Icon name="x" size={18} /></Button>
+          <div className={styles.dialogHeading}>
+            <h2 id={titleId}>{title}</h2>
+            {description ? <p className={styles.dialogDescription}>{description}</p> : null}
+          </div>
+          <Button variant="quiet" size="sm" className={styles.dialogClose} onClick={onClose} aria-label="Đóng hộp thoại"><Icon name="x" size={18} /></Button>
         </div>
         <div className={styles.dialogBody}>{children}</div>
+        {footer ? <div className={styles.dialogFooter}>{footer}</div> : null}
       </div>
     </div>
   );

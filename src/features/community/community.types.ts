@@ -15,7 +15,7 @@ export const COMMUNITY_CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as con
 
 export type CommunityCefrLevel = (typeof COMMUNITY_CEFR_LEVELS)[number];
 
-export const COMMUNITY_VISIBILITIES = ['PUBLIC'] as const;
+export const COMMUNITY_VISIBILITIES = ['PUBLIC', 'PRIVATE'] as const;
 
 export type CommunityVisibility = (typeof COMMUNITY_VISIBILITIES)[number];
 
