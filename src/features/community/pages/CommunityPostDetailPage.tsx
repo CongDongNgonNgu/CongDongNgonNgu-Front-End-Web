@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from 'react';
@@ -11,6 +12,8 @@ import type { CommunityComposerApiPort } from '../components/CommunityComposer';
 import type { CommunityPostActionsApi } from '../components/CommunityPostCard';
 import './CommunityPostDetailPage.css';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Dialog } from '../../../components/ui/Overlays';
+import { Icon } from '../../../components/ui/Icon/Icon';
 
 import type {
   CommunityComment,
@@ -214,6 +217,7 @@ export function CommunityPostDetailPageView({
   currentUserId,
   onAuthRequired,
 }: CommunityPostDetailPageViewProps) {
+  const navigate = useNavigate();
   const [post, setPost] = useState<CommunityPost | null>(null);
   const [postLoading, setPostLoading] = useState(true);
   const [postError, setPostError] = useState<DetailError | null>(null);
@@ -244,7 +248,14 @@ export function CommunityPostDetailPageView({
   const [postDeleting, setPostDeleting] = useState(false);
   const [confirmPostDelete, setConfirmPostDelete] = useState(false);
   const [postActionError, setPostActionError] = useState<string | null>(null);
+  const [postDeleteFocusPending, setPostDeleteFocusPending] = useState(false);
   const [actionPending, setActionPending] = useState<string | null>(null);
+  const [postMenuOpen, setPostMenuOpen] = useState(false);
+  const [commentMenuOpen, setCommentMenuOpen] = useState<string | null>(null);
+  const postMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const commentMenuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const commentsHeadingRef = useRef<HTMLHeadingElement>(null);
+  const postStateHeadingRef = useRef<HTMLHeadingElement>(null);
   const [shareMessage, setShareMessage] = useState('');
   const [shareHref, setShareHref] = useState('');
 
@@ -291,6 +302,12 @@ export function CommunityPostDetailPageView({
     void loadPost();
     void loadComments();
   }, [loadComments, loadPost]);
+
+  useEffect(() => {
+    if (!postDeleteFocusPending || !postError) return;
+    postStateHeadingRef.current?.focus();
+    setPostDeleteFocusPending(false);
+  }, [postDeleteFocusPending, postError]);
 
   const handleLoadMore = useCallback(async () => {
     if (!nextCursor || loadingMore) return;
@@ -515,6 +532,7 @@ export function CommunityPostDetailPageView({
         message: 'Bài viết không khả dụng',
         unavailable: true,
       });
+      setPostDeleteFocusPending(true);
     } catch {
       setPostActionError('Không thể xóa bài viết.');
     } finally {
@@ -556,6 +574,42 @@ export function CommunityPostDetailPageView({
     }
   }, [api, reportCategory, reportReason, reportTarget]);
 
+  const renderCommentComposer = useCallback((inline = false) => (
+    <form
+      className={inline ? 'community-detail__comment-form community-detail__comment-form--inline' : 'community-detail__comment-form'}
+      onSubmit={handleCommentSubmit}
+    >
+      {inline ? (
+        <div className="community-detail__reply-context">
+          <span>Đang trả lời {getAuthorName(replyTo as CommunityComment)}</span>
+          <button type="button" onClick={() => setReplyTo(null)}>
+            Hủy
+          </button>
+        </div>
+      ) : null}
+      <label htmlFor="community-comment-input">Chia sẻ suy nghĩ của bạn</label>
+      <textarea
+        id="community-comment-input"
+        value={commentDraft}
+        onChange={(event) => {
+          setCommentDraft(event.target.value);
+          if (commentFormError) setCommentFormError(null);
+        }}
+        maxLength={MAX_COMMENT_CODE_POINTS}
+        rows={inline ? 3 : 4}
+        placeholder={authenticated ? 'Viết bình luận bằng văn bản thuần…' : 'Đăng nhập để tham gia thảo luận'}
+        disabled={commentSubmitting}
+      />
+      <div className="community-detail__form-footer">
+        <span>{Array.from(commentDraft).length}/{MAX_COMMENT_CODE_POINTS}</span>
+        <button type="submit" disabled={commentSubmitting}>
+          {commentSubmitting ? 'Đang gửi…' : inline ? 'Gửi phản hồi' : 'Gửi bình luận'}
+        </button>
+      </div>
+      {commentFormError ? <p role="alert">{commentFormError}</p> : null}
+    </form>
+  ), [authenticated, commentDraft, commentFormError, commentSubmitting, handleCommentSubmit, replyTo]);
+
   const renderComment = useCallback(
     (comment: CommunityComment, nested = false) => {
       const thread = getThread(comment);
@@ -564,55 +618,94 @@ export function CommunityPostDetailPageView({
         <article
           className={nested ? 'community-detail__comment community-detail__comment--reply' : 'community-detail__comment'}
           key={comment.id}
-          aria-label={`Bình luận của ${getAuthorName(comment)}`}
+          aria-label={comment.isDeleted ? 'Bình luận đã bị xóa' : `Bình luận của ${getAuthorName(comment)}`}
         >
-          <div className="community-detail__comment-meta">
-            <strong>{getAuthorName(comment)}</strong>
-            {comment.editedAt ? <span>Đã chỉnh sửa</span> : null}
-            {comment.createdAt ? <time dateTime={comment.createdAt}>{formatDate(comment.createdAt)}</time> : null}
-          </div>
-          <p className={comment.isDeleted ? 'community-detail__deleted' : undefined}>
-            {commentText(comment)}
-          </p>
+          {!comment.isDeleted ? (
+            <div className="community-detail__comment-meta">
+              <strong>{getAuthorName(comment)}</strong>
+              {comment.editedAt ? <span>Đã chỉnh sửa</span> : null}
+              {comment.createdAt ? <time dateTime={comment.createdAt}>{formatDate(comment.createdAt)}</time> : null}
+            </div>
+          ) : null}
+          {comment.isDeleted ? (
+            <div className="community-detail__deleted" role="note">
+              <strong>Bình luận đã bị xóa</strong>
+              <span>Các phản hồi bên dưới vẫn được duy trì để bảo toàn mạch thảo luận.</span>
+            </div>
+          ) : (
+            <p>{commentText(comment)}</p>
+          )}
           {!comment.isDeleted ? (
             <div className="community-detail__comment-actions">
               {!nested ? (
-                <button type="button" onClick={() => setReplyTo(comment)}>
+                <button type="button" onClick={() => { setReplyTo(comment); setCommentMenuOpen(null); }}>
                   Trả lời
                 </button>
               ) : null}
-              {owner ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingComment(comment);
-                      setEditCommentDraft(comment.content ?? '');
-                      setCommentFormError(null);
-                    }}
-                  >
-                    Chỉnh sửa
-                  </button>
-                  <button type="button" onClick={() => setCommentDeleting(comment)}>
-                    Xóa
-                  </button>
-                </>
-              ) : null}
               <button
                 type="button"
-                onClick={() => {
-                  if (!authenticated) {
-                    handleRequireAuth();
-                    return;
-                  }
-                  setReportTarget({ type: 'COMMENT', id: comment.id });
-                  setReportError(null);
+                className="community-detail__comment-menu-trigger"
+                aria-haspopup="menu"
+                aria-expanded={commentMenuOpen === comment.id}
+                aria-controls={`community-comment-menu-${comment.id}`}
+                aria-label={`Tùy chọn bình luận của ${getAuthorName(comment)}`}
+                ref={commentMenuTriggerRef}
+                onClick={(event) => {
+                  commentMenuTriggerRef.current = event.currentTarget;
+                  setCommentMenuOpen((current) => current === comment.id ? null : comment.id);
                 }}
               >
-                Báo cáo
+                <Icon name="more-horizontal" size={18} />
               </button>
+              {commentMenuOpen === comment.id ? (
+                <div className="community-detail__comment-menu" id={`community-comment-menu-${comment.id}`} role="menu">
+                  {owner ? (
+                    <>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setCommentMenuOpen(null);
+                          setEditingComment(comment);
+                          setEditCommentDraft(comment.content ?? '');
+                          setCommentFormError(null);
+                        }}
+                      >
+                        Chỉnh sửa
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setCommentMenuOpen(null);
+                          setCommentDeleting(comment);
+                        }}
+                      >
+                        Xóa
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setCommentMenuOpen(null);
+                        if (!authenticated) {
+                          handleRequireAuth();
+                          return;
+                        }
+                        setReportTarget({ type: 'COMMENT', id: comment.id });
+                        setReportError(null);
+                      }}
+                    >
+                      Báo cáo
+                    </button>
+                  )}
+                </div>
+              ) : null}
             </div>
           ) : null}
+          {!nested && replyTo?.id === comment.id ? renderCommentComposer(true) : null}
           {thread.replies?.length ? (
             <div className="community-detail__replies">
               {thread.replies.map((reply) => renderComment(reply, true))}
@@ -626,7 +719,7 @@ export function CommunityPostDetailPageView({
         </article>
       );
     },
-    [authenticated, currentUserId, handleRequireAuth],
+    [authenticated, commentMenuOpen, currentUserId, handleRequireAuth, renderCommentComposer, replyTo],
   );
 
   const postMeta = useMemo(() => {
@@ -652,7 +745,7 @@ export function CommunityPostDetailPageView({
       <main className="community-detail community-detail--state">
         <section className="community-detail__state" role={postError?.unavailable ? undefined : 'alert'}>
           <p className="community-detail__eyebrow">Cộng đồng</p>
-          <h1>{postError?.message ?? 'Bài viết không khả dụng'}</h1>
+          <h1 ref={postStateHeadingRef} tabIndex={-1}>{postError?.message ?? 'Bài viết không khả dụng'}</h1>
           <p>
             {postError?.unavailable
               ? 'Nội dung có thể đã bị xóa, ẩn hoặc đang được kiểm duyệt.'
@@ -670,6 +763,42 @@ export function CommunityPostDetailPageView({
 
   return (
     <main className="community-detail">
+      <header className="community-detail__mobile-header">
+        <button
+          type="button"
+          className="community-detail__mobile-back"
+          onClick={() => navigate('/community')}
+          aria-label="Quay lại danh sách bài thảo luận"
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+        <div className="community-detail__mobile-header-copy">
+          <span>Cộng đồng</span>
+          <strong>Bài viết cộng đồng</strong>
+        </div>
+        <div className="community-detail__mobile-actions" aria-label="Thao tác bài viết">
+          <button
+            type="button"
+            className="community-detail__mobile-icon-action"
+            onClick={() => void handlePostAction('save')}
+            disabled={actionPending !== null}
+            aria-label="Lưu bài viết"
+          >
+            <Icon name="bookmark" size={18} />
+          </button>
+          {post.isShareable ? (
+            <button
+              type="button"
+              className="community-detail__mobile-icon-action"
+              onClick={() => void handlePostAction('share')}
+              disabled={actionPending !== null}
+              aria-label="Chia sẻ bài viết"
+            >
+              <Icon name="share" size={18} />
+            </button>
+          ) : null}
+        </div>
+      </header>
       <nav className="community-detail__breadcrumbs" aria-label="Điều hướng">
         <span>Trang chủ</span>
         <span aria-hidden="true">/</span>
@@ -682,49 +811,108 @@ export function CommunityPostDetailPageView({
         <div className="community-detail__primary">
           <article className="community-detail__post" aria-labelledby="community-detail-title">
             <header className="community-detail__post-header">
-              <div>
-                <p className="community-detail__eyebrow">{post.postType}</p>
-                <h1 id="community-detail-title">Bài viết cộng đồng</h1>
-              </div>
-              {post.isOwner ? (
-                <div className="community-detail__owner-actions">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingPost(true);
-                      setEditPostDraft(post.content);
-                      setPostActionError(null);
-                    }}
-                  >
-                    Chỉnh sửa
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Xóa bài viết"
-                    onClick={() => setConfirmPostDelete(true)}
-                    disabled={postDeleting}
-                  >
-                    {postDeleting ? 'Đang xóa…' : 'Xóa bài viết'}
-                  </button>
+              <div className="community-detail__post-topline">
+                <div className="community-detail__meta" aria-label="Thông tin bài viết">
+                  {postMeta.map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
                 </div>
-              ) : null}
-            </header>
-
-            <div className="community-detail__author">
-              <span className="community-detail__avatar" aria-hidden="true">
-                {post.author.displayName.slice(0, 1).toUpperCase()}
-              </span>
-              <div>
-                <strong>{post.author.displayName}</strong>
-                <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
+                <div className="community-detail__post-header-actions" aria-label="Thao tác bài viết">
+                  <button
+                    type="button"
+                    className="community-detail__icon-action"
+                    onClick={() => void handlePostAction('save')}
+                    disabled={actionPending !== null}
+                    aria-label={post.isSaved ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
+                  >
+                    <Icon name="bookmark" size={18} />
+                  </button>
+                  {post.isShareable ? (
+                    <button
+                      type="button"
+                      className="community-detail__icon-action"
+                      onClick={() => void handlePostAction('share')}
+                      disabled={actionPending !== null}
+                      aria-label="Chia sẻ"
+                    >
+                      <Icon name="share" size={18} />
+                    </button>
+                  ) : null}
+                  <div className="community-detail__post-menu">
+                    <button
+                      type="button"
+                      className="community-detail__icon-action"
+                      aria-haspopup="menu"
+                      aria-expanded={postMenuOpen}
+                      aria-controls="community-detail-post-menu"
+                      aria-label="Tùy chọn bài viết"
+                       ref={postMenuTriggerRef}
+                       onClick={() => setPostMenuOpen((current) => !current)}
+                    >
+                      <Icon name="more-horizontal" size={18} />
+                    </button>
+                    {postMenuOpen ? (
+                      <div className="community-detail__post-menu-list" id="community-detail-post-menu" role="menu">
+                        {post.isOwner ? (
+                          <>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => {
+                                setPostMenuOpen(false);
+                                setEditingPost(true);
+                                setEditPostDraft(post.content);
+                                setPostActionError(null);
+                              }}
+                            >
+                              Chỉnh sửa bài viết
+                            </button>
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => {
+                                setPostMenuOpen(false);
+                                setConfirmPostDelete(true);
+                              }}
+                              disabled={postDeleting}
+                            >
+                              {postDeleting ? 'Đang xóa…' : 'Xóa bài viết'}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setPostMenuOpen(false);
+                              if (!authenticated) {
+                                handleRequireAuth();
+                                return;
+                              }
+                              setReportTarget({ type: 'POST', id: post.id });
+                              setReportError(null);
+                            }}
+                          >
+                            Báo cáo vi phạm
+                          </button>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="community-detail__meta" aria-label="Thông tin bài viết">
-              {postMeta.map((item) => (
-                <span key={item}>{item}</span>
-              ))}
-            </div>
+              <p className="community-detail__eyebrow">{post.postType}</p>
+              <h1 id="community-detail-title">Bài viết cộng đồng</h1>
+              <div className="community-detail__author">
+                <span className="community-detail__avatar" aria-hidden="true">
+                  {post.author.displayName.slice(0, 1).toUpperCase()}
+                </span>
+                <div>
+                  <strong>{post.author.displayName}</strong>
+                  <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
+                </div>
+              </div>
+            </header>
 
             <p className="community-detail__content">{post.content}</p>
 
@@ -736,35 +924,9 @@ export function CommunityPostDetailPageView({
               >
                 Hữu ích{post.helpfulCount ? ` · ${post.helpfulCount}` : ''}
               </button>
-              <button
-                type="button"
-                onClick={() => void handlePostAction('save')}
-                disabled={actionPending !== null}
-              >
-                Lưu{post.isSaved ? ' · Đã lưu' : ''}
-              </button>
-              {post.isShareable ? (
-                <button
-                  type="button"
-                  onClick={() => void handlePostAction('share')}
-                  disabled={actionPending !== null}
-                >
-                  Chia sẻ
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => {
-                  if (!authenticated) {
-                    handleRequireAuth();
-                    return;
-                  }
-                  setReportTarget({ type: 'POST', id: post.id });
-                  setReportError(null);
-                }}
-              >
-                Báo cáo
-              </button>
+              <span className="community-detail__comment-count" aria-label={`${post.commentCount ?? comments.length} bình luận`}>
+                {post.commentCount ?? comments.length} bình luận
+              </span>
             </div>
             {postActionError ? <p role="alert">{postActionError}</p> : null}
             {shareMessage ? (
@@ -779,41 +941,12 @@ export function CommunityPostDetailPageView({
             <div className="community-detail__section-heading">
               <div>
                 <p className="community-detail__eyebrow">Thảo luận</p>
-                <h2 id="comments-title">Bình luận</h2>
+                <h2 id="comments-title" ref={commentsHeadingRef} tabIndex={-1}>Thảo luận &amp; Đóng góp tri thức</h2>
               </div>
               <span>{post.commentCount ?? comments.length}</span>
             </div>
 
-            <form className="community-detail__comment-form" onSubmit={handleCommentSubmit}>
-              {replyTo ? (
-                <div className="community-detail__reply-context">
-                  <span>Đang trả lời {getAuthorName(replyTo)}</span>
-                  <button type="button" onClick={() => setReplyTo(null)}>
-                    Hủy
-                  </button>
-                </div>
-              ) : null}
-              <label htmlFor="community-comment-input">Chia sẻ suy nghĩ của bạn</label>
-              <textarea
-                id="community-comment-input"
-                value={commentDraft}
-                onChange={(event) => {
-                  setCommentDraft(event.target.value);
-                  if (commentFormError) setCommentFormError(null);
-                }}
-                maxLength={MAX_COMMENT_CODE_POINTS}
-                rows={4}
-                placeholder={authenticated ? 'Viết bình luận bằng văn bản thuần…' : 'Đăng nhập để tham gia thảo luận'}
-                disabled={commentSubmitting}
-              />
-              <div className="community-detail__form-footer">
-                <span>{Array.from(commentDraft).length}/{MAX_COMMENT_CODE_POINTS}</span>
-                <button type="submit" disabled={commentSubmitting}>
-                  {commentSubmitting ? 'Đang gửi…' : 'Gửi bình luận'}
-                </button>
-              </div>
-              {commentFormError ? <p role="alert">{commentFormError}</p> : null}
-            </form>
+            {!replyTo ? renderCommentComposer() : null}
 
             {commentsLoading ? (
               <p className="community-detail__muted" aria-live="polite">Đang tải bình luận…</p>
@@ -845,25 +978,48 @@ export function CommunityPostDetailPageView({
         </div>
 
         <aside className="community-detail__rail" aria-label="Thông tin học tập">
-          <div>
+          <section className="community-detail__rail-card community-detail__rail-card--context">
             <p className="community-detail__eyebrow">Ngữ cảnh học tập</p>
             <h2>Đọc kỹ, hỏi rõ, cùng tiến bộ.</h2>
             <p>
               Giữ thảo luận ở một cấp phản hồi để mọi người dễ theo dõi. Chia sẻ
               ví dụ văn bản thuần và tôn trọng người học khác.
             </p>
-          </div>
-          <div className="community-detail__rail-note">
-            <span>Quy tắc cộng đồng</span>
-            <p>Bình tĩnh · Cụ thể · Hữu ích</p>
-          </div>
+          </section>
+          <section className="community-detail__rail-card community-detail__rail-card--metadata">
+            <p className="community-detail__rail-label">Thông tin bài viết</p>
+            <dl>
+              <div><dt>Ngôn ngữ</dt><dd>{post.targetLanguage.nativeName}</dd></div>
+              {post.cefrLevel ? <div><dt>Trình độ</dt><dd>CEFR {post.cefrLevel}</dd></div> : null}
+              {post.topic ? <div><dt>Chủ đề</dt><dd>{post.topic}</dd></div> : null}
+              <div><dt>Loại bài</dt><dd>{post.postType}</dd></div>
+            </dl>
+          </section>
+          <details className="community-detail__rail-card community-detail__rail-card--guidelines" open>
+            <summary>
+              <span className="community-detail__rail-label">Nguyên tắc trao đổi</span>
+              <span aria-hidden="true">⌄</span>
+            </summary>
+            <ul>
+              <li>Tôn trọng ngữ cảnh bản xứ.</li>
+              <li>Dẫn chứng rõ ràng, cụ thể.</li>
+              <li>Khích lệ người học cùng tiến bộ.</li>
+            </ul>
+          </details>
+          <section className="community-detail__rail-card community-detail__rail-card--discussion">
+            <p className="community-detail__rail-label">Mạch thảo luận</p>
+            <p>Phản hồi được giữ ở một cấp để câu hỏi, dẫn chứng và câu trả lời luôn dễ theo dõi.</p>
+          </section>
         </aside>
       </div>
 
-      {editingPost ? (
-        <div className="community-detail__modal-backdrop">
-          <section className="community-detail__modal" role="dialog" aria-modal="true" aria-labelledby="edit-post-title">
-            <h2 id="edit-post-title">Chỉnh sửa bài viết</h2>
+      <Dialog
+        open={editingPost}
+        title='Chỉnh sửa bài viết'
+        description='Chỉ có thể cập nhật nội dung và thông tin hiện có của bài viết.'
+        onClose={() => setEditingPost(false)}
+        returnFocusRef={postMenuTriggerRef}
+      >
             <label htmlFor="community-edit-post">Nội dung</label>
             <textarea
               id="community-edit-post"
@@ -881,14 +1037,15 @@ export function CommunityPostDetailPageView({
                 {postSaving ? 'Đang lưu…' : 'Lưu thay đổi'}
               </button>
             </div>
-          </section>
-        </div>
-      ) : null}
+      </Dialog>
 
-      {editingComment ? (
-        <div className="community-detail__modal-backdrop">
-          <section className="community-detail__modal" role="dialog" aria-modal="true" aria-labelledby="edit-comment-title">
-            <h2 id="edit-comment-title">Chỉnh sửa bình luận</h2>
+      <Dialog
+        open={Boolean(editingComment)}
+        title='Chỉnh sửa bình luận'
+        description='Giữ nguyên ý nghĩa của bình luận khi cập nhật văn bản.'
+        onClose={() => setEditingComment(null)}
+        returnFocusRef={commentMenuTriggerRef}
+      >
             <label htmlFor="community-edit-comment">Nội dung</label>
             <textarea
               id="community-edit-comment"
@@ -906,14 +1063,15 @@ export function CommunityPostDetailPageView({
                 {commentSubmitting ? 'Đang lưu…' : 'Lưu thay đổi'}
               </button>
             </div>
-          </section>
-        </div>
-      ) : null}
+      </Dialog>
 
-      {commentDeleting ? (
-        <div className="community-detail__modal-backdrop">
-          <section className="community-detail__modal" role="dialog" aria-modal="true" aria-labelledby="delete-comment-title">
-            <h2 id="delete-comment-title">Xóa bình luận?</h2>
+      <Dialog
+        open={Boolean(commentDeleting)}
+        title='Xóa bình luận?'
+        description='Bình luận sẽ được thay bằng trạng thái đã xóa và các phản hồi vẫn được giữ lại.'
+        onClose={() => setCommentDeleting(null)}
+        returnFocusRef={commentsHeadingRef}
+      >
             <p>Bình luận sẽ được thay bằng trạng thái đã xóa và các phản hồi vẫn được giữ lại.</p>
             {commentFormError ? <p role="alert">{commentFormError}</p> : null}
             <div className="community-detail__modal-actions">
@@ -924,14 +1082,15 @@ export function CommunityPostDetailPageView({
                 {commentSubmitting ? 'Đang xóa…' : 'Xóa bình luận'}
               </button>
             </div>
-          </section>
-        </div>
-      ) : null}
+      </Dialog>
 
-      {confirmPostDelete ? (
-        <div className="community-detail__modal-backdrop">
-          <section className="community-detail__modal" role="dialog" aria-modal="true" aria-labelledby="delete-post-title">
-            <h2 id="delete-post-title">Xóa bài viết?</h2>
+      <Dialog
+        open={confirmPostDelete}
+        title='Xóa bài viết?'
+        description='Bài viết sẽ không còn hiển thị công khai và không thể khôi phục từ trang này.'
+        onClose={() => setConfirmPostDelete(false)}
+        returnFocusRef={postMenuTriggerRef}
+      >
             <p>Bài viết sẽ không còn hiển thị công khai và không thể khôi phục từ trang này.</p>
             <div className="community-detail__modal-actions">
               <button type="button" onClick={() => setConfirmPostDelete(false)}>
@@ -939,25 +1098,25 @@ export function CommunityPostDetailPageView({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setConfirmPostDelete(false);
-                  void handlePostDelete();
-                }}
+                onClick={() => void handlePostDelete()}
                 disabled={postDeleting}
               >
                 {postDeleting ? 'Đang xóa…' : 'Xóa bài viết'}
               </button>
             </div>
-          </section>
-        </div>
-      ) : null}
+      </Dialog>
 
-      {reportTarget ? (
-        <div className="community-detail__modal-backdrop">
-          <section className="community-detail__modal" role="dialog" aria-modal="true" aria-labelledby="report-title">
-            <h2 id="report-title">Báo cáo nội dung</h2>
-            <p>Chỉ gửi báo cáo khi nội dung vi phạm quy tắc cộng đồng.</p>
-            <label htmlFor="community-report-reason">Lý do</label>
+      <Dialog
+        open={Boolean(reportTarget)}
+        title='Báo cáo nội dung'
+        description='Chỉ gửi báo cáo khi nội dung vi phạm quy tắc cộng đồng.'
+        onClose={() => {
+          setReportTarget(null);
+          setReportCategory('');
+          setReportReason('');
+        }}
+        returnFocusRef={reportTarget?.type === 'COMMENT' ? commentMenuTriggerRef : postMenuTriggerRef}
+      >
             <label htmlFor="community-report-category">Danh mục</label>
             <select
               id="community-report-category"
@@ -974,6 +1133,7 @@ export function CommunityPostDetailPageView({
                 </option>
               ))}
             </select>
+            <label htmlFor="community-report-reason">Lý do</label>
             <textarea
               id="community-report-reason"
               value={reportReason}
@@ -997,9 +1157,7 @@ export function CommunityPostDetailPageView({
                 {reportSubmitting ? 'Đang gửi…' : 'Gửi báo cáo'}
               </button>
             </div>
-          </section>
-        </div>
-      ) : null}
+      </Dialog>
     </main>
   );
 }

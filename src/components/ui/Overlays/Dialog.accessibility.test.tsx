@@ -36,4 +36,31 @@ describe('Dialog accessibility behavior', () => {
     await user.click(close);
     expect(trigger).toHaveFocus();
   });
+
+  it('keeps focus inside when tab starts outside and connects the description', () => {
+    render(
+      <>
+        <button>Outside</button>
+        <Dialog
+          open
+          title='Dialog test'
+          description='Choose an action.'
+          onClose={() => undefined}
+        >
+          <button>Action</button>
+        </Dialog>
+      </>,
+    );
+
+    const dialog = screen.getByRole('dialog', { name: 'Dialog test' });
+    const outside = screen.getByRole('button', { name: 'Outside' });
+    outside.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    expect(dialog).toHaveAttribute('aria-describedby');
+    expect(document.getElementById(dialog.getAttribute('aria-describedby') ?? '') as HTMLElement).toHaveTextContent(
+      'Choose an action.',
+    );
+  });
 });

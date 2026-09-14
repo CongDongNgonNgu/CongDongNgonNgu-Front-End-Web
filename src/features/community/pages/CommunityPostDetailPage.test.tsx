@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -157,9 +158,86 @@ describe('CommunityPostDetailPageView', () => {
 
     renderDetail(api, true);
 
-    expect(await screen.findByRole('button', { name: 'Chỉnh sửa' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Xóa bài viết' })).toBeInTheDocument();
+    const menuTrigger = await screen.findByRole('button', { name: 'Tùy chọn bài viết' });
+    fireEvent.click(menuTrigger);
+    expect(screen.getByRole('menuitem', { name: 'Chỉnh sửa bài viết' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Xóa bài viết' })).toBeInTheDocument();
     expect(api.getPost).toHaveBeenCalledWith('post-1', true);
+  });
+
+  it('contains focus in the post edit dialog and restores focus to its trigger', async () => {
+    const user = userEvent.setup();
+    const api = createApi({
+      getPost: vi.fn().mockResolvedValue(post({ isOwner: true })),
+    });
+
+    renderDetail(api, true, 'user-1');
+
+    const menuTrigger = await screen.findByRole('button', { name: 'Tùy chọn bài viết' });
+    await user.click(menuTrigger);
+    const trigger = screen.getByRole('menuitem', { name: 'Chỉnh sửa bài viết' });
+    await user.click(trigger);
+
+    const dialog = screen.getByRole('dialog', { name: 'Chỉnh sửa bài viết' });
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+
+    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled])',
+    ));
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    expect(first).toBeDefined();
+    expect(last).toBeDefined();
+
+    last.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(first);
+
+    first.focus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(last);
+
+    await user.click(screen.getByRole('button', { name: 'Hủy' }));
+    expect(menuTrigger).toHaveFocus();
+  });
+
+  it('moves focus to the surviving post state after deleting the post', async () => {
+    const user = userEvent.setup();
+    const api = createApi({
+      getPost: vi.fn().mockResolvedValue(post({ isOwner: true })),
+      deletePost: vi.fn().mockResolvedValue(undefined),
+    });
+
+    renderDetail(api, true, 'user-1');
+
+    const menuTrigger = await screen.findByRole('button', { name: 'Tùy chọn bài viết' });
+    await user.click(menuTrigger);
+    await user.click(screen.getByRole('menuitem', { name: 'Xóa bài viết' }));
+    await user.click(screen.getByRole('button', { name: 'Xóa bài viết' }));
+
+    const stateHeading = await screen.findByRole('heading', { name: 'Bài viết không khả dụng' });
+    expect(stateHeading).toHaveFocus();
+  });
+
+  it('uses dialog focus semantics for comment reports and restores the report trigger', async () => {
+    const user = userEvent.setup();
+    const api = createApi();
+
+    renderDetail(api, true);
+
+    const commentArticle = await screen.findByRole('article', {
+      name: 'Bình luận của Minh Hoàng',
+    });
+    const menuTrigger = within(commentArticle).getByRole('button', { name: /Tùy chọn bình luận/ });
+    await user.click(menuTrigger);
+    const trigger = screen.getByRole('menuitem', { name: 'Báo cáo' });
+    await user.click(trigger);
+
+    const dialog = screen.getByRole('dialog', { name: 'Báo cáo nội dung' });
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+
+    await user.click(screen.getByRole('button', { name: 'Hủy' }));
+    expect(menuTrigger).toHaveFocus();
   });
 
   it('keeps the post visible when comments fail independently', async () => {
@@ -237,8 +315,14 @@ describe('CommunityPostDetailPageView', () => {
     fireEvent.change(screen.getByLabelText('Chia sẻ suy nghĩ của bạn'), {
       target: { value: 'Mình dùng mẫu này trong phần viết.' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Gửi bình luận' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi phản hồi' }));
 
+    await waitFor(() => {
+      expect(api.createComment).toHaveBeenCalledWith('post-1', {
+        content: 'Mình dùng mẫu này trong phần viết.',
+        parentCommentId: 'comment-1',
+      });
+    });
     expect(await screen.findByText('Mình dùng mẫu này trong phần viết.')).toBeInTheDocument();
     expect(api.createComment).toHaveBeenCalledWith('post-1', {
       content: 'Mình dùng mẫu này trong phần viết.',
@@ -267,7 +351,12 @@ describe('CommunityPostDetailPageView', () => {
 
     renderDetail(api, true, 'user-2');
     await screen.findByText('Minh Hoàng');
-    fireEvent.click(screen.getByRole('button', { name: 'Chỉnh sửa' }));
+    const commentArticle = await screen.findByRole('article', {
+      name: 'Bình luận của Minh Hoàng',
+    });
+    const commentMenuTrigger = within(commentArticle).getByRole('button', { name: /Tùy chọn bình luận/ });
+    fireEvent.click(commentMenuTrigger);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Chỉnh sửa' }));
     fireEvent.change(screen.getByLabelText('Nội dung', { selector: '#community-edit-comment' }), {
       target: { value: 'Nội dung đã chỉnh sửa.' },
     });
@@ -280,9 +369,11 @@ describe('CommunityPostDetailPageView', () => {
     });
     expect(screen.getByText('Nội dung đã chỉnh sửa.')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Xóa' }));
+    fireEvent.click(commentMenuTrigger);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Xóa' }));
     fireEvent.click(screen.getByRole('button', { name: 'Xóa bình luận' }));
     expect(await screen.findByText('Bình luận đã bị xóa')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Thảo luận & Đóng góp tri thức' })).toHaveFocus();
     expect(api.deleteComment).toHaveBeenCalledWith('comment-1');
   });
 
@@ -293,7 +384,8 @@ describe('CommunityPostDetailPageView', () => {
     const commentArticle = await screen.findByRole('article', {
       name: 'Bình luận của Minh Hoàng',
     });
-    fireEvent.click(within(commentArticle).getByRole('button', { name: 'Báo cáo' }));
+    fireEvent.click(within(commentArticle).getByRole('button', { name: /Tùy chọn bình luận/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Báo cáo' }));
     fireEvent.change(screen.getByLabelText('Danh mục'), {
       target: { value: 'SPAM' },
     });
@@ -315,7 +407,7 @@ describe('CommunityPostDetailPageView', () => {
     await screen.findByText('Minh Hoàng');
     fireEvent.click(screen.getByRole('button', { name: /Hữu ích/ }));
     await waitFor(() => expect(api.addHelpful).toHaveBeenCalledWith('post-1'));
-    fireEvent.click(screen.getByRole('button', { name: /Lưu/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Lưu/ })[0]);
     await waitFor(() => expect(api.savePost).toHaveBeenCalledWith('post-1'));
     fireEvent.click(screen.getByRole('button', { name: 'Chia sẻ' }));
     await waitFor(() => expect(api.getShareLink).toHaveBeenCalledWith('post-1'));
