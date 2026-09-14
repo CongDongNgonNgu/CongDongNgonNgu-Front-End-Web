@@ -54,6 +54,19 @@
   white-space: pre-wrap;
 }
 
+.detailLink {
+  justify-self: start;
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.detailLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .footer {
   display: grid;
   gap: var(--space-3);

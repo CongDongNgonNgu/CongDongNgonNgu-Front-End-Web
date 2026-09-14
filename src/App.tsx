@@ -12,6 +12,7 @@ import { OwnPassportPage, PublicPassportPage } from './features/passport/Passpor
 import { LanguageExplorerPage } from './features/languages/pages/LanguageExplorerPage';
 import { LanguageHubPage } from './features/languages/pages/LanguageHubPage';
 import { CommunityPage } from './features/community/pages/CommunityPage';
+import { CommunityPostDetailPage } from './features/community/pages/CommunityPostDetailPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -34,6 +35,7 @@ function RoutedApp() {
         <Route path='/languages' element={<LanguageExplorerPage />} />
         <Route path='/languages/:slug' element={<LanguageHubPage />} />
         <Route path='/community' element={<CommunityPage />} />
+        <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/verify-email' element={<VerifyEmailPage />} />

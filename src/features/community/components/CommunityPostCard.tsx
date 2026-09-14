@@ -161,6 +161,13 @@ export function CommunityPostCard({
 
         {post.topic ? <p className={styles.topic}>#{post.topic}</p> : null}
         <p className={styles.content} dir={post.targetLanguage.direction}>{post.content}</p>
+        <a
+          className={styles.detailLink}
+          href={`/community/posts/${encodeURIComponent(post.id)}`}
+          aria-label={`Xem chi tiết bài viết của ${post.author.displayName}`}
+        >
+          Xem chi tiết bài viết
+        </a>
 
         <div className={styles.footer}>
           <div className={styles.stats} aria-label='Thông tin tương tác'>
