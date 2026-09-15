@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { TextInput } from '../../../components/ui/FormControls/TextInput';
 import { authErrorMessage } from '../auth-errors';
@@ -12,6 +12,7 @@ import feedbackStyles from '../AuthFeedback.module.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +21,12 @@ export function LoginPage() {
   const [fieldError, setFieldError] = useState('');
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const locationState = location.state as { from?: unknown } | null;
+  const returnPath = typeof locationState?.from === 'string'
+    && locationState.from.startsWith('/')
+    && !locationState.from.startsWith('//')
+    ? locationState.from
+    : '/';
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,7 +45,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login({ email: email.trim().toLowerCase(), password });
-      navigate('/', { replace: true });
+      navigate(returnPath, { replace: true });
     } catch (reason) {
       setError(authErrorMessage(reason));
     } finally {

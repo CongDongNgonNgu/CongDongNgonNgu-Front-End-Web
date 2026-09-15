@@ -113,6 +113,26 @@
   line-height: var(--leading-body);
 }
 
+.promptActions {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+}
+
+.promptActionLink {
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.promptActionLink:hover,
+.promptActionLink:focus-visible {
+  color: var(--color-brand-orange-readable);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .feedSection {
   display: grid;
   min-width: 0;
@@ -272,9 +292,18 @@
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .composerPrompt > button {
+  .composerPrompt > .promptActions {
     grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .promptActions {
+    justify-items: stretch;
+  }
+
+  .promptActions > * {
+    width: 100%;
+    text-align: center;
   }
 
   .feedHeading {

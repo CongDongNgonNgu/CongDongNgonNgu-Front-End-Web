@@ -127,9 +127,17 @@ export function CommunityPageView({
               <strong>{authenticated ? 'Bạn đang học điều gì?' : 'Muốn chia sẻ cùng cộng đồng?'}</strong>
               <p>{authenticated ? 'Đặt một câu hỏi hoặc ghi lại một khám phá mới.' : 'Đăng nhập để tạo bài viết của riêng bạn.'}</p>
             </div>
-            <Button onClick={handleOpenComposer}>
-              {authenticated ? 'Tạo bài viết' : 'Đăng nhập để viết'}
-            </Button>
+            <div className={styles.promptActions}>
+              <Button onClick={handleOpenComposer}>
+                {authenticated ? 'Tạo bài viết' : 'Đăng nhập để viết'}
+              </Button>
+              <Link className={styles.promptActionLink} to='/community/ask/correction'>
+                Nhờ cộng đồng sửa giúp
+              </Link>
+              <Link className={styles.promptActionLink} to='/community/ask/question'>
+                Đặt câu hỏi
+              </Link>
+            </div>
           </section>
 
           <section className={styles.feedSection}>

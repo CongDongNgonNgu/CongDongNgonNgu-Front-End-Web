@@ -13,6 +13,8 @@ import { LanguageExplorerPage } from './features/languages/pages/LanguageExplore
 import { LanguageHubPage } from './features/languages/pages/LanguageHubPage';
 import { CommunityPage } from './features/community/pages/CommunityPage';
 import { CommunityPostDetailPage } from './features/community/pages/CommunityPostDetailPage';
+import { CommunityCorrectionRequestPage } from './features/community/pages/CommunityCorrectionRequestPage';
+import { CommunityQuestionRequestPage } from './features/community/pages/CommunityQuestionRequestPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -35,6 +37,8 @@ function RoutedApp() {
         <Route path='/languages' element={<LanguageExplorerPage />} />
         <Route path='/languages/:slug' element={<LanguageHubPage />} />
         <Route path='/community' element={<CommunityPage />} />
+        <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />
+        <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
         <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
