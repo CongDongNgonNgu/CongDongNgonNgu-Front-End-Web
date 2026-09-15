@@ -152,7 +152,7 @@ describe('CommunityCorrectionRequestPageView', () => {
       topic: 'school',
       visibility: 'PUBLIC',
     }));
-    expect(await screen.findByLabelText('location-path')).toHaveTextContent('/community/posts/correction-post-1');
+    await waitFor(() => expect(screen.getByLabelText('location-path')).toHaveTextContent('/community/posts/correction-post-1'));
   });
 
   it('prevents duplicate correction submits and keeps input after a rate limit', async () => {
@@ -205,7 +205,7 @@ describe('CommunityQuestionRequestPageView', () => {
       topic: 'travel',
       visibility: 'PUBLIC',
     }));
-    expect(await screen.findByLabelText('location-path')).toHaveTextContent('/community/posts/question-post-1');
+    await waitFor(() => expect(screen.getByLabelText('location-path')).toHaveTextContent('/community/posts/question-post-1'));
     expect(screen.queryByLabelText(/Tiêu đề/)).not.toBeInTheDocument();
   });
 

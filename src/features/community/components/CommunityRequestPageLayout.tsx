@@ -1,6 +1,16 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { Icon, type IconName } from '../../../components/ui/Icon/Icon';
 import styles from '../pages/CommunityRequestPage.module.css';
+
+export interface CommunityGuidanceCard {
+  icon: IconName;
+  title: string;
+  description?: string;
+  items?: Array<{ label?: string; text: string }>;
+  tone?: 'accent' | 'muted';
+  link?: { label: string; to: string };
+}
 
 interface CommunityRequestPageLayoutProps {
   breadcrumb: string;
@@ -8,9 +18,7 @@ interface CommunityRequestPageLayoutProps {
   title: string;
   description: string;
   children: ReactNode;
-  asideTitle: string;
-  asideDescription: string;
-  asideItems: string[];
+  guidanceCards: CommunityGuidanceCard[];
 }
 
 export function CommunityRequestPageLayout({
@@ -19,9 +27,7 @@ export function CommunityRequestPageLayout({
   title,
   description,
   children,
-  asideTitle,
-  asideDescription,
-  asideItems,
+  guidanceCards,
 }: CommunityRequestPageLayoutProps) {
   return (
     <div className={styles.page}>
@@ -44,16 +50,38 @@ export function CommunityRequestPageLayout({
           {children}
         </section>
 
-        <aside className={styles.guidanceRail} aria-label={asideTitle}>
-          <p className={styles.railEyebrow}>GỢI Ý NHỎ</p>
-          <h2>{asideTitle}</h2>
-          <p>{asideDescription}</p>
-          <ul>
-            {asideItems.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-          <Link className={styles.railLink} to='/community'>
-            Quay lại bảng tin <span aria-hidden='true'>→</span>
-          </Link>
+        <aside className={styles.guidanceRail} aria-label='Hướng dẫn gửi yêu cầu'>
+          {guidanceCards.map((card) => (
+            <section
+              key={card.title}
+              className={[
+                styles.guidanceCard,
+                card.tone === 'accent' ? styles.guidanceCardAccent : '',
+                card.tone === 'muted' ? styles.guidanceCardMuted : '',
+              ].filter(Boolean).join(' ')}
+            >
+              <div className={styles.guidanceCardHeading}>
+                <Icon name={card.icon} size={20} />
+                <h2>{card.title}</h2>
+              </div>
+              {card.description ? <p className={styles.guidanceCardDescription}>{card.description}</p> : null}
+              {card.items?.length ? (
+                <ul className={styles.guidanceCardItems}>
+                  {card.items.map((item) => (
+                    <li key={(item.label ?? '') + item.text}>
+                      <Icon name='check-circle' size={16} />
+                      <span>{item.label ? <strong>{item.label}</strong> : null}{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {card.link ? (
+                <Link className={styles.guidanceCardLink} to={card.link.to}>
+                  {card.link.label} <span aria-hidden='true'>→</span>
+                </Link>
+              ) : null}
+            </section>
+          ))}
         </aside>
       </div>
     </div>

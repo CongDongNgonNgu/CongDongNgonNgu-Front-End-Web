@@ -20,7 +20,6 @@ import {
   validateCorrectionRequestInput,
   type CorrectionRequestFormInput,
   type CorrectionRequestValidationErrors,
-  MAX_CORRECTION_CONTEXT_CODE_POINTS,
   MAX_CORRECTION_TEXT_CODE_POINTS,
 } from '../corrections-validation';
 import type { CommunityLanguageCatalogApi, CommunityRequestApi } from '../corrections.types';
@@ -134,20 +133,32 @@ export function CommunityCorrectionRequestPageView({
       breadcrumb='Nhờ cộng đồng sửa giúp'
       eyebrow='NHỜ CỘNG ĐỒNG SỬA GIÚP'
       title='Nhờ cộng đồng sửa giúp'
-      description='Chia sẻ một câu hoặc đoạn văn bản bạn muốn hiểu rõ hơn. Người học khác có thể góp ý đúng vào mục tiêu bạn chọn.'
-      asideTitle='Một yêu cầu rõ ràng sẽ nhận được phản hồi tốt hơn'
-      asideDescription='Giữ nguyên câu bạn đã viết, sau đó thêm một chút bối cảnh nếu điều đó giúp người khác hiểu ý định của bạn.'
-      asideItems={[
-        'Chọn đúng một mục tiêu để phản hồi không bị lan man.',
-        'Không đưa thông tin cá nhân hoặc dữ liệu nhạy cảm vào nội dung.',
-        'Mục Phát âm chỉ dùng cho câu hỏi về cách đọc phần văn bản.',
+      description='Chia sẻ một câu bạn đang học để cộng đồng góp ý rõ ràng và tôn trọng.'
+      guidanceCards={[
+        {
+          icon: 'users',
+          title: 'Cộng đồng học tập tử tế',
+          description: 'Mỗi câu bạn gửi gắm là một cơ hội học hỏi chung. Người sửa sẽ giải thích ngọn ngành ngữ cảnh thay vì chỉ đưa ra một đáp án khô khan.',
+        },
+        {
+          icon: 'sparkles',
+          title: 'Gợi ý để nhận phản hồi chất lượng',
+          items: [
+            { label: 'Cung cấp ngữ cảnh rõ ràng: ', text: 'Bạn định dùng câu này với ai và trong tình huống nào?' },
+            { label: 'Giữ nguyên câu gốc: ', text: 'Không cần ngại sai sót; lỗi sai thực tế giúp bạn nhớ lâu hơn.' },
+            { label: 'Lắng nghe đa chiều: ', text: 'Ngôn ngữ sống luôn có nhiều cách diễn đạt phù hợp tùy đối tượng.' },
+          ],
+        },
+        {
+          icon: 'user-round',
+          title: 'Cam kết không sử dụng AI tạo tự động',
+          tone: 'muted',
+          description: 'Mọi lời góp ý đến từ sự sẻ chia của con người thực. Chúng tôi không dùng bot tạo gợi ý sửa giả để đảm bảo tính nhân văn và chiều sâu văn hóa.',
+        },
       ]}
     >
       <div className={styles.formCard}>
-        <div className={styles.formIntro}>
-          <h2 id='community-request-form-heading'>Gửi câu cần được góp ý</h2>
-          <p>Phần văn bản sẽ được lưu đúng như bạn nhập, gồm cả dấu cách và xuống dòng.</p>
-        </div>
+        <h2 id='community-request-form-heading' className={styles.visuallyHidden}>Gửi câu cần được góp ý</h2>
 
         <form className={styles.form} onSubmit={submit} noValidate>
           {languagesError ? <CatalogError onRetry={() => void loadLanguages()} /> : null}
@@ -180,22 +191,13 @@ export function CommunityCorrectionRequestPageView({
             onChange={(value) => update('correctionIntent', value)}
           />
 
-          <div className={styles.contextField}>
-            <Textarea
-              id='correction-context'
-              label='Bối cảnh (không bắt buộc)'
-              value={input.context}
-              onChange={(event) => update('context', event.target.value)}
-              error={errors.context}
-              hint='Không bắt buộc.'
-            />
-            <p className={styles.charCount} aria-live='polite'>
-              {countUnicodeCodePoints(input.context)} / {MAX_CORRECTION_CONTEXT_CODE_POINTS.toLocaleString('vi-VN')} ký tự
-            </p>
-          </div>
-
           <RequestMetadataFields
             idPrefix='correction'
+            context={{
+              value: input.context,
+              error: errors.context,
+              onChange: (value) => update('context', value),
+            }}
             cefrLevel={input.cefrLevel}
             topic={input.topic}
             visibility={input.visibility as 'PUBLIC' | 'PRIVATE'}
@@ -208,9 +210,12 @@ export function CommunityCorrectionRequestPageView({
             {isSubmitting ? 'Đang gửi yêu cầu…' : ''}
           </p>
 
-          <div className={styles.formActions}>
-            <Link className={styles.cancelLink} to='/community'>Hủy</Link>
+          <div className={[styles.formActions, styles.formActionsCorrection].join(' ')}>
             <Button type='submit' loading={isSubmitting}>Gửi yêu cầu sửa</Button>
+            <Link className={styles.cancelLink} to='/community'>Hủy</Link>
+            <span className={styles.actionReassurance}>
+              Tuân thủ nguyên tắc cộng đồng học tập phi thương mại.
+            </span>
           </div>
         </form>
       </div>

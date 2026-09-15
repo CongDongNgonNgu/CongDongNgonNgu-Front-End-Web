@@ -9,6 +9,11 @@ import styles from '../pages/CommunityRequestPage.module.css';
 
 interface RequestMetadataFieldsProps {
   idPrefix: string;
+  context?: {
+    value: string;
+    error?: string;
+    onChange: (value: string) => void;
+  };
   cefrLevel: string;
   topic: string;
   visibility: CommunityVisibility;
@@ -18,6 +23,7 @@ interface RequestMetadataFieldsProps {
 
 export function RequestMetadataFields({
   idPrefix,
+  context,
   cefrLevel,
   topic,
   visibility,
@@ -32,6 +38,18 @@ export function RequestMetadataFields({
       </div>
 
       <div className={styles.metadataGrid}>
+        {context ? (
+          <div className={styles.metadataContext}>
+            <TextInput
+              id={idPrefix + '-context'}
+              label='Bối cảnh (không bắt buộc)'
+              value={context.value}
+              onChange={(event) => context.onChange(event.target.value)}
+              error={context.error}
+              hint='Không bắt buộc.'
+            />
+          </div>
+        ) : null}
         <SelectControl
           id={idPrefix + '-cefr'}
           label='Trình độ CEFR'
