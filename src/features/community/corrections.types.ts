@@ -61,9 +61,71 @@ export interface CorrectionRequestResponse {
 
 export interface CommunityRequestApi {
   createCorrectionRequest(input: CorrectionRequestInput): Promise<CorrectionRequestResponse>;
-  getCorrectionRequest(postId: string): Promise<CorrectionRequestResponse>;
+  getCorrectionRequest(postId: string, authenticated?: boolean): Promise<CorrectionRequestResponse>;
   createQuestion(input: QuestionInput): Promise<CommunityPost>;
-  getQuestion(postId: string): Promise<CommunityPost>;
+  getQuestion(postId: string, authenticated?: boolean): Promise<CommunityPost>;
+}
+
+export interface StructuredResponseAuthorResponse {
+  id: string;
+  displayName: string;
+}
+
+export type StructuredResponseKind = 'CORRECTION_PROPOSAL' | 'QA_ANSWER';
+
+export interface StructuredResponseResponse {
+  id: string;
+  parentPostId: string;
+  author: StructuredResponseAuthorResponse | null;
+  responseKind: StructuredResponseKind;
+  correctedText: string | null;
+  answerText: string | null;
+  explanation: string | null;
+  createdAt: string;
+  updatedAt: string;
+  editedAt: string | null;
+  isDeleted: boolean;
+  helpfulCount: number;
+  viewerHelpful: boolean;
+  isAccepted: boolean;
+  acceptedAt: string | null;
+  canAccept: boolean;
+  canVote: boolean;
+}
+
+export interface StructuredResponseListResponse {
+  items: StructuredResponseResponse[];
+  nextCursor: string | null;
+}
+
+export interface StructuredResponseInput {
+  responseKind: StructuredResponseKind;
+  correctedText?: string;
+  answerText?: string;
+  explanation?: string;
+}
+
+export interface StructuredResponseAcceptanceResponse {
+  parentPostId: string;
+  responseId: string | null;
+  acceptedAt: string | null;
+  revoked: boolean;
+}
+
+export interface CommunityStructuredResponseApi {
+  listStructuredResponses(
+    postId: string,
+    query?: { limit?: number; cursor?: string },
+    authenticated?: boolean,
+  ): Promise<StructuredResponseListResponse>;
+  createStructuredResponse(
+    postId: string,
+    input: StructuredResponseInput,
+  ): Promise<StructuredResponseResponse>;
+  addStructuredResponseHelpful(responseId: string): Promise<StructuredResponseResponse>;
+  removeStructuredResponseHelpful(responseId: string): Promise<StructuredResponseResponse>;
+  acceptStructuredResponse(postId: string, responseId: string): Promise<StructuredResponseResponse>;
+  revokeStructuredResponseAcceptance(postId: string): Promise<StructuredResponseAcceptanceResponse>;
 }
 
 export interface CommunityLanguageCatalogApi {

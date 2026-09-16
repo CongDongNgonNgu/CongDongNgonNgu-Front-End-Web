@@ -8,8 +8,10 @@ import {
 } from 'react';
 import { useAuth } from '../../auth/AuthProvider';
 import { communityApi } from '../api/community-api';
+import { correctionsApi } from '../api/corrections-api';
 import type { CommunityComposerApiPort } from '../components/CommunityComposer';
 import type { CommunityPostActionsApi } from '../components/CommunityPostCard';
+import { StructuredResponseExperience } from '../components/StructuredResponseExperience';
 import './CommunityPostDetailPage.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Dialog } from '../../../components/ui/Overlays';
@@ -27,6 +29,7 @@ import type {
   CommunityReportCategory,
   CommunityUpdateCommentInput,
 } from '../community.types';
+import type { CommunityRequestApi, CommunityStructuredResponseApi } from '../corrections.types';
 import { COMMUNITY_REPORT_CATEGORIES, COMMUNITY_REPORT_CATEGORY_LABELS } from '../community.constants';
 import {
   MAX_COMMUNITY_COMMENT_CONTENT_CODE_POINTS,
@@ -66,6 +69,8 @@ export interface CommunityPostDetailApi extends CommunityComposerApiPort, Commun
 
 export interface CommunityPostDetailPageViewProps {
   api: CommunityPostDetailApi;
+  structuredApi?: CommunityStructuredResponseApi;
+  requestApi?: Pick<CommunityRequestApi, 'getCorrectionRequest'>;
   postId: string;
   authenticated?: boolean;
   currentUserId?: string | null;
@@ -212,6 +217,8 @@ function updateCommentTree(
 
 export function CommunityPostDetailPageView({
   api,
+  structuredApi = correctionsApi,
+  requestApi = correctionsApi,
   postId,
   authenticated = false,
   currentUserId,
@@ -937,6 +944,16 @@ export function CommunityPostDetailPageView({
             ) : null}
           </article>
 
+          {post.postType === 'CORRECTION_REQUEST' || post.postType === 'QUESTION' ? (
+            <StructuredResponseExperience
+              parent={post}
+              authenticated={authenticated}
+              api={structuredApi}
+              requestApi={requestApi}
+              onAuthRequired={handleRequireAuth}
+            />
+          ) : null}
+
           <section className="community-detail__comments" aria-labelledby="comments-title">
             <div className="community-detail__section-heading">
               <div>
@@ -1164,8 +1181,12 @@ export function CommunityPostDetailPageView({
 
 export function CommunityPostDetailPage({
   api = communityApi,
+  structuredApi = correctionsApi,
+  requestApi = correctionsApi,
 }: {
   api?: CommunityPostDetailApi;
+  structuredApi?: CommunityStructuredResponseApi;
+  requestApi?: Pick<CommunityRequestApi, 'getCorrectionRequest'>;
 }) {
   const { status, user } = useAuth();
   const navigate = useNavigate();
@@ -1185,6 +1206,8 @@ export function CommunityPostDetailPage({
   return (
     <CommunityPostDetailPageView
       api={api}
+      structuredApi={structuredApi}
+      requestApi={requestApi}
       postId={postId}
       authenticated={status === 'authenticated'}
       currentUserId={user?.id}
