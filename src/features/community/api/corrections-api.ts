@@ -5,6 +5,7 @@ import type {
   CommunityStructuredResponseApi,
   CorrectionRequestInput,
   CorrectionRequestResponse,
+  LibraryCandidateResponse,
   QuestionInput,
   StructuredResponseAcceptanceResponse,
   StructuredResponseInput,
@@ -88,6 +89,13 @@ export class CorrectionsApi implements CommunityRequestApi, CommunityStructuredR
     return this.client.requestProtected<StructuredResponseResponse>(
       '/community/structured-responses/' + encodeURIComponent(responseId) + '/helpful',
       { method: 'DELETE' },
+    );
+  }
+
+  nominateStructuredResponseAsLibraryCandidate(responseId: string): Promise<LibraryCandidateResponse> {
+    return this.client.requestProtected<LibraryCandidateResponse>(
+      '/community/structured-responses/' + encodeURIComponent(responseId) + '/library-candidate',
+      { method: 'POST' },
     );
   }
 

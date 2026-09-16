@@ -28,7 +28,7 @@ function response(overrides: Partial<StructuredResponseResponse> = {}): Structur
     id: 'response-1', parentPostId: 'post-1', author: { id: 'contributor-1', displayName: 'Lê Mai' },
     responseKind: 'CORRECTION_PROPOSAL', correctedText: 'Tôi đã đi học vào ngày mai.', answerText: null,
     explanation: 'Dùng thì tương lai cho ngày mai.', createdAt: '2026-09-15T08:10:00.000Z', updatedAt: '2026-09-15T08:10:00.000Z', editedAt: null,
-    isDeleted: false, helpfulCount: 2, viewerHelpful: false, isAccepted: false, acceptedAt: null, canAccept: false, canVote: true,
+    isDeleted: false, helpfulCount: 2, viewerHelpful: false, isAccepted: false, acceptedAt: null, libraryCandidateState: null, canAccept: false, canVote: true, canNominateCandidate: false,
     ...overrides,
   };
 }
@@ -43,6 +43,12 @@ function createApis(item = response()) {
     createStructuredResponse: vi.fn().mockResolvedValue(response({ id: 'response-2', correctedText: 'Tôi sẽ đi học vào ngày mai.' })),
     addStructuredResponseHelpful: vi.fn().mockResolvedValue(response({ helpfulCount: 3, viewerHelpful: true })),
     removeStructuredResponseHelpful: vi.fn().mockResolvedValue(response({ helpfulCount: 1, viewerHelpful: false })),
+    nominateStructuredResponseAsLibraryCandidate: vi.fn().mockResolvedValue({
+      id: 'candidate-1', sourcePostId: 'post-1', sourceResponseId: item.id, contributorUserId: 'contributor-1',
+      targetLanguageCode: 'vi', responseKind: 'CORRECTION_PROPOSAL', sourceText: 'Tôi đã đi học vào ngày mai.',
+      correctedText: 'Tôi sẽ đi học vào ngày mai.', answerText: null, explanation: 'Dùng thì tương lai.',
+      state: 'PENDING_REVIEW', submittedForReview: true, createdAt: '2026-09-15T09:00:00.000Z',
+    }),
     acceptStructuredResponse: vi.fn().mockResolvedValue(response({ isAccepted: true, acceptedAt: '2026-09-15T09:00:00.000Z', canAccept: true })),
     revokeStructuredResponseAcceptance: vi.fn().mockResolvedValue({ parentPostId: 'post-1', responseId: item.id, acceptedAt: null, revoked: true }),
   };
@@ -92,5 +98,17 @@ describe('StructuredResponseExperience', () => {
     await user.click(screen.getByRole('button', { name: 'Chấp nhận bản sửa' }));
     await waitFor(() => expect(api.acceptStructuredResponse).toHaveBeenCalledWith('post-1', 'response-1'));
     expect(await screen.findByText('Được người hỏi chấp nhận')).toBeInTheDocument();
+  });
+
+  it('lets the requester nominate the accepted response without implying verification', async () => {
+    const user = userEvent.setup();
+    const acceptedResponse = response({ canAccept: true, canVote: false, isAccepted: true, canNominateCandidate: true });
+    const { api, requestApi } = createApis(acceptedResponse);
+    render(<StructuredResponseExperience parent={post(true)} authenticated requestApi={requestApi} api={api} onAuthRequired={vi.fn()} />);
+
+    await screen.findByRole('article', { name: 'Đề xuất sửa câu của Lê Mai' });
+    await user.click(screen.getByRole('button', { name: 'Đề cử vào Thư viện' }));
+    await waitFor(() => expect(api.nominateStructuredResponseAsLibraryCandidate).toHaveBeenCalledWith('response-1'));
+    expect(await screen.findByText('Đã gửi để xem xét · chưa được xác minh')).toBeInTheDocument();
   });
 });

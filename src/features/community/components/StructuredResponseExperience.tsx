@@ -33,6 +33,9 @@ function errorMessage(error: unknown, fallback: string): string {
     if (code === 'CORRECTIONS_ACCEPT_FORBIDDEN') return 'Chỉ người hỏi mới có thể chấp nhận câu trả lời.';
     if (code === 'CORRECTIONS_SELF_VOTE') return 'Bạn không thể đánh dấu phản hồi của chính mình.';
     if (code === 'CORRECTIONS_ACCEPTANCE_CONFLICT') return 'Lựa chọn đã thay đổi. Vui lòng tải lại danh sách.';
+    if (code === 'CORRECTIONS_CANDIDATE_NOT_ACCEPTED') return 'Chỉ phản hồi đang được chấp nhận mới có thể được đề cử.';
+    if (code === 'CORRECTIONS_CANDIDATE_SOURCE_NOT_PUBLIC') return 'Chỉ nội dung công khai mới có thể được đề cử vào Thư viện.';
+    if (code === 'CORRECTIONS_CANDIDATE_FORBIDDEN') return 'Chỉ người hỏi mới có thể đề cử phản hồi.';
   }
   return fallback;
 }
@@ -164,6 +167,27 @@ export function StructuredResponseExperience({
     }
   };
 
+  const handleNominateCandidate = async (response: StructuredResponseResponse) => {
+    if (!authenticated) {
+      onAuthRequired();
+      return;
+    }
+    setPendingAction('candidate:' + response.id);
+    setActionError(null);
+    try {
+      const candidate = await api.nominateStructuredResponseAsLibraryCandidate(response.id);
+      setResponses((current) => current.map((item) => item.id === response.id ? {
+        ...item,
+        libraryCandidateState: candidate.state,
+        canNominateCandidate: false,
+      } : item));
+    } catch (error) {
+      setActionError(errorMessage(error, 'Không thể gửi đề cử vào Thư viện.'));
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
   const handleEditorSubmit = async (input: StructuredResponseInput) => {
     setEditorBusy(true);
     setEditorError(null);
@@ -214,6 +238,7 @@ export function StructuredResponseExperience({
               onAuthRequired={onAuthRequired}
               onHelpful={(item) => void handleHelpful(item)}
               onAccept={(item) => void handleAccept(item)}
+              onNominateCandidate={(item) => void handleNominateCandidate(item)}
             />
           ))}
           {nextCursor ? (

@@ -72,6 +72,7 @@ export interface StructuredResponseAuthorResponse {
 }
 
 export type StructuredResponseKind = 'CORRECTION_PROPOSAL' | 'QA_ANSWER';
+export type LibraryCandidateState = 'PENDING_REVIEW' | 'INVALIDATED';
 
 export interface StructuredResponseResponse {
   id: string;
@@ -89,8 +90,26 @@ export interface StructuredResponseResponse {
   viewerHelpful: boolean;
   isAccepted: boolean;
   acceptedAt: string | null;
+  libraryCandidateState: LibraryCandidateState | null;
   canAccept: boolean;
   canVote: boolean;
+  canNominateCandidate: boolean;
+}
+
+export interface LibraryCandidateResponse {
+  id: string;
+  sourcePostId: string;
+  sourceResponseId: string;
+  contributorUserId: string;
+  targetLanguageCode: string;
+  responseKind: StructuredResponseKind;
+  sourceText: string;
+  correctedText: string | null;
+  answerText: string | null;
+  explanation: string | null;
+  state: LibraryCandidateState;
+  submittedForReview: true;
+  createdAt: string;
 }
 
 export interface StructuredResponseListResponse {
@@ -124,6 +143,7 @@ export interface CommunityStructuredResponseApi {
   ): Promise<StructuredResponseResponse>;
   addStructuredResponseHelpful(responseId: string): Promise<StructuredResponseResponse>;
   removeStructuredResponseHelpful(responseId: string): Promise<StructuredResponseResponse>;
+  nominateStructuredResponseAsLibraryCandidate(responseId: string): Promise<LibraryCandidateResponse>;
   acceptStructuredResponse(postId: string, responseId: string): Promise<StructuredResponseResponse>;
   revokeStructuredResponseAcceptance(postId: string): Promise<StructuredResponseAcceptanceResponse>;
 }

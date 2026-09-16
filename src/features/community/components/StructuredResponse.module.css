@@ -194,6 +194,12 @@
   padding-top: 14px;
 }
 
+.candidateStatus {
+  color: var(--color-text-secondary, #5f6e78);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .error {
   margin: 12px 0;
   color: var(--color-danger, #b42318);

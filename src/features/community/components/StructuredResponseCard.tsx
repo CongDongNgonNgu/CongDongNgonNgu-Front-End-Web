@@ -12,6 +12,7 @@ interface StructuredResponseCardProps {
   onAuthRequired: () => void;
   onHelpful: (response: StructuredResponseResponse) => void;
   onAccept: (response: StructuredResponseResponse) => void;
+  onNominateCandidate: (response: StructuredResponseResponse) => void;
 }
 
 function formatDate(value: string): string {
@@ -29,6 +30,7 @@ export function StructuredResponseCard({
   onAuthRequired,
   onHelpful,
   onAccept,
+  onNominateCandidate,
 }: StructuredResponseCardProps) {
   const responseLabel = response.responseKind === 'CORRECTION_PROPOSAL' ? 'Đề xuất sửa câu' : 'Câu trả lời';
   const acceptLabel = response.responseKind === 'CORRECTION_PROPOSAL' ? 'Chấp nhận bản sửa' : 'Chấp nhận câu trả lời';
@@ -79,6 +81,19 @@ export function StructuredResponseCard({
                 loading={pendingAction === 'accept:' + response.id}
               >
                 {response.isAccepted ? 'Bỏ chấp nhận' : acceptLabel}
+              </Button>
+            ) : null}
+            {response.libraryCandidateState === 'PENDING_REVIEW' ? (
+              <span className={styles.candidateStatus} role='status'>Đã gửi để xem xét · chưa được xác minh</span>
+            ) : null}
+            {response.canNominateCandidate ? (
+              <Button
+                variant='quiet'
+                size='sm'
+                onClick={() => onNominateCandidate(response)}
+                loading={pendingAction === 'candidate:' + response.id}
+              >
+                Đề cử vào Thư viện
               </Button>
             ) : null}
           </div>
