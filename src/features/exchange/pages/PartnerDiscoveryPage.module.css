@@ -395,7 +395,6 @@
 
 @media (min-width: 64rem) {
   .filterDisclosure summary { display: none; }
-  .filterDisclosure:not([open]) .filterForm { display: grid; }
 }
 
 @media (max-width: 63.999rem) {

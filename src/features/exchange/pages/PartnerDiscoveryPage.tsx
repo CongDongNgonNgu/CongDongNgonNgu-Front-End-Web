@@ -17,6 +17,7 @@ import {
 import styles from './PartnerDiscoveryPage.module.css';
 
 const PAGE_SIZE = 6;
+const DESKTOP_BREAKPOINT = 1024;
 
 interface PartnerDiscoveryPageViewProps {
   api: PartnerDiscoveryApi;
@@ -64,9 +65,19 @@ export function PartnerDiscoveryPageView({ api, authenticated, authLoading = fal
   const [catalogError, setCatalogError] = useState<unknown>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [retryKey, setRetryKey] = useState(0);
+  const [filterOpen, setFilterOpen] = useState(isDesktopViewport);
   const requestId = useRef(0);
 
   usePageMetadata();
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`);
+    const syncWithViewport = () => setFilterOpen(media.matches);
+    syncWithViewport();
+    media.addEventListener('change', syncWithViewport);
+    return () => media.removeEventListener('change', syncWithViewport);
+  }, []);
 
   useEffect(() => {
     if (!authenticated) {
@@ -172,7 +183,11 @@ export function PartnerDiscoveryPageView({ api, authenticated, authLoading = fal
 
           <div className={styles.workspace}>
             <aside className={styles.filterRail} aria-label='Bộ lọc tìm bạn học'>
-              <details className={styles.filterDisclosure}>
+              <details
+                className={styles.filterDisclosure}
+                open={filterOpen}
+                onToggle={(event) => setFilterOpen(event.currentTarget.open)}
+              >
                 <summary>
                   <span><Icon name='chevron-down' size={18} /> Bộ lọc</span>
                   {activeFilterCount > 0 ? <Badge tone='info'>{activeFilterCount} đang dùng</Badge> : null}
@@ -248,7 +263,7 @@ function FilterForm({
 }) {
   return (
     <form className={styles.filterForm} onSubmit={(event) => { event.preventDefault(); onApply(); }}>
-      <h3 className={styles.desktopFilterTitle}>Bộ lọc</h3>
+      <h2 className={styles.desktopFilterTitle}>Bộ lọc</h2>
       <div className={styles.filterIntro}>
         <p>Chọn tín hiệu bạn muốn ưu tiên. Kết quả vẫn giữ nguyên thứ tự xác định.</p>
       </div>
@@ -477,6 +492,13 @@ function topicLabel(value: string): string {
     technology: 'Công nghệ',
   };
   return labels[value] ?? value.replace(/[-_]+/g, ' ');
+}
+
+function isDesktopViewport(): boolean {
+  if (typeof window === 'undefined') return false;
+  return typeof window.matchMedia === 'function'
+    ? window.matchMedia(`(min-width: ${DESKTOP_BREAKPOINT}px)`).matches
+    : window.innerWidth >= DESKTOP_BREAKPOINT;
 }
 
 function usePageMetadata() {

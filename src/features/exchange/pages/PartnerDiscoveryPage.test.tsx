@@ -108,6 +108,7 @@ describe('PartnerDiscoveryPageView', () => {
 
     expect(screen.getByRole('status', { name: 'Đang tải gợi ý học cùng' })).toBeVisible();
     expect(await screen.findByRole('heading', { name: 'Người học cùng' })).toBeVisible();
+    expect(screen.getByText(/Chọn tín hiệu bạn muốn ưu tiên/).closest('details')).toHaveAttribute('open');
     expect(screen.getByText('Múi giờ tương thích.')).toBeVisible();
     expect(screen.getByText('Có khoảng thời gian học phù hợp.')).toBeVisible();
     expect(screen.getByRole('link', { name: /Xem hồ sơ công khai/ })).toHaveAttribute('href', '/profiles/candidate-1');
