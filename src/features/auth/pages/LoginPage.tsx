@@ -100,7 +100,7 @@ export function LoginPage() {
         </label>
         <div className={formStyles.formActions}>
           <Button type='submit' variant='secondary' fullWidth loading={loading}>Đăng nhập vào tài khoản →</Button>
-          <ProviderButtons mode='login' />
+          <ProviderButtons />
         </div>
         <div className={formStyles.authLinks}>
           <span>Bạn là thành viên mới?</span>

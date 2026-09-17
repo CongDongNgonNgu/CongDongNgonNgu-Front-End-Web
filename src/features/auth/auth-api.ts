@@ -31,13 +31,12 @@ export class AuthApi {
     return this.request<ProviderCapabilities>('/auth/providers');
   }
 
-  getOAuthStartUrl(provider: 'google' | 'facebook' | 'zalo' | 'apple', mode: 'login' | 'register' = 'login'): string {
+  getOAuthStartUrl(provider: 'google' | 'facebook' | 'zalo' | 'apple'): string {
     const base = resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
     const url = new URL(
       base + '/auth/oauth/' + encodeURIComponent(provider) + '/start',
       base.startsWith('/') ? window.location.origin : undefined,
     );
-    url.searchParams.set('mode', mode);
     return base.startsWith('/') ? url.pathname + url.search : url.toString();
   }
 

@@ -283,4 +283,20 @@ describe('auth pages', () => {
     expect(screen.queryByText(/đã được đăng ký trước đó/i)).not.toBeInTheDocument();
     expect(refreshAccess).not.toHaveBeenCalled();
   });
+
+  it('maps the backend collision error code to the explicit linking recovery state', () => {
+    const api = createApi();
+    const refreshAccess = vi.spyOn(api, 'refreshAccess');
+    render(
+      <MemoryRouter initialEntries={['/auth/callback?status=error&code=AUTH_ACCOUNT_COLLISION']}>
+        <AuthProvider api={api}>
+          <Routes><Route path='/auth/callback' element={<AuthCallbackPage />} /></Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Không thể liên kết tài khoản' })).toBeVisible();
+    expect(screen.getByRole('alert')).toHaveTextContent('Hãy đăng nhập bằng email và mật khẩu');
+    expect(refreshAccess).not.toHaveBeenCalled();
+  });
 });

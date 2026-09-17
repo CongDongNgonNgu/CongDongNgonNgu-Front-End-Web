@@ -2,18 +2,14 @@ import { Button } from '../../components/ui/Button';
 import { useAuth } from './AuthProvider';
 import styles from './ProviderButtons.module.css';
 
-interface ProviderButtonsProps {
-  mode?: 'login' | 'register';
-}
-
-export function ProviderButtons({ mode = 'login' }: ProviderButtonsProps) {
+export function ProviderButtons() {
   const { api, providers } = useAuth();
   const google = providers.find((provider) => provider.name === 'google');
   const available = google?.enabled === true;
   return (
     <div className={styles.providerGroup}>
       <div className={styles.divider} role='presentation'>
-        <span>{mode === 'register' ? 'Hoặc đăng ký bằng' : 'Hoặc đăng nhập bằng'}</span>
+        <span>Hoặc tiếp tục bằng</span>
       </div>
       <Button
         className={styles.providerButton}

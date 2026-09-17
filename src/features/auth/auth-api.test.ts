@@ -96,11 +96,11 @@ describe('AuthApi', () => {
     expect(new Headers(init.headers).get('X-CSRF-Token')).toBe('csrf-value');
   });
 
-  it('builds OAuth redirects from the configured API base', () => {
+  it('builds the unified Google OAuth redirect from the configured API base', () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://auth.example.test/api/v1');
     const api = new AuthApi();
     expect(api.getOAuthStartUrl('google')).toBe(
-      'https://auth.example.test/api/v1/auth/oauth/google/start?mode=login',
+      'https://auth.example.test/api/v1/auth/oauth/google/start',
     );
   });
 

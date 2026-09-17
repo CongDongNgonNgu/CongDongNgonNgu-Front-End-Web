@@ -111,7 +111,7 @@ export function RegisterPage() {
         </label>
         <div className={formStyles.formActions}>
           <Button type="submit" variant="secondary" fullWidth loading={loading}>Tạo tài khoản thành viên →</Button>
-          <ProviderButtons mode="register" />
+          <ProviderButtons />
         </div>
         <div className={formStyles.authLinks}>
           <span>Đã là thành viên?</span>

@@ -59,10 +59,12 @@ export function AuthCallbackPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status');
+  const code = searchParams.get('code');
   const [error, setError] = useState('');
   const attempted = useRef(false);
-  const isRecoveryError = recoveryStatuses.has(status ?? '');
-  const copy = recoveryCopy[status ?? ''] ?? recoveryCopy.error;
+  const recoveryStatus = status === 'error' && code === 'AUTH_ACCOUNT_COLLISION' ? 'collision' : status;
+  const isRecoveryError = recoveryStatuses.has(recoveryStatus ?? '');
+  const copy = recoveryCopy[recoveryStatus ?? ''] ?? recoveryCopy.error;
 
   useEffect(() => {
     if (attempted.current || isRecoveryError) return;
