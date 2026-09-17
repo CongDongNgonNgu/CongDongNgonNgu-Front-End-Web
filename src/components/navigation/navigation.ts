@@ -16,6 +16,13 @@ export const headerNavigation: NavigationItem[] = [
     icon: "compass",
     href: "/",
   },
+  {
+    id: "exchange",
+    label: "Tìm bạn học",
+    shortLabel: "Bạn học",
+    icon: "arrow-left-right",
+    href: "/exchange",
+  },
 ];
 
 export const additionalNavigation: NavigationItem[] = [

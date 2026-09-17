@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { Drawer } from '../../ui/Overlays';
 import { Icon } from '../../ui/Icon/Icon';
-import { additionalNavigation } from '../../navigation/navigation';
+import { additionalNavigation, headerNavigation } from '../../navigation/navigation';
 import { NavigationLink } from './NavigationLink';
 import { runLogout } from './header.utils';
 import styles from './HeaderDrawer.module.css';
@@ -27,6 +27,7 @@ export function HeaderDrawer({ open, isAuthenticated, onLogout, onClose, initial
     >
       <nav className={styles.drawerNav} aria-label='Điều hướng menu di động'>
         <Link className={`${styles.drawerNavItem} ${styles.drawerNavItemActive}`} to='/' onClick={onClose}><Icon name='home' size={20} /><span>Trang chủ</span></Link>
+        {headerNavigation.filter((item) => item.id !== 'home').map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={onClose} />)}
         {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={onClose} />)}
       </nav>
       <div className={styles.drawerAuth} aria-label='Tài khoản'>

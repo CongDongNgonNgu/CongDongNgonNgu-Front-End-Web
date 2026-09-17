@@ -12,6 +12,7 @@ const footerGroups: Array<{ title: string; items: FooterItem[] }> = [
     title: "Khám phá",
     items: [
       { label: "Trang chủ", href: "/" },
+      { label: "Tìm bạn học", href: "/exchange" },
       { label: "Ngôn ngữ", href: "#languages" },
       { label: "Cách bắt đầu", href: "#how-it-works" },
     ],

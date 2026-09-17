@@ -15,6 +15,7 @@ import { CommunityPage } from './features/community/pages/CommunityPage';
 import { CommunityPostDetailPage } from './features/community/pages/CommunityPostDetailPage';
 import { CommunityCorrectionRequestPage } from './features/community/pages/CommunityCorrectionRequestPage';
 import { CommunityQuestionRequestPage } from './features/community/pages/CommunityQuestionRequestPage';
+import { PartnerDiscoveryPage } from './features/exchange/pages/PartnerDiscoveryPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -40,6 +41,7 @@ function RoutedApp() {
         <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />
         <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
         <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
+        <Route path='/exchange' element={<PartnerDiscoveryPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/verify-email' element={<VerifyEmailPage />} />

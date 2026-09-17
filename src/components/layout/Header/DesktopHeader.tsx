@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Avatar } from '../../ui/Surface';
 import { DropdownMenu } from '../../ui/Overlays';
 import { Icon } from '../../ui/Icon/Icon';
@@ -21,6 +21,7 @@ interface DesktopHeaderProps {
 }
 
 export function DesktopHeader({ isAuthenticated, onLogout, moreOpen, onMoreToggle, onSearch, searchOpen, onAccountToggle, accountOpen }: DesktopHeaderProps) {
+  const { pathname } = useLocation();
   return (
     <div className={styles.desktopHeader}>
       <div className='shell-width'>
@@ -31,7 +32,7 @@ export function DesktopHeader({ isAuthenticated, onLogout, moreOpen, onMoreToggl
           </Link>
           <nav className={styles.desktopNav} aria-label='Điều hướng chính'>
             <ul className={styles.desktopNavList}>
-              {headerNavigation.map((item) => <li key={item.id}><NavigationLink item={item} className={styles.navLinkActive} /></li>)}
+              {headerNavigation.map((item) => <li key={item.id}><NavigationLink item={item} className={pathname === item.href ? styles.navLinkActive : styles.navLink} /></li>)}
               <li><DropdownMenu open={moreOpen} label='Thêm' onToggle={onMoreToggle}>{additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.dropdownItem} />)}</DropdownMenu></li>
             </ul>
           </nav>
