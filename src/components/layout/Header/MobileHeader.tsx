@@ -6,7 +6,7 @@ import type { MenuHandler, SearchHandler } from './header.types';
 import controls from './HeaderControls.module.css';
 import styles from './MobileHeader.module.css';
 
-export function MobileHeader({ isAuthenticated, searchOpen, onSearch, onMenu }: { isAuthenticated: boolean; searchOpen: boolean; onSearch: SearchHandler; onMenu: MenuHandler }) {
+export function MobileHeader({ isAuthenticated, userDisplayName, searchOpen, onSearch, onMenu }: { isAuthenticated: boolean; userDisplayName: string; searchOpen: boolean; onSearch: SearchHandler; onMenu: MenuHandler }) {
   return (
     <div className={styles.mobileHeader}>
       <div className='shell-width'>
@@ -18,7 +18,7 @@ export function MobileHeader({ isAuthenticated, searchOpen, onSearch, onMenu }: 
           </Link>
           <div className={styles.mobileHeaderActions}>
             <button className={`${controls.iconButton} ${controls.mobileCircle}`} type='button' onClick={onSearch} aria-label='Tìm kiếm' aria-expanded={searchOpen} aria-controls='global-search-panel'><Icon name='search' size={20} /></button>
-            {isAuthenticated ? <Button variant='quiet' size='sm' className={styles.mobileAccountButton} onClick={onMenu} aria-label='NH, Tài khoản' aria-haspopup='dialog'><Avatar name='Người học' size='sm' /></Button> : null}
+            {isAuthenticated ? <Button variant='quiet' size='sm' className={styles.mobileAccountButton} onClick={onMenu} aria-label={`Tài khoản của ${userDisplayName}`} aria-haspopup='dialog'><Avatar name={userDisplayName} size='sm' /></Button> : null}
           </div>
         </div>
       </div>

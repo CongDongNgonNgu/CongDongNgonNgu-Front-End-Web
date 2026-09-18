@@ -20,7 +20,7 @@ import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 function RoutedApp() {
-  const { status, logout } = useAuth();
+  const { status, user, logout } = useAuth();
   const { pathname } = useLocation();
   const authLayout = pathname === '/login'
     || pathname === '/register'
@@ -32,7 +32,7 @@ function RoutedApp() {
   const authSurface = pathname === '/login' ? 'login' : pathname === '/register' ? 'register' : 'flow';
   const authFooterTone = 'light';
   return (
-    <AppShell isAuthenticated={status === 'authenticated'} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
+    <AppShell isAuthenticated={status === 'authenticated'} userDisplayName={user?.displayName} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/languages' element={<LanguageExplorerPage />} />

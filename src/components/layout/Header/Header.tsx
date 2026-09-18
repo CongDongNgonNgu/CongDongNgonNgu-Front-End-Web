@@ -4,15 +4,18 @@ import { HeaderDrawer } from './HeaderDrawer';
 import { HeaderSearchPanel } from './HeaderSearchPanel';
 import { MobileActionBar } from './MobileActionBar';
 import { MobileHeader } from './MobileHeader';
+import { resolveAvatarName } from './header.utils';
 import styles from './Header.module.css';
 
 interface HeaderProps {
   isAuthenticated?: boolean;
+  userDisplayName?: string;
   onLogout?: () => Promise<void> | void;
   hideMobileActionBar?: boolean;
 }
 
-export function Header({ isAuthenticated = false, onLogout, hideMobileActionBar = false }: HeaderProps) {
+export function Header({ isAuthenticated = false, userDisplayName, onLogout, hideMobileActionBar = false }: HeaderProps) {
+  const avatarName = resolveAvatarName(userDisplayName);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [searchAnnouncement, setSearchAnnouncement] = useState('');
@@ -69,6 +72,7 @@ export function Header({ isAuthenticated = false, onLogout, hideMobileActionBar 
     <header className={styles.siteHeader} role='banner'>
       <DesktopHeader
         isAuthenticated={isAuthenticated}
+        userDisplayName={avatarName}
         onLogout={onLogout}
         moreOpen={moreOpen}
         onMoreToggle={toggleMore}
@@ -77,7 +81,7 @@ export function Header({ isAuthenticated = false, onLogout, hideMobileActionBar 
         onAccountToggle={toggleAccount}
         accountOpen={accountOpen}
       />
-      <MobileHeader isAuthenticated={isAuthenticated} searchOpen={searchOpen} onSearch={openSearch} onMenu={openDrawer} />
+      <MobileHeader isAuthenticated={isAuthenticated} userDisplayName={avatarName} searchOpen={searchOpen} onSearch={openSearch} onMenu={openDrawer} />
 
       {searchOpen ? (
         <HeaderSearchPanel
