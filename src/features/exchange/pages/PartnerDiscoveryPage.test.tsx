@@ -111,7 +111,7 @@ describe('PartnerDiscoveryPageView', () => {
     expect(screen.getByText(/Chọn tín hiệu bạn muốn ưu tiên/).closest('details')).toHaveAttribute('open');
     expect(screen.getByText('Múi giờ tương thích.')).toBeVisible();
     expect(screen.getByText('Có khoảng thời gian học phù hợp.')).toBeVisible();
-    expect(screen.getByRole('link', { name: /Xem hồ sơ công khai/ })).toHaveAttribute('href', '/profiles/candidate-1');
+    expect(screen.getByRole('link', { name: /Xem hồ sơ bạn cùng học/ })).toHaveAttribute('href', '/exchange/profile/candidate-1');
     const candidateArticle = screen.getByRole('article');
     expect(candidateArticle).not.toHaveTextContent(/email|@example|Ho_Chi_Minh|08:00/i);
     expect(api.discover).toHaveBeenCalledWith({

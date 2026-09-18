@@ -18,7 +18,7 @@ export function MobileHeader({ isAuthenticated, userDisplayName, searchOpen, onS
           </Link>
           <div className={styles.mobileHeaderActions}>
             <button className={`${controls.iconButton} ${controls.mobileCircle}`} type='button' onClick={onSearch} aria-label='Tìm kiếm' aria-expanded={searchOpen} aria-controls='global-search-panel'><Icon name='search' size={20} /></button>
-            {isAuthenticated ? <Button variant='quiet' size='sm' className={styles.mobileAccountButton} onClick={onMenu} aria-label={`Tài khoản của ${userDisplayName}`} aria-haspopup='dialog'><Avatar name={userDisplayName} size='sm' /></Button> : null}
+            {isAuthenticated ? <Button variant='quiet' size='sm' className={styles.mobileAccountButton} onClick={onMenu} aria-label={`Tài khoản của ${userDisplayName}`} aria-haspopup='dialog'><Avatar name={userDisplayName} size='sm' decorative /></Button> : null}
           </div>
         </div>
       </div>

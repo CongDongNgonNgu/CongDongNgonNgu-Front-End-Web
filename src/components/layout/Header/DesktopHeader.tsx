@@ -41,7 +41,7 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
             <button className={controls.iconButton} type='button' onClick={onSearch} aria-label='Tìm kiếm' aria-expanded={searchOpen} aria-controls='global-search-panel'><Icon name='search' size={20} /></button>
             {isAuthenticated ? (
               <div className={styles.accountMenuWrap}>
-                <button className={styles.accountTrigger} type='button' onClick={onAccountToggle} aria-label={`Tài khoản của ${userDisplayName}`} aria-haspopup='menu' aria-expanded={accountOpen}><Avatar name={userDisplayName} size='sm' /><span>Tài khoản</span></button>
+                <button className={styles.accountTrigger} type='button' onClick={onAccountToggle} aria-haspopup='menu' aria-expanded={accountOpen}><Avatar name={userDisplayName} size='sm' decorative /><span>Tài khoản</span></button>
                 {accountOpen ? <div className={styles.accountMenu} role='menu' aria-label='Tài khoản'><Link className={styles.dropdownItem} role='menuitem' to='/profile'><Icon name='user-round' size={18} />Hộ chiếu ngôn ngữ</Link></div> : null}
               </div>
             ) : null}

@@ -57,6 +57,55 @@ export interface DiscoveryResponse {
   filters: DiscoveryRequest;
 }
 
+export const RELATIONSHIP_STATES = [
+  'NONE',
+  'OUTGOING_PENDING',
+  'INCOMING_PENDING',
+  'CONNECTED',
+] as const;
+export type RelationshipState = typeof RELATIONSHIP_STATES[number];
+
+export interface ExchangeRelationshipResponse {
+  scope: 'exchange-relationship';
+  targetUserId: string;
+  state: RelationshipState;
+  canRequest: boolean;
+  canAccept: boolean;
+  canDecline: boolean;
+  canCancel: boolean;
+  canDisconnect: boolean;
+}
+
+export interface BuddyProfilePreview {
+  scope: 'exchange-buddy';
+  user: {
+    id: string;
+    displayName: string;
+  };
+  languages: DiscoveryLanguage[];
+  goals: string[];
+  interests: string[];
+  timezoneSummary: {
+    visibility: 'SUMMARY';
+    hasTimezone: boolean;
+  } | null;
+  availabilitySummary: {
+    visibility: 'SUMMARY';
+    hasAvailability: boolean;
+  } | null;
+  relationship: ExchangeRelationshipResponse;
+}
+
+export interface BuddyProfilePreviewApi {
+  getBuddyProfile: (userId: string) => Promise<BuddyProfilePreview>;
+  getRelationship: (userId: string) => Promise<ExchangeRelationshipResponse>;
+  requestConnection: (userId: string) => Promise<ExchangeRelationshipResponse>;
+  acceptConnection: (userId: string) => Promise<ExchangeRelationshipResponse>;
+  declineConnection: (userId: string) => Promise<ExchangeRelationshipResponse>;
+  cancelConnection: (userId: string) => Promise<ExchangeRelationshipResponse>;
+  disconnect: (userId: string) => Promise<ExchangeRelationshipResponse>;
+}
+
 export interface PartnerDiscoveryApi {
   discover: (request: DiscoveryRequest) => Promise<DiscoveryResponse>;
   listLanguages: () => Promise<LanguageCatalogItem[]>;

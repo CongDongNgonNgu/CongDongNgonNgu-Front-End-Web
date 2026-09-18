@@ -3,9 +3,10 @@ import styles from "./Avatar.module.css";
 interface AvatarProps {
   name: string;
   size?: "sm" | "md" | "lg";
+  decorative?: boolean;
 }
 
-export function Avatar({ name, size = "md" }: AvatarProps) {
+export function Avatar({ name, size = "md", decorative = false }: AvatarProps) {
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -13,5 +14,5 @@ export function Avatar({ name, size = "md" }: AvatarProps) {
     .map((part) => part[0]?.toUpperCase())
     .join("");
 
-  return <span className={[styles.avatar, styles[`avatar--${size}`]].join(" ")} aria-label={name}>{initials}</span>;
+  return <span className={[styles.avatar, styles[`avatar--${size}`]].join(" ")} aria-label={name} data-initials={decorative ? initials : undefined}>{decorative ? null : initials}</span>;
 }

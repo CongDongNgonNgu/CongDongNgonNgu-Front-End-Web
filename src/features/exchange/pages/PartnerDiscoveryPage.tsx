@@ -405,8 +405,8 @@ function CandidateCard({ candidate }: { candidate: DiscoveryCandidate }) {
         </dl>
       ) : null}
 
-      <Link className={styles.profileLink} to={`/profiles/${encodeURIComponent(candidate.user.id)}`}>
-        Xem hồ sơ công khai <span aria-hidden='true'>↗</span>
+      <Link className={styles.profileLink} to={`/exchange/profile/${encodeURIComponent(candidate.user.id)}`}>
+        Xem hồ sơ bạn cùng học <span aria-hidden='true'>↗</span>
       </Link>
     </article>
   );

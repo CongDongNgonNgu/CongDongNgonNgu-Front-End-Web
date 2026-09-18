@@ -13,3 +13,5 @@
 .avatar--sm { width: 2rem; height: 2rem; }
 .avatar--md { width: 2.5rem; height: 2.5rem; }
 .avatar--lg { width: 3.5rem; height: 3.5rem; }
+
+.avatar[data-initials]::before { content: attr(data-initials); }

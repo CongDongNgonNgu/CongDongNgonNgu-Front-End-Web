@@ -46,11 +46,10 @@ describe('authenticated header avatars', () => {
 
     await waitFor(() => expect(screen.getAllByLabelText('Tan Trieu')).toHaveLength(2));
 
-    expect(screen.getAllByLabelText('Tan Trieu').map((avatar) => avatar.textContent)).toEqual(['TT', 'TT']);
+    expect(screen.getAllByLabelText('Tan Trieu').map((avatar) => avatar.getAttribute('data-initials'))).toEqual(['TT', 'TT']);
 
-    const accountButtons = screen.getAllByRole('button').filter((button) => button.getAttribute('aria-label')?.includes('Tan Trieu'));
-    expect(accountButtons).toHaveLength(2);
-    expect(accountButtons.every((button) => button.getAttribute('aria-label')?.includes('Tan Trieu'))).toBe(true);
+    expect(screen.getByRole('button', { name: /Tan Trieu Tài khoản/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tài khoản của Tan Trieu' })).toBeInTheDocument();
   });
 
   it('uses a generic avatar name when the authenticated display name is missing', () => {
@@ -62,6 +61,6 @@ describe('authenticated header avatars', () => {
 
     const fallbackAvatars = screen.getAllByLabelText('Thành viên');
     expect(fallbackAvatars).toHaveLength(2);
-    expect(fallbackAvatars.every((avatar) => Boolean(avatar.textContent))).toBe(true);
+    expect(fallbackAvatars.every((avatar) => Boolean(avatar.getAttribute('data-initials')))).toBe(true);
   });
 });
