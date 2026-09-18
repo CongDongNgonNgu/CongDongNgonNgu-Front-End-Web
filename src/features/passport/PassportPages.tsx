@@ -574,6 +574,10 @@ function PassportEditor({
   const goalValues = Array.from(new Set([...GOAL_OPTIONS.map((option) => option.value), ...draft.goals]));
   return (
     <section ref={editorSectionRef} className={styles.editorFrame} aria-labelledby='passport-editor-title'>
+      <div className={styles.editorIdentityContext}>
+        <Avatar name={profile.user.displayName} size='sm' />
+        <span>Hồ sơ đang chỉnh sửa: <strong>{profile.user.displayName}</strong></span>
+      </div>
       <p className={styles.editModeNotice} role='status'>Bạn đang chỉnh sửa hồ sơ</p>
       <div className={styles.editorHeader}>
         <div>

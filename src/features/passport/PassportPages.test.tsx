@@ -140,6 +140,7 @@ describe('Passport pages', () => {
 
     await ui.click(await screen.findByRole('button', { name: 'Chỉnh sửa hồ sơ' }));
 
+    expect(screen.getByText('Linh Nguyễn', { selector: 'strong' })).toBeVisible();
     expect(screen.getByText('Bạn đang chỉnh sửa hồ sơ')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Đang chỉnh sửa' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Đang chỉnh sửa' })).toHaveAttribute('aria-pressed', 'true');
