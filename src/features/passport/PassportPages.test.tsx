@@ -124,6 +124,45 @@ describe('Passport pages', () => {
       expect.objectContaining({ languageCode: 'vi', visibility: 'PRIVATE' }),
       expect.objectContaining({ languageCode: 'en', visibility: 'PRIVATE' }),
     ]));
+    expect(screen.getByRole('status')).toHaveTextContent('Đã lưu thay đổi');
+    expect(screen.getByRole('button', { name: 'Chỉnh sửa hồ sơ' })).toHaveFocus();
+  });
+
+  it('replaces the read-only body with a focused editor and active edit state', async () => {
+    const ui = userEvent.setup();
+    const api: PassportApi = {
+      getLanguages: vi.fn().mockResolvedValue(catalog),
+      getProfile: vi.fn().mockResolvedValue(ownProfile),
+      updateProfile: vi.fn().mockResolvedValue(ownProfile),
+      getPublicProfile: vi.fn(),
+    };
+    renderWithAuth(<MemoryRouter initialEntries={['/profile']}><OwnPassportPage api={api} userId='user-1' /></MemoryRouter>);
+
+    await ui.click(await screen.findByRole('button', { name: 'Chỉnh sửa hồ sơ' }));
+
+    expect(screen.getByText('Bạn đang chỉnh sửa hồ sơ')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Đang chỉnh sửa' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Đang chỉnh sửa' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('heading', { name: 'Những ngôn ngữ tạo nên bạn' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Cập nhật những điều/ })).toHaveFocus();
+  });
+
+  it('cancels editing, restores the read-only view, and returns focus to the trigger', async () => {
+    const ui = userEvent.setup();
+    const api: PassportApi = {
+      getLanguages: vi.fn().mockResolvedValue(catalog),
+      getProfile: vi.fn().mockResolvedValue(ownProfile),
+      updateProfile: vi.fn().mockResolvedValue(ownProfile),
+      getPublicProfile: vi.fn(),
+    };
+    renderWithAuth(<MemoryRouter initialEntries={['/profile']}><OwnPassportPage api={api} userId='user-1' /></MemoryRouter>);
+
+    await ui.click(await screen.findByRole('button', { name: 'Chỉnh sửa hồ sơ' }));
+    await ui.click(screen.getByRole('button', { name: 'Hủy' }));
+
+    expect(screen.getByRole('heading', { name: 'Những ngôn ngữ tạo nên bạn' })).toBeVisible();
+    expect(screen.queryByText('Bạn đang chỉnh sửa hồ sơ')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Chỉnh sửa hồ sơ' })).toHaveFocus();
   });
 
   it('renders only the public projection and never mounts private controls or fields', async () => {

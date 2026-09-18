@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { ErrorState, EmptyState } from '../../components/ui/Feedback';
@@ -63,6 +63,12 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+  const editTriggerRef = useRef<HTMLButtonElement>(null);
+  const profileHeroRef = useRef<HTMLElement>(null);
+  const editorSectionRef = useRef<HTMLElement>(null);
+  const editorHeadingRef = useRef<HTMLHeadingElement>(null);
+  const returnFocusTarget = useRef<'trigger' | null>(null);
 
   const loadProfile = useCallback(() => {
     if (!userId) return;
@@ -87,6 +93,20 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
     loadProfile();
   }, [loadProfile]);
 
+  useEffect(() => {
+    if (editing) {
+      editorSectionRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      editorHeadingRef.current?.focus();
+      return;
+    }
+
+    if (returnFocusTarget.current === 'trigger') {
+      profileHeroRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      editTriggerRef.current?.focus();
+      returnFocusTarget.current = null;
+    }
+  }, [editing]);
+
   if (!providedUserId && auth.status === 'loading') return <PassportLoading label='Đang tải hộ chiếu ngôn ngữ' />;
   if (!userId) return <Navigate to='/login' replace state={{ from: location.pathname }} />;
   if (loadState === 'loading') return <PassportLoading label='Đang tải hộ chiếu ngôn ngữ' />;
@@ -110,6 +130,8 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
     try {
       const nextProfile = await api.updateProfile(input);
       setProfile(nextProfile);
+      setSaveMessage('Đã lưu thay đổi');
+      returnFocusTarget.current = 'trigger';
       setEditing(false);
     } catch (error: unknown) {
       setSaveError(error instanceof Error ? error.message : 'Chưa thể lưu thay đổi lúc này.');
@@ -118,24 +140,40 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
     }
   }
 
+  function openEditor(): void {
+    setSaveError('');
+    setSaveMessage('');
+    setEditing(true);
+  }
+
+  function closeEditor(): void {
+    setSaveError('');
+    returnFocusTarget.current = 'trigger';
+    setEditing(false);
+  }
+
   return (
-    <>
-      <PassportView
-        profile={profile}
-        isOwner
-        onEdit={() => { setSaveError(''); setEditing(true); }}
-      />
-      {editing ? (
+    <PassportView
+      profile={profile}
+      isOwner
+      editing={editing}
+      editTriggerRef={editTriggerRef}
+      profileHeroRef={profileHeroRef}
+      saveMessage={saveMessage}
+      onEdit={openEditor}
+      body={editing ? (
         <PassportEditor
           profile={profile}
           catalog={catalog}
           saving={saving}
           saveError={saveError}
-          onCancel={() => { setSaveError(''); setEditing(false); }}
+          editorSectionRef={editorSectionRef}
+          editorHeadingRef={editorHeadingRef}
+          onCancel={closeEditor}
           onSave={saveProfile}
         />
-      ) : null}
-    </>
+      ) : undefined}
+    />
   );
 }
 
@@ -192,19 +230,31 @@ export function PublicPassportPage({ api: providedApi, userId: providedUserId }:
   return <PassportView profile={profile} isOwner={false} />;
 }
 
+interface PassportViewProps {
+  profile: PassportProfile;
+  isOwner: boolean;
+  onEdit?: () => void;
+  editing?: boolean;
+  editTriggerRef?: RefObject<HTMLButtonElement>;
+  profileHeroRef?: RefObject<HTMLElement>;
+  saveMessage?: string;
+  body?: ReactNode;
+}
+
 function PassportView({
   profile,
   isOwner,
   onEdit,
-}: {
-  profile: PassportProfile;
-  isOwner: boolean;
-  onEdit?: () => void;
-}) {
+  editing = false,
+  editTriggerRef,
+  profileHeroRef,
+  saveMessage,
+  body,
+}: PassportViewProps) {
   const ownProfile = isOwner ? profile as OwnProfile : null;
   return (
     <section className={styles.passportPage} aria-labelledby='passport-title'>
-      <header className={styles.passportHero}>
+      <header className={styles.passportHero} ref={profileHeroRef}>
         <div className={styles.identityBlock}>
           <Avatar name={profile.user.displayName} size='lg' />
           <div>
@@ -215,9 +265,16 @@ function PassportView({
         </div>
         {isOwner ? (
           <div className={styles.heroActions}>
-            <Button variant='primary' onClick={onEdit}>
+            <Button
+              ref={editTriggerRef}
+              variant='primary'
+              className={editing ? styles.editButtonActive : undefined}
+              disabled={editing}
+              aria-pressed={editing}
+              onClick={onEdit}
+            >
               <Icon name='user-round' size={18} />
-              Chỉnh sửa hồ sơ
+              {editing ? 'Đang chỉnh sửa' : 'Chỉnh sửa hồ sơ'}
             </Button>
             <Link className={styles.quietLink} to={'/profiles/' + encodeURIComponent(profile.user.id)}>
               Xem hồ sơ công khai
@@ -226,54 +283,58 @@ function PassportView({
         ) : null}
       </header>
 
-      <div className={styles.passportLayout}>
-        <div className={styles.passportPrimary}>
-          <LanguageSection languages={profile.languages} isOwner={isOwner} />
-          <CollectionsSection profile={profile} />
-          <InterestsSection profile={profile} />
-        </div>
+      {saveMessage ? <p className={styles.saveSuccess} role='status'>{saveMessage}</p> : null}
 
-        <aside className={styles.passportRail} aria-label='Thông tin kết nối và riêng tư'>
-          <div className={styles.railCard}>
-            <div className={styles.railCardHeader}>
-              <h2>Nhịp kết nối</h2>
-              <Icon name='compass' size={18} />
-            </div>
-            {ownProfile ? (
-              <>
-                <div className={styles.railHighlight}>
-                  <span>Khung giờ của bạn</span>
-                  <strong>{availabilitySummary(ownProfile.availability)}</strong>
-                  <small>{timezoneLabel(ownProfile.timezone)}</small>
-                </div>
-                {ownProfile.availability.length > 0 ? (
-                  <ul className={styles.railAvailabilityList}>
-                    {ownProfile.availability.map((window) => <li key={window.dayOfWeek + '-' + window.startTime + '-' + window.endTime}>{formatAvailabilityWindow(window)}</li>)}
-                  </ul>
-                ) : null}
-              </>
-            ) : (
-              <div className={styles.railHighlight}>
-                <span>Khung giờ cụ thể</span>
-                <strong>Không hiển thị công khai</strong>
-                <small>Hồ sơ này chỉ mở những nội dung được phép chia sẻ.</small>
+      {body ?? (
+        <div className={styles.passportLayout}>
+          <div className={styles.passportPrimary}>
+            <LanguageSection languages={profile.languages} isOwner={isOwner} />
+            <CollectionsSection profile={profile} />
+            <InterestsSection profile={profile} />
+          </div>
+
+          <aside className={styles.passportRail} aria-label='Thông tin kết nối và riêng tư'>
+            <div className={styles.railCard}>
+              <div className={styles.railCardHeader}>
+                <h2>Nhịp kết nối</h2>
+                <Icon name='compass' size={18} />
               </div>
-            )}
-          </div>
-
-          <div className={styles.railCard}>
-            <div className={styles.railCardHeader}>
-              <h2>Bảo vệ danh tính</h2>
-              <Icon name='lock' size={18} />
+              {ownProfile ? (
+                <>
+                  <div className={styles.railHighlight}>
+                    <span>Khung giờ của bạn</span>
+                    <strong>{availabilitySummary(ownProfile.availability)}</strong>
+                    <small>{timezoneLabel(ownProfile.timezone)}</small>
+                  </div>
+                  {ownProfile.availability.length > 0 ? (
+                    <ul className={styles.railAvailabilityList}>
+                      {ownProfile.availability.map((window) => <li key={window.dayOfWeek + '-' + window.startTime + '-' + window.endTime}>{formatAvailabilityWindow(window)}</li>)}
+                    </ul>
+                  ) : null}
+                </>
+              ) : (
+                <div className={styles.railHighlight}>
+                  <span>Khung giờ cụ thể</span>
+                  <strong>Không hiển thị công khai</strong>
+                  <small>Hồ sơ này chỉ mở những nội dung được phép chia sẻ.</small>
+                </div>
+              )}
             </div>
-            <p className={styles.railText}>
-              {isOwner
-                ? 'Bạn kiểm soát việc từng ngôn ngữ xuất hiện trên hồ sơ công khai. Email và dữ liệu tài khoản không thuộc hộ chiếu.'
-                : 'Email, mã nhà cung cấp, vai trò tài khoản và ngôn ngữ riêng tư không xuất hiện ở đây.'}
-            </p>
-          </div>
-        </aside>
-      </div>
+
+            <div className={styles.railCard}>
+              <div className={styles.railCardHeader}>
+                <h2>Bảo vệ danh tính</h2>
+                <Icon name='lock' size={18} />
+              </div>
+              <p className={styles.railText}>
+                {isOwner
+                  ? 'Bạn kiểm soát việc từng ngôn ngữ xuất hiện trên hồ sơ công khai. Email và dữ liệu tài khoản không thuộc hộ chiếu.'
+                  : 'Email, mã nhà cung cấp, vai trò tài khoản và ngôn ngữ riêng tư không xuất hiện ở đây.'}
+              </p>
+            </div>
+          </aside>
+        </div>
+      )}
     </section>
   );
 }
@@ -399,6 +460,8 @@ function PassportEditor({
   catalog,
   saving,
   saveError,
+  editorSectionRef,
+  editorHeadingRef,
   onCancel,
   onSave,
 }: {
@@ -406,6 +469,8 @@ function PassportEditor({
   catalog: LanguageCatalogItem[];
   saving: boolean;
   saveError: string;
+  editorSectionRef: RefObject<HTMLElement>;
+  editorHeadingRef: RefObject<HTMLHeadingElement>;
   onCancel: () => void;
   onSave: (input: ProfileUpdateInput) => Promise<void>;
 }) {
@@ -508,11 +573,12 @@ function PassportEditor({
 
   const goalValues = Array.from(new Set([...GOAL_OPTIONS.map((option) => option.value), ...draft.goals]));
   return (
-    <section className={styles.editorFrame} aria-labelledby='passport-editor-title'>
+    <section ref={editorSectionRef} className={styles.editorFrame} aria-labelledby='passport-editor-title'>
+      <p className={styles.editModeNotice} role='status'>Bạn đang chỉnh sửa hồ sơ</p>
       <div className={styles.editorHeader}>
         <div>
           <p className={styles.eyebrow}>Chỉnh sửa</p>
-          <h2 id='passport-editor-title'>Cập nhật những điều thuộc về hành trình ngôn ngữ</h2>
+          <h2 ref={editorHeadingRef} id='passport-editor-title' tabIndex={-1}>Cập nhật những điều thuộc về hành trình ngôn ngữ</h2>
         </div>
         <Button variant='quiet' onClick={onCancel}>Đóng</Button>
       </div>
