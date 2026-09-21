@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
@@ -69,6 +69,27 @@ function profile(state: RelationshipState = 'NONE'): BuddyProfilePreview {
 function makeApi(state: RelationshipState = 'NONE'): BuddyProfilePreviewApi {
   return {
     getBuddyProfile: vi.fn().mockResolvedValue(profile(state)),
+    getBlockStatus: vi.fn().mockResolvedValue({
+      scope: 'exchange-block-status',
+      targetUserId: 'target-1',
+      blockedByMe: false,
+    }),
+    blockUser: vi.fn().mockResolvedValue({
+      scope: 'exchange-block',
+      targetUserId: 'target-1',
+      blocked: true,
+    }),
+    unblockUser: vi.fn().mockResolvedValue({
+      scope: 'exchange-block',
+      targetUserId: 'target-1',
+      blocked: false,
+    }),
+    reportUser: vi.fn().mockResolvedValue({ scope: 'exchange-report', submitted: true }),
+    getContactPermission: vi.fn().mockResolvedValue({
+      scope: 'exchange-contact-permission',
+      targetUserId: 'target-1',
+      decision: 'DENIED_NOT_CONNECTED',
+    }),
     getRelationship: vi.fn().mockResolvedValue(relationship(state)),
     requestConnection: vi.fn().mockResolvedValue(relationship('OUTGOING_PENDING')),
     acceptConnection: vi.fn().mockResolvedValue(relationship('CONNECTED')),
@@ -142,6 +163,51 @@ describe('BuddyProfilePreviewPageView', () => {
     await user.click(screen.getByRole('button', { name: 'Từ chối' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Kết nối tạm thời không khả dụng');
     expect(screen.getByRole('button', { name: 'Chấp nhận kết nối' })).toBeVisible();
+  });
+
+  it('requires confirmation before blocking and offers actor-owned unblock without restoring the relationship', async () => {
+    const user = userEvent.setup();
+    const api = makeApi();
+    renderPage(api);
+
+    await screen.findByRole('heading', { name: 'Kenji S.' });
+    await user.click(screen.getByRole('button', { name: 'An toàn' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Chặn thành viên' }));
+    expect(screen.getByRole('dialog', { name: 'Chặn thành viên này?' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Chặn thành viên' }));
+
+    expect(api.blockUser).toHaveBeenCalledWith('target-1');
+    expect(await screen.findByRole('heading', { name: 'Hồ sơ không khả dụng' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Bỏ chặn thành viên' })).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Bỏ chặn thành viên' }));
+    expect(screen.getByRole('dialog', { name: 'Bỏ chặn thành viên?' })).toBeVisible();
+    await user.click(within(screen.getByRole('dialog', { name: 'Bỏ chặn thành viên?' })).getByRole('button', { name: 'Bỏ chặn thành viên' }));
+    expect(api.unblockUser).toHaveBeenCalledWith('target-1');
+    expect(await screen.findByRole('heading', { name: 'Kenji S.' })).toBeVisible();
+  });
+
+  it('keeps reporting private and validates the bounded category/context form', async () => {
+    const user = userEvent.setup();
+    const api = makeApi();
+    renderPage(api);
+
+    await screen.findByRole('heading', { name: 'Kenji S.' });
+    await user.click(screen.getByRole('button', { name: 'An toàn' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Báo cáo hồ sơ' }));
+    expect(screen.getByRole('dialog', { name: 'Báo cáo hồ sơ' })).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Gửi báo cáo' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Hãy chọn một lý do');
+    await user.selectOptions(screen.getByRole('combobox'), 'SAFETY_CONCERN');
+    await user.type(screen.getByRole('textbox'), 'Cần xem xét riêng tư.');
+    await user.click(screen.getByRole('button', { name: 'Gửi báo cáo' }));
+
+    expect(api.reportUser).toHaveBeenCalledWith('target-1', {
+      category: 'SAFETY_CONCERN',
+      context: 'Cần xem xét riêng tư.',
+    });
+    expect(await screen.findByText('Đã tiếp nhận báo cáo')).toBeVisible();
   });
 });
 

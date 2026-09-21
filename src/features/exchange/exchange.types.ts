@@ -76,6 +76,48 @@ export interface ExchangeRelationshipResponse {
   canDisconnect: boolean;
 }
 
+export const EXCHANGE_REPORT_CATEGORIES = [
+  'SPAM',
+  'HARASSMENT',
+  'INAPPROPRIATE_CONTENT',
+  'IMPERSONATION',
+  'SAFETY_CONCERN',
+  'OTHER',
+] as const;
+export type ExchangeReportCategory = typeof EXCHANGE_REPORT_CATEGORIES[number];
+
+export const CONTACT_PERMISSION_DECISIONS = [
+  'ALLOWED',
+  'DENIED_NOT_CONNECTED',
+  'DENIED_BLOCKED',
+  'DENIED_PERMISSION',
+  'DENIED_INELIGIBLE',
+] as const;
+export type ContactPermissionDecision = typeof CONTACT_PERMISSION_DECISIONS[number];
+
+export interface ExchangeBlockStatus {
+  scope: 'exchange-block-status';
+  targetUserId: string;
+  blockedByMe: boolean;
+}
+
+export interface ExchangeBlockResponse {
+  scope: 'exchange-block';
+  targetUserId: string;
+  blocked: boolean;
+}
+
+export interface ExchangeReportResponse {
+  scope: 'exchange-report';
+  submitted: true;
+}
+
+export interface ExchangeContactPermissionResponse {
+  scope: 'exchange-contact-permission';
+  targetUserId: string;
+  decision: ContactPermissionDecision;
+}
+
 export interface BuddyProfilePreview {
   scope: 'exchange-buddy';
   user: {
@@ -98,6 +140,11 @@ export interface BuddyProfilePreview {
 
 export interface BuddyProfilePreviewApi {
   getBuddyProfile: (userId: string) => Promise<BuddyProfilePreview>;
+  getBlockStatus: (userId: string) => Promise<ExchangeBlockStatus>;
+  blockUser: (userId: string) => Promise<ExchangeBlockResponse>;
+  unblockUser: (userId: string) => Promise<ExchangeBlockResponse>;
+  reportUser: (userId: string, input: { category: ExchangeReportCategory; context?: string }) => Promise<ExchangeReportResponse>;
+  getContactPermission: (userId: string) => Promise<ExchangeContactPermissionResponse>;
   getRelationship: (userId: string) => Promise<ExchangeRelationshipResponse>;
   requestConnection: (userId: string) => Promise<ExchangeRelationshipResponse>;
   acceptConnection: (userId: string) => Promise<ExchangeRelationshipResponse>;

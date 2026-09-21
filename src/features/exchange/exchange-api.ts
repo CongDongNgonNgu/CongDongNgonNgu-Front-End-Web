@@ -5,6 +5,11 @@ import type {
   BuddyProfilePreviewApi,
   DiscoveryRequest,
   DiscoveryResponse,
+  ExchangeBlockResponse,
+  ExchangeBlockStatus,
+  ExchangeContactPermissionResponse,
+  ExchangeReportCategory,
+  ExchangeReportResponse,
   ExchangeRelationshipResponse,
   PartnerDiscoveryApi,
 } from './exchange.types';
@@ -32,6 +37,45 @@ export class ExchangeApi implements PartnerDiscoveryApi, BuddyProfilePreviewApi 
   getBuddyProfile(userId: string): Promise<BuddyProfilePreview> {
     return this.auth.requestProtected<BuddyProfilePreview>(
       '/exchange/profile-preview/' + encodeURIComponent(userId),
+    );
+  }
+
+  getBlockStatus(userId: string): Promise<ExchangeBlockStatus> {
+    return this.auth.requestProtected<ExchangeBlockStatus>(
+      '/exchange/blocks/' + encodeURIComponent(userId),
+    );
+  }
+
+  blockUser(userId: string): Promise<ExchangeBlockResponse> {
+    return this.auth.requestProtected<ExchangeBlockResponse>(
+      '/exchange/blocks/' + encodeURIComponent(userId),
+      { method: 'POST' },
+    );
+  }
+
+  unblockUser(userId: string): Promise<ExchangeBlockResponse> {
+    return this.auth.requestProtected<ExchangeBlockResponse>(
+      '/exchange/blocks/' + encodeURIComponent(userId),
+      { method: 'DELETE' },
+    );
+  }
+
+  reportUser(
+    userId: string,
+    input: { category: ExchangeReportCategory; context?: string },
+  ): Promise<ExchangeReportResponse> {
+    return this.auth.requestProtected<ExchangeReportResponse>(
+      '/exchange/reports/' + encodeURIComponent(userId),
+      {
+        method: 'POST',
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  getContactPermission(userId: string): Promise<ExchangeContactPermissionResponse> {
+    return this.auth.requestProtected<ExchangeContactPermissionResponse>(
+      '/exchange/contact-permission/' + encodeURIComponent(userId),
     );
   }
 

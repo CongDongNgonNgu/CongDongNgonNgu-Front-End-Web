@@ -43,4 +43,28 @@ describe('ExchangeApi relationship contract', () => {
       expect(call[1]?.body).toBeUndefined();
     }
   });
+
+  it('uses session-derived safety endpoints and never accepts a reporter or blocker id in the body', async () => {
+    const requestProtected = vi.fn().mockResolvedValue({});
+    const api = new ExchangeApi({
+      requestProtected,
+      getLanguages: vi.fn(),
+    });
+
+    await api.getBlockStatus('user/2');
+    await api.blockUser('user/2');
+    await api.unblockUser('user/2');
+    await api.reportUser('user/2', { category: 'SAFETY_CONCERN', context: 'review' });
+    await api.getContactPermission('user/2');
+
+    expect(requestProtected.mock.calls.slice(0, 5)).toEqual([
+      ['/exchange/blocks/user%2F2'],
+      ['/exchange/blocks/user%2F2', { method: 'POST' }],
+      ['/exchange/blocks/user%2F2', { method: 'DELETE' }],
+      ['/exchange/reports/user%2F2', { method: 'POST', body: JSON.stringify({ category: 'SAFETY_CONCERN', context: 'review' }) }],
+      ['/exchange/contact-permission/user%2F2'],
+    ]);
+    expect(requestProtected.mock.calls[3][1]?.body).not.toContain('reporter');
+    expect(requestProtected.mock.calls[1][1]?.body).toBeUndefined();
+  });
 });
