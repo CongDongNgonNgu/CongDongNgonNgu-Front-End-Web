@@ -13,11 +13,13 @@ export function LibraryFilterDrawer({ open, onClose, children }: LibraryFilterDr
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const previousBodyOverflowRef = useRef('');
 
   useEffect(() => {
     if (!open) return undefined;
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    document.body.classList.add('drawer-open');
+    previousBodyOverflowRef.current = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     closeButtonRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -42,7 +44,8 @@ export function LibraryFilterDrawer({ open, onClose, children }: LibraryFilterDr
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.classList.remove('drawer-open');
+      document.body.style.overflow = previousBodyOverflowRef.current;
+      previousBodyOverflowRef.current = '';
       document.removeEventListener('keydown', handleKeyDown);
       returnFocusRef.current?.focus();
     };

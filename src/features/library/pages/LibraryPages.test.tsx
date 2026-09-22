@@ -8,7 +8,10 @@ import type { LibraryPublicResource, LibraryPublicSearchItem } from '../library.
 import type { LibrarySearchApiPort } from '../hooks/useLibrarySearch';
 import type { LibraryResourceApiPort } from '../hooks/useLibraryResource';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  document.body.style.overflow = '';
+});
 
 const languages = [
   {
@@ -99,6 +102,62 @@ describe('Library explorer pages', () => {
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog', { name: 'Bộ lọc tìm kiếm' })).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
+  });
+
+  it('keeps drawer focus stable while changing a filter and restores body overflow on close', async () => {
+    const api = { listResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+    const user = userEvent.setup();
+    document.body.style.overflow = 'scroll';
+    renderExplorer(api);
+
+    const trigger = await screen.findByRole('button', { name: 'Bộ lọc' });
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog', { name: 'Bộ lọc tìm kiếm' });
+    const language = within(dialog).getByLabelText('Ngôn ngữ');
+
+    expect(document.body.style.overflow).toBe('hidden');
+    await user.selectOptions(language, 'vi');
+
+    expect(screen.getByRole('dialog', { name: 'Bộ lọc tìm kiếm' })).toBeInTheDocument();
+    expect(language).toHaveFocus();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    const closeButton = within(dialog).getByRole('button', { name: 'Đóng bộ lọc' });
+    within(dialog).getByRole('button', { name: 'Xem kết quả' }).focus();
+    await user.tab();
+    expect(closeButton).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(trigger).toHaveFocus();
+    expect(document.body.style.overflow).toBe('scroll');
+  });
+
+  it('restores body overflow when the open drawer unmounts', async () => {
+    const api = { listResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+    const user = userEvent.setup();
+    document.body.style.overflow = 'auto';
+    renderExplorer(api);
+
+    await user.click(await screen.findByRole('button', { name: 'Bộ lọc' }));
+    expect(document.body.style.overflow).toBe('hidden');
+    cleanup();
+    expect(document.body.style.overflow).toBe('auto');
+  });
+
+  it('applies topic changes on Enter or blur instead of requesting per keystroke', async () => {
+    const api = { listResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+    const user = userEvent.setup();
+    renderExplorer(api);
+    await waitFor(() => expect(api.listResources).toHaveBeenCalledTimes(1));
+    api.listResources.mockClear();
+
+    const topic = screen.getByPlaceholderText('Ví dụ: travel');
+    await user.type(topic, 'greetings');
+    expect(api.listResources).not.toHaveBeenCalled();
+
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(api.listResources).toHaveBeenCalledTimes(1));
+    expect(screen.getByLabelText('location-search')).toHaveTextContent('topic=greetings');
   });
 
   it('shows a recoverable error state and an explicit empty state', async () => {

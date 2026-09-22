@@ -34,6 +34,7 @@ export function LibraryExplorerPageView({
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
   const [languageError, setLanguageError] = useState<unknown>(null);
   const search = useLibrarySearch({ api, filters });
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   useEffect(() => {
     setSearchInput(filters.q);
@@ -180,7 +181,7 @@ export function LibraryExplorerPageView({
         </section>
       </div>
 
-      <LibraryFilterDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+      <LibraryFilterDrawer open={drawerOpen} onClose={closeDrawer}>
         <LibraryFilters
           values={filters}
           languages={languages}

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { LanguageCatalogItem } from '../../languages/languages.types';
 import { CEFR_LEVELS } from '../../languages/languages.types';
 import { LIBRARY_RESOURCE_TYPES, type LibraryFilters as LibraryFilterValues } from '../library.types';
@@ -33,7 +34,17 @@ export function LibraryFilters({
   onChange,
   onClear,
 }: LibraryFiltersProps) {
+  const [topicDraft, setTopicDraft] = useState(values.topic);
   const hasFilters = Boolean(values.language || values.type || values.topic || values.level);
+
+  useEffect(() => {
+    setTopicDraft(values.topic);
+  }, [values.topic]);
+
+  const commitTopic = () => {
+    if (topicDraft.trim() !== values.topic) onChange('topic', topicDraft);
+  };
+
   return (
     <div className={styles.filterGroup}>
       <div className={styles.filterHeading}>
@@ -71,8 +82,15 @@ export function LibraryFilters({
         <input
           id={`${idPrefix}-topic`}
           type='text'
-          value={values.topic}
-          onChange={(event) => onChange('topic', event.target.value)}
+          value={topicDraft}
+          onChange={(event) => setTopicDraft(event.target.value)}
+          onBlur={commitTopic}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              commitTopic();
+            }
+          }}
           placeholder='Ví dụ: travel'
           inputMode='search'
         />
