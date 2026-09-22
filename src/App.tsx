@@ -11,6 +11,8 @@ import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { OwnPassportPage, PublicPassportPage } from './features/passport/PassportPages';
 import { LanguageExplorerPage } from './features/languages/pages/LanguageExplorerPage';
 import { LanguageHubPage } from './features/languages/pages/LanguageHubPage';
+import { LibraryExplorerPage } from './features/library/pages/LibraryExplorerPage';
+import { LibraryResourceDetailPage } from './features/library/pages/LibraryResourceDetailPage';
 import { CommunityPage } from './features/community/pages/CommunityPage';
 import { CommunityPostDetailPage } from './features/community/pages/CommunityPostDetailPage';
 import { CommunityCorrectionRequestPage } from './features/community/pages/CommunityCorrectionRequestPage';
@@ -38,6 +40,8 @@ function RoutedApp() {
         <Route path='/' element={<HomePage />} />
         <Route path='/languages' element={<LanguageExplorerPage />} />
         <Route path='/languages/:slug' element={<LanguageHubPage />} />
+        <Route path='/library' element={<LibraryExplorerPage />} />
+        <Route path='/library/:resourceId' element={<LibraryResourceDetailPage />} />
         <Route path='/community' element={<CommunityPage />} />
         <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />
         <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
