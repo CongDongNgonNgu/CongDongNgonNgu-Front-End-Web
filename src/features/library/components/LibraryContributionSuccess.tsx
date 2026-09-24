@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon/Icon';
@@ -7,9 +8,9 @@ interface LibraryContributionSuccessProps {
   onContributeAnother: () => void;
 }
 
-export function LibraryContributionSuccess({ onContributeAnother }: LibraryContributionSuccessProps) {
+export const LibraryContributionSuccess = forwardRef<HTMLElement, LibraryContributionSuccessProps>(function LibraryContributionSuccess({ onContributeAnother }, ref) {
   return (
-    <section className={styles.success} aria-labelledby='contribution-success-heading' tabIndex={-1}>
+    <section ref={ref} className={styles.success} aria-labelledby='contribution-success-heading' tabIndex={-1}>
       <div className={styles.icon} aria-hidden='true'><Icon name='check' size={24} /></div>
       <p className={styles.kicker}>ĐÃ TIẾP NHẬN</p>
       <h2 id='contribution-success-heading'>Cảm ơn bạn đã đóng góp.</h2>
@@ -24,4 +25,4 @@ export function LibraryContributionSuccess({ onContributeAnother }: LibraryContr
       </div>
     </section>
   );
-}
+});

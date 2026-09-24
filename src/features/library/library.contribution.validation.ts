@@ -84,8 +84,8 @@ export function validateContributionStep(
 ): Record<string, string> {
   const full = validateContributionForm(form, policy, languages).errors;
   const fieldsByStep: Record<number, string[]> = {
-    0: ['resourceType', 'primaryLanguageCode', 'secondaryLanguageCode', 'cefrLevel'],
-    1: ['topics', 'term', 'definition', 'partOfSpeech', 'exampleSentence', 'text', 'context', 'sourceText', 'translatedText'],
+    0: ['resourceType', 'primaryLanguageCode', 'secondaryLanguageCode', 'cefrLevel', 'topics'],
+    1: ['term', 'definition', 'partOfSpeech', 'exampleSentence', 'text', 'context', 'sourceText', 'translatedText'],
     2: ['attribution', 'licenseKey'],
     3: ['rightsConfirmed', 'reuseConsent'],
   };

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -71,6 +71,17 @@ async function fillVocabularyToSubmit() {
   return user;
 }
 
+async function fillVocabularyToLicenseStep() {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('radio', { name: /Từ vựng/ }));
+  await user.selectOptions(screen.getByLabelText(/Ngôn ngữ chính/), 'vi');
+  await user.click(screen.getByRole('button', { name: 'Tiếp tục' }));
+  await user.type(screen.getByLabelText(/Từ hoặc cụm từ/), 'xin chào');
+  await user.type(screen.getByLabelText(/Định nghĩa/), 'lời chào');
+  await user.click(screen.getByRole('button', { name: 'Tiếp tục' }));
+  return user;
+}
+
 describe('LibraryContributionPage', () => {
   it('redirects unauthenticated visitors with the safe contribution return path', async () => {
     renderContribution(makeApi(), 'unauthenticated');
@@ -109,7 +120,50 @@ describe('LibraryContributionPage', () => {
       reuseConsent: true,
     });
     expect(await screen.findByRole('heading', { name: 'Cảm ơn bạn đã đóng góp.' })).toBeVisible();
+    expect(screen.getByRole('region', { name: 'Cảm ơn bạn đã đóng góp.' })).toHaveFocus();
     expect(screen.queryByRole('link', { name: /resource-1/ })).not.toBeInTheDocument();
+  });
+
+  it('keeps malformed topics on step 0 and focuses the visible topics control', async () => {
+    renderContribution(makeApi());
+    await screen.findByRole('heading', { name: 'Chuẩn bị đóng góp' });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('radio', { name: /Từ vựng/ }));
+    await user.selectOptions(screen.getByLabelText(/Ngôn ngữ chính/), 'vi');
+    const topics = screen.getByLabelText(/Chủ đề/);
+    await user.type(topics, 'giao.tiep');
+    await user.click(screen.getByRole('button', { name: 'Tiếp tục' }));
+
+    expect(screen.queryByRole('heading', { name: 'Nội dung để người học sử dụng' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Mỗi chủ đề cần là chữ, số hoặc dấu gạch nối/)).toBeVisible();
+    await waitFor(() => expect(document.activeElement).toBe(topics));
+  });
+
+  it('keeps more than 20 topics on step 0 and focuses the topics control', async () => {
+    renderContribution(makeApi());
+    await screen.findByRole('heading', { name: 'Chuẩn bị đóng góp' });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('radio', { name: /Từ vựng/ }));
+    await user.selectOptions(screen.getByLabelText(/Ngôn ngữ chính/), 'vi');
+    const topics = screen.getByLabelText(/Chủ đề/);
+    fireEvent.change(topics, { target: { value: Array.from({ length: 21 }, (_, index) => `topic-${index + 1}`).join(', ') } });
+    await user.click(screen.getByRole('button', { name: 'Tiếp tục' }));
+
+    expect(screen.queryByRole('heading', { name: 'Nội dung để người học sử dụng' })).not.toBeInTheDocument();
+    expect(screen.getByText(/tối đa 20 chủ đề/)).toBeVisible();
+    await waitFor(() => expect(document.activeElement).toBe(topics));
+  });
+
+  it('focuses the first license radio when the license is missing', async () => {
+    renderContribution(makeApi());
+    await screen.findByRole('heading', { name: 'Chuẩn bị đóng góp' });
+    const user = await fillVocabularyToLicenseStep();
+    await user.type(screen.getByLabelText(/Bạn muốn được ghi công/), 'Người đóng góp');
+    await user.click(screen.getByRole('button', { name: 'Tiếp tục' }));
+
+    const firstLicense = screen.getByRole('radio', { name: /CC BY 4.0/ });
+    expect(screen.getByText('Chọn một giấy phép phù hợp.')).toBeVisible();
+    await waitFor(() => expect(document.activeElement).toBe(firstLicense));
   });
 
   it('retries provenance against the same resource and never creates a second draft', async () => {
@@ -181,6 +235,30 @@ describe('LibraryContributionPage', () => {
       rightsConfirmed: true,
       reuseConsent: true,
     });
+  });
+
+  it.each([
+    ['LIBRARY_LICENSE_DISABLED', 'Giấy phép đã chọn không còn phù hợp.'],
+    ['LIBRARY_LICENSE_REDISTRIBUTION_REQUIRED', 'Giấy phép đã chọn không còn phù hợp.'],
+  ])('keeps a permanent license-policy failure fail-closed without a retry draft (%s)', async (code, notice) => {
+    const submitContribution = vi.fn().mockRejectedValue(new ApiClientError('license changed', 409, code));
+    const getPolicy = vi.fn().mockResolvedValue(policy);
+    const api = makeApi({ getPolicy, submitContribution });
+    renderContribution(api);
+    await screen.findByRole('heading', { name: 'Chuẩn bị đóng góp' });
+    const user = await fillVocabularyToSubmit();
+    await user.click(screen.getByRole('checkbox', { name: /đã tạo nội dung/ }));
+    await user.click(screen.getByRole('checkbox', { name: /tái phân phối công khai/ }));
+    await user.click(screen.getByRole('button', { name: 'Gửi đóng góp' }));
+
+    expect(await screen.findByText(new RegExp(notice.replace('.', '\\.'), 'u'))).toBeVisible();
+    expect(await screen.findByText(/Bản nháp đã tạo được giữ nguyên/)).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Thử lại' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Bắt đầu đóng góp mới' })).toBeVisible();
+    await waitFor(() => expect(getPolicy).toHaveBeenCalledTimes(2));
+    expect(api.createResource).toHaveBeenCalledTimes(1);
+    expect(api.attachProvenance).toHaveBeenCalledTimes(1);
+    expect(submitContribution).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed when policy has no eligible licenses', async () => {

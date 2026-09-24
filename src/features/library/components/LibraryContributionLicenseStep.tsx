@@ -37,9 +37,10 @@ export function LibraryContributionLicenseStep({ form, licenses, errors, disable
         <legend>Giấy phép đóng góp</legend>
         <p className={styles.hint}>Bạn cần chủ động chọn một giấy phép. Không có lựa chọn mặc định.</p>
         <div className={styles.licenseList}>
-          {licenses.map((license) => (
+          {licenses.map((license, index) => (
             <label key={license.licenseKey} className={`${styles.licenseOption} ${form.licenseKey === license.licenseKey ? styles.licenseOptionSelected : ''}`}>
               <input
+                id={`contribution-license-${index}`}
                 type='radio'
                 name='contributionLicense'
                 value={license.licenseKey}

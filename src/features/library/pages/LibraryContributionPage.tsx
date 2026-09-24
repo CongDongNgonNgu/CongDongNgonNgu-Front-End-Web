@@ -12,6 +12,7 @@ import { LibraryContributionStepper } from '../components/LibraryContributionSte
 import { LibraryContributionSuccess } from '../components/LibraryContributionSuccess';
 import { LibraryContributionTypeFields } from '../components/LibraryContributionTypeFields';
 import { LibraryContributionApi, libraryContributionApi } from '../library.contribution.api';
+import { isPermanentLicensePolicyError } from '../library.contribution.errors';
 import {
   INITIAL_CONTRIBUTION_FORM,
   type LibraryContributionApiPort,
@@ -56,7 +57,7 @@ export function LibraryContributionPageView({
   const [languagesError, setLanguagesError] = useState<unknown>(null);
   const [policyNotice, setPolicyNotice] = useState<string | null>(null);
   const [termsReviewRequired, setTermsReviewRequired] = useState(false);
-  const successRef = useRef<HTMLDivElement>(null);
+  const successRef = useRef<HTMLElement>(null);
   const policy = useLibraryContributionPolicy(policyApi, authStatus === 'authenticated');
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export function LibraryContributionPageView({
 
   const refreshPolicyForSubmission = useCallback((error: unknown) => {
     const termsAreStale = isTermsStaleError(error);
+    const licensePolicyChanged = isPermanentLicensePolicyError(error);
     setForm((current) => ({
       ...current,
       rightsConfirmed: false,
@@ -94,7 +96,9 @@ export function LibraryContributionPageView({
     if (termsAreStale) setStep(3);
     setPolicyNotice(termsAreStale
       ? 'Chính sách đóng góp đã thay đổi. Hãy xem lại điều khoản và xác nhận mới trước khi gửi lại.'
-      : 'Giấy phép đã chọn không còn phù hợp. Hãy kiểm tra chính sách trước khi thử lại.');
+      : licensePolicyChanged
+        ? 'Giấy phép đã chọn không còn phù hợp. Bản nháp đã tạo được giữ nguyên và không thể âm thầm thay thế giấy phép trong luồng này; hệ thống sẽ không tự tạo bản nháp thứ hai.'
+        : 'Giấy phép đã chọn không còn phù hợp. Hãy kiểm tra chính sách trước khi thử lại.');
     void policy.reload();
   }, [policy.reload]);
   const contribution = useLibraryContribution({ api, onPolicyRefreshRequired: refreshPolicyForSubmission });
@@ -174,9 +178,7 @@ export function LibraryContributionPageView({
         <nav className={styles.breadcrumbs} aria-label='Breadcrumb'>
           <Link to='/library'>Thư viện mở</Link><span aria-hidden='true'>/</span><span aria-current='page'>Đóng góp tài nguyên</span>
         </nav>
-        <div ref={successRef}>
-          <LibraryContributionSuccess onContributeAnother={startOver} />
-        </div>
+        <LibraryContributionSuccess ref={successRef} onContributeAnother={startOver} />
       </div>
     );
   }
@@ -221,7 +223,12 @@ export function LibraryContributionPageView({
           {contribution.state.errorMessage ? (
             <div className={styles.remoteError} role='alert'>
               <div><strong>Chưa thể hoàn tất bước này</strong><p>{contribution.state.errorMessage}</p></div>
-              {isContributionRetryable(contribution.state.stage) ? <Button variant='secondary' onClick={() => void contribution.retry()} loading={contribution.state.isBusy}>Thử lại</Button> : null}
+              {isContributionRetryable(contribution.state.stage) && !isPermanentLicensePolicyError(contribution.state.error)
+                ? <Button variant='secondary' onClick={() => void contribution.retry()} loading={contribution.state.isBusy}>Thử lại</Button>
+                : null}
+              {isPermanentLicensePolicyError(contribution.state.error)
+                ? <Button variant='secondary' onClick={startOver}>Bắt đầu đóng góp mới</Button>
+                : null}
             </div>
           ) : null}
           {isContributionStageBusy(contribution.state.stage) ? <p className={styles.liveStatus} role='status' aria-live='polite'>{stageMessage(contribution.state.stage)}</p> : null}
@@ -297,7 +304,7 @@ function fieldIdForError(field: string): string {
     sourceText: 'contribution-source-text',
     translatedText: 'contribution-translated-text',
     attribution: 'contribution-attribution',
-    licenseKey: 'contribution-license-error',
+    licenseKey: 'contribution-license-0',
     rightsConfirmed: 'contribution-rights-confirmed',
     reuseConsent: 'contribution-reuse-consent',
   };

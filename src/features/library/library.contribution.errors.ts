@@ -30,7 +30,12 @@ export function getContributionErrorMessage(error: unknown): string {
 export function shouldRefreshContributionPolicy(error: unknown): boolean {
   const code = getContributionErrorCode(error);
   return code === 'LIBRARY_CONTRIBUTION_TERMS_STALE'
-    || code === 'LIBRARY_LICENSE_DISABLED'
+    || isPermanentLicensePolicyError(error);
+}
+
+export function isPermanentLicensePolicyError(error: unknown): boolean {
+  const code = getContributionErrorCode(error);
+  return code === 'LIBRARY_LICENSE_DISABLED'
     || code === 'LIBRARY_LICENSE_REDISTRIBUTION_REQUIRED'
     || code === 'LIBRARY_LICENSE_UNKNOWN';
 }
