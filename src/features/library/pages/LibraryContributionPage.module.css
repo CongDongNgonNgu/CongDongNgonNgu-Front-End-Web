@@ -1,0 +1,55 @@
+.page { padding: clamp(2rem, 5vw, 4.5rem) 0 7rem; }
+.breadcrumbs { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.breadcrumbs a { color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); text-decoration: none; }
+.breadcrumbs a:hover, .breadcrumbs a:focus-visible { color: var(--color-brand-orange-readable); text-decoration: underline; text-underline-offset: 0.2em; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.75fr); gap: clamp(2rem, 8vw, 8rem); align-items: end; margin: clamp(3rem, 7vw, 6rem) 0 clamp(2.5rem, 5vw, 4rem); }
+.eyebrow { margin: 0 0 var(--space-3); color: var(--color-brand-orange-readable); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; }
+.hero h1 { max-width: 13ch; color: var(--color-text-primary); font-size: clamp(2.5rem, 6.8vw, 5.4rem); letter-spacing: -0.055em; line-height: 0.98; }
+.heroDescription { max-width: 45rem; margin-top: var(--space-5); color: var(--color-text-secondary); font-size: clamp(1rem, 2vw, 1.2rem); line-height: var(--leading-body); }
+.heroNote { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: start; padding-top: var(--space-4); border-top: 2px solid var(--color-brand-navy); color: var(--color-brand-navy); }
+.heroNote strong { color: var(--color-text-primary); }
+.heroNote p { margin-top: var(--space-2); color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.formIntro { display: flex; justify-content: space-between; gap: var(--space-8); align-items: end; margin-bottom: var(--space-5); }
+.formIntro h2 { color: var(--color-text-primary); font-size: clamp(1.5rem, 3vw, 2.25rem); line-height: var(--leading-tight); }
+.formIntro > p { max-width: 34rem; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.formCard { display: grid; gap: var(--space-8); padding: clamp(1.25rem, 4vw, 3rem); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); box-shadow: var(--shadow-low); }
+.formActions { display: flex; justify-content: space-between; gap: var(--space-3); align-items: center; padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.formActions button:last-child { min-width: 9rem; }
+.loadingPanel { max-width: 62rem; padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); }
+.policyNotice, .remoteError { display: flex; justify-content: space-between; gap: var(--space-4); align-items: center; margin-bottom: var(--space-5); padding: var(--space-4); border-radius: var(--radius-control); line-height: var(--leading-body); }
+.policyNotice { color: var(--color-info-strong); border: 1px solid var(--color-info-border); background: var(--color-info-surface); }
+.policyNotice > span { flex: 1; }
+.remoteError { border: 1px solid var(--color-danger-border); color: var(--color-danger-strong); background: var(--color-danger-surface); }
+.remoteError p { margin-top: var(--space-1); line-height: var(--leading-body); }
+.remoteError button { flex: 0 0 auto; }
+.liveStatus { margin: 0 0 var(--space-4); color: var(--color-info-strong); font-size: var(--font-size-sm); }
+.blockedState { max-width: 46rem; margin: clamp(2rem, 6vw, 5rem) auto; padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid var(--color-warning-border); border-radius: var(--radius-surface); background: var(--color-warning-surface); text-align: center; }
+.blockedIcon { display: inline-grid; place-items: center; width: 3rem; height: 3rem; border-radius: var(--radius-pill); color: var(--color-warning-strong); background: rgb(255 255 255 / 0.56); }
+.blockedState .eyebrow { margin-top: var(--space-5); color: var(--color-warning-strong); }
+.blockedState h2 { color: var(--color-text-primary); font-size: clamp(1.5rem, 3vw, 2.3rem); line-height: var(--leading-tight); }
+.blockedState > p:not(.eyebrow) { max-width: 36rem; margin: var(--space-4) auto 0; color: var(--color-text-primary); line-height: var(--leading-body); }
+.blockedState button { margin-top: var(--space-6); }
+
+@media (max-width: 63.999rem) {
+  .hero { grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.6fr); gap: var(--space-8); }
+}
+
+@media (max-width: 47.999rem) {
+  .page { padding: 1.5rem 0 5rem; }
+  .hero { display: block; margin-top: 3rem; }
+  .hero h1 { max-width: 14ch; font-size: clamp(2.45rem, 14vw, 4rem); }
+  .heroNote { margin-top: var(--space-8); }
+  .formIntro { display: block; }
+  .formIntro > p { margin-top: var(--space-3); }
+  .formCard { padding: var(--space-4); }
+  .formActions { align-items: stretch; }
+  .formActions button { flex: 1; }
+  .formActions > span { flex: 1; }
+  .policyNotice, .remoteError { align-items: start; }
+  .remoteError { display: grid; }
+  .remoteError button { width: 100%; }
+}
+
+@media (max-width: 21rem) {
+  .hero h1 { font-size: 2.3rem; }
+}

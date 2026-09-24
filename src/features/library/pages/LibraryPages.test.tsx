@@ -64,6 +64,14 @@ function LocationProbe() {
 }
 
 describe('Library explorer pages', () => {
+  it('exposes a contribution entry without changing the explorer surface', async () => {
+    const api = { listResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+    renderExplorer(api);
+
+    const contributionLink = await screen.findByRole('link', { name: /Đóng góp tài nguyên/ });
+    expect(contributionLink).toHaveAttribute('href', '/library/contribute');
+  });
+
   it('hydrates URL filters, renders mixed public rows, and carries the cursor into load more', async () => {
     const listResources = vi.fn()
       .mockResolvedValueOnce({ items: [searchItem('one'), searchItem('two', { resourceType: 'SENTENCE', preview: { title: '你好', excerpt: 'A sentence.' } })], nextCursor: 'opaque-next' })

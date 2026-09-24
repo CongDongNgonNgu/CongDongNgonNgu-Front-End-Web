@@ -1,0 +1,24 @@
+.section { display: grid; gap: var(--space-8); }
+.heading { max-width: 44rem; }
+.kicker { margin: 0 0 var(--space-2); color: var(--color-brand-orange-readable); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; }
+.heading h2 { color: var(--color-text-primary); font-size: clamp(1.5rem, 3vw, 2.25rem); line-height: var(--leading-tight); }
+.heading p:last-child { margin-top: var(--space-3); color: var(--color-text-secondary); line-height: var(--leading-body); }
+.attributionPanel { max-width: 48rem; padding: var(--space-5); border-left: 3px solid var(--color-brand-orange); background: var(--color-surface-muted); }
+.licenseFieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.licenseFieldset legend { color: var(--color-text-primary); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
+.hint { margin-top: var(--space-2); color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.licenseList { display: grid; gap: var(--space-3); margin-top: var(--space-5); }
+.licenseOption { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); align-items: start; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); cursor: pointer; }
+.licenseOption:has(input:focus-visible) { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.licenseOptionSelected { border-color: var(--color-brand-orange); background: var(--color-warning-surface); }
+.licenseOption input { margin-top: 0.25rem; accent-color: var(--color-brand-orange); }
+.licenseBody { display: grid; gap: var(--space-1); min-width: 0; }
+.licenseBody strong { color: var(--color-text-primary); overflow-wrap: anywhere; }
+.licenseMeta, .licenseConstraint { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.licenseBody a { width: fit-content; max-width: 100%; color: var(--color-brand-navy); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); overflow-wrap: anywhere; }
+.licenseBody a:hover, .licenseBody a:focus-visible { color: var(--color-brand-orange-readable); }
+.error { margin-top: var(--space-3); color: var(--color-danger-strong); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+
+@media (max-width: 47.999rem) {
+  .attributionPanel { padding: var(--space-4); }
+}

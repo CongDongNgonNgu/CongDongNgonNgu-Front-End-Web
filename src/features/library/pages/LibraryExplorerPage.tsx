@@ -103,6 +103,7 @@ export function LibraryExplorerPageView({
           <p className={styles.heroDescription}>
             Một thư viện mở cho người học: nội dung ngắn gọn, đã được xác minh, với nguồn gốc và quyền sử dụng có thể kiểm chứng.
           </p>
+          <Link className={styles.contributeLink} to='/library/contribute'>Đóng góp tài nguyên <span aria-hidden='true'>↗</span></Link>
         </div>
         <div className={styles.heroNote} aria-label='Nguyên tắc thư viện'>
           <span className={styles.heroNoteMark} aria-hidden='true'>01</span>
