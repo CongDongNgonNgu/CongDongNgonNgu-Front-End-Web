@@ -32,7 +32,7 @@ export interface LibraryReviewLicense {
   exists: boolean;
   displayName: string | null;
   canonicalUrl: string | null;
-  attributionRequired: boolean;
+  attributionRequired: boolean | null;
   redistributionAllowed: boolean | null;
   derivativeConstraints: string | null;
   active: boolean;

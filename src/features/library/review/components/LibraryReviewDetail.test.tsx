@@ -30,9 +30,15 @@ function makeApi(overrides: Partial<LibraryReviewApiPort> = {}): LibraryReviewAp
   };
 }
 
-function renderDetail(api: LibraryReviewApiPort, value = detail) {
-  return render(<MemoryRouter><LibraryReviewDetail api={api} detail={value} onRefresh={vi.fn().mockResolvedValue(undefined)} /></MemoryRouter>);
+function renderDetail(api: LibraryReviewApiPort, value = detail, onRefresh = vi.fn().mockResolvedValue(undefined)) {
+  return render(<MemoryRouter><LibraryReviewDetail api={api} detail={value} onRefresh={onRefresh} /></MemoryRouter>);
 }
+
+const invalidVerifiedDetail = {
+  ...detail,
+  resource: { ...detail.resource, reviewState: 'VERIFIED' as const },
+  provenance: [{ ...detail.provenance[0], sourceType: 'PHASE06_LIBRARY_CANDIDATE', sourceHealth: { applicable: true, valid: false, reason: 'PARENT_NOT_PUBLIC' } }],
+};
 
 describe('LibraryReviewDetail', () => {
   it('disables Verify when Backend eligibility is false', () => {
@@ -62,6 +68,47 @@ describe('LibraryReviewDetail', () => {
     expect(api.transitionReview).toHaveBeenCalledWith('resource-1', { nextState: 'VERIFIED' });
   });
 
+  it('restores focus to the Verify trigger after Cancel', async () => {
+    const user = userEvent.setup();
+    renderDetail(makeApi());
+    const trigger = screen.getByRole('button', { name: 'Xác minh' });
+    await user.click(trigger);
+    await user.click(screen.getByRole('button', { name: 'Huỷ' }));
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it('restores focus to the Reject trigger after Escape', async () => {
+    const user = userEvent.setup();
+    renderDetail(makeApi());
+    const trigger = screen.getByRole('button', { name: 'Từ chối' });
+    await user.click(trigger);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it('restores focus to the Reconcile trigger after Cancel', async () => {
+    const user = userEvent.setup();
+    renderDetail(makeApi(), invalidVerifiedDetail);
+    const trigger = screen.getByRole('button', { name: 'Đưa về hàng chờ xem xét' });
+    await user.click(trigger);
+    await user.click(screen.getByRole('button', { name: 'Huỷ' }));
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it('renders nullable attribution requirements without inventing evidence', () => {
+    renderDetail(makeApi());
+    expect(screen.getByText('Yêu cầu ghi công')).toBeVisible();
+    expect(screen.getByText('Có')).toBeVisible();
+
+    cleanup();
+    renderDetail(makeApi(), { ...detail, provenance: [{ ...detail.provenance[0], license: { ...detail.provenance[0].license, attributionRequired: false } }] });
+    expect(screen.getByText('Không')).toBeVisible();
+
+    cleanup();
+    renderDetail(makeApi(), { ...detail, provenance: [{ ...detail.provenance[0], license: { ...detail.provenance[0].license, attributionRequired: null } }] });
+    expect(screen.getByText('Chưa xác định')).toBeVisible();
+  });
+
   it('maps source-still-valid without claiming reconciliation succeeded', async () => {
     const user = userEvent.setup();
     const api = makeApi({ reconcileSource: vi.fn().mockRejectedValue(new ApiClientError('valid', 409, 'LIBRARY_SOURCE_STILL_VALID')) });
@@ -79,18 +126,38 @@ describe('LibraryReviewDetail', () => {
     renderDetail(api);
     await user.click(screen.getByRole('button', { name: 'Xác minh' }));
     await user.click(screen.getByRole('button', { name: 'Xác nhận xác minh' }));
-    expect(await screen.findByRole('alert')).toBeVisible();
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(await screen.findByRole('status')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Tải lại chi tiết' })).toBeVisible();
+    expect(api.transitionReview).toHaveBeenCalledTimes(1);
   });
 
   it('surfaces a review conflict without retrying the mutation', async () => {
     const user = userEvent.setup();
     const transitionReview = vi.fn().mockRejectedValue(new ApiClientError('conflict', 409, 'LIBRARY_REVIEW_CONFLICT'));
     const api = makeApi({ transitionReview });
-    renderDetail(api);
+    const onRefresh = vi.fn().mockResolvedValue(undefined);
+    renderDetail(api, detail, onRefresh);
     await user.click(screen.getByRole('button', { name: 'Xác minh' }));
     await user.click(screen.getByRole('button', { name: 'Xác nhận xác minh' }));
     expect(await screen.findByRole('status')).toBeVisible();
     expect(transitionReview).toHaveBeenCalledTimes(1);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a reload path when conflict refresh fails', async () => {
+    const user = userEvent.setup();
+    const transitionReview = vi.fn().mockRejectedValue(new ApiClientError('conflict', 409, 'LIBRARY_REVIEW_CONFLICT'));
+    const onRefresh = vi.fn().mockResolvedValue(false);
+    const api = makeApi({ transitionReview });
+    renderDetail(api, detail, onRefresh);
+    await user.click(screen.getByRole('button', { name: 'Xác minh' }));
+    await user.click(screen.getByRole('button', { name: 'Xác nhận xác minh' }));
+    expect(await screen.findByRole('status')).toBeVisible();
+    const reload = screen.getByRole('button', { name: 'Tải lại chi tiết' });
+    expect(reload).toBeVisible();
+    await user.click(reload);
+    expect(transitionReview).toHaveBeenCalledTimes(1);
+    expect(onRefresh).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Tải lại chi tiết' })).toBeVisible();
   });
 });

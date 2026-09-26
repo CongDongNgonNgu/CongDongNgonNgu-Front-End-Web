@@ -20,7 +20,7 @@ import styles from './LibraryReviewDetail.module.css';
 interface LibraryReviewDetailProps {
   api: LibraryReviewApiPort;
   detail: LibraryReviewDetailModel;
-  onRefresh: () => Promise<void>;
+  onRefresh: () => Promise<boolean | void>;
 }
 
 type ReviewAction = 'VERIFY' | 'REJECT' | 'RECONCILE';
@@ -63,9 +63,13 @@ export function LibraryReviewDetail({ api, detail, onRefresh }: LibraryReviewDet
   const [note, setNote] = useState('');
   const [actionError, setActionError] = useState<unknown>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [reloadRequired, setReloadRequired] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const statusRef = useRef<HTMLDivElement>(null);
-  const actionTriggerRef = useRef<HTMLButtonElement>(null);
+  const verifyTriggerRef = useRef<HTMLButtonElement>(null);
+  const rejectTriggerRef = useRef<HTMLButtonElement>(null);
+  const reconcileTriggerRef = useRef<HTMLButtonElement>(null);
 
   const resource = detail.resource;
   const hasInvalidSource = detail.provenance.some((entry) => entry.sourceHealth.applicable && !entry.sourceHealth.valid);
@@ -81,8 +85,24 @@ export function LibraryReviewDetail({ api, detail, onRefresh }: LibraryReviewDet
   const openAction = (nextAction: ReviewAction) => {
     setActionError(null);
     setNotice(null);
+    setReloadRequired(false);
     setNote('');
     setAction(nextAction);
+  };
+
+  const refreshDetail = async () => {
+    setIsRefreshing(true);
+    try {
+      const refreshed = await onRefresh();
+      const failed = refreshed === false;
+      setReloadRequired(failed);
+      return !failed;
+    } catch {
+      setReloadRequired(true);
+      return false;
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const closeAction = () => {
@@ -112,13 +132,19 @@ export function LibraryReviewDetail({ api, detail, onRefresh }: LibraryReviewDet
         : action === 'REJECT'
           ? 'Đã ghi nhận quyết định từ chối trong lịch sử kiểm duyệt.'
           : 'Đã đưa tài nguyên về hàng chờ xem xét. Không có tự động xác minh lại.');
-      await onRefresh();
+      await refreshDetail();
     } catch (error) {
       if (isReviewConflict(error) || isSourceStillValid(error)) {
         setAction(null);
         setActionError(null);
         setNotice(getLibraryReviewErrorMessage(error));
-        if (isSourceStillValid(error)) await onRefresh();
+        await refreshDetail();
+      } else if (getLibraryReviewErrorCode(error) === 'LIBRARY_SELF_VERIFICATION_DENIED') {
+        setAction(null);
+        setActionError(null);
+        setNote('');
+        setNotice(getLibraryReviewErrorMessage(error));
+        setReloadRequired(true);
       } else {
         setActionError(error);
       }
@@ -130,7 +156,7 @@ export function LibraryReviewDetail({ api, detail, onRefresh }: LibraryReviewDet
   return (
     <article className={styles.article}>
       <Link className={styles.backLink} to='/library/review'>← Quay lại hàng chờ</Link>
-      {notice ? <div className={styles.actionNotice} role='status' tabIndex={-1} ref={statusRef}>{notice}</div> : null}
+      {notice ? <div className={styles.actionNotice} role='status' tabIndex={-1} ref={statusRef}><span>{notice}</span>{reloadRequired ? <Button variant='secondary' size='sm' onClick={() => void refreshDetail()} loading={isRefreshing}>Tải lại chi tiết</Button> : null}</div> : null}
 
       <header className={styles.header}>
         <div className={styles.headerMain}>
@@ -175,13 +201,13 @@ export function LibraryReviewDetail({ api, detail, onRefresh }: LibraryReviewDet
       </section>
 
       <section className={styles.actionSection} aria-labelledby='actions-heading'>
-        <div><p className={styles.eyebrow}>REVIEW ACTIONS</p><h2 id='actions-heading'>Ghi nhận quyết định</h2><p>Không có thao tác Request Changes trong lifecycle hiện tại.</p></div>
+        <div><p className={styles.eyebrow}>REVIEW ACTIONS</p><h2 id='actions-heading'>Ghi nhận quyết định</h2><p>Quyết định sẽ được ghi vào lịch sử kiểm duyệt và Backend sẽ kiểm tra lại điều kiện trước khi áp dụng.</p></div>
         <div className={styles.actions}>
           {resource.reviewState === 'COMMUNITY_REVIEW' ? <>
-            <Button ref={actionTriggerRef} disabled={!canVerify} onClick={() => openAction('VERIFY')}>Xác minh</Button>
-            <Button variant='danger' disabled={!canReject} onClick={() => openAction('REJECT')}>Từ chối</Button>
+            <Button ref={verifyTriggerRef} disabled={!canVerify} onClick={() => openAction('VERIFY')}>Xác minh</Button>
+            <Button ref={rejectTriggerRef} variant='danger' disabled={!canReject} onClick={() => openAction('REJECT')}>Từ chối</Button>
           </> : null}
-          {canReconcile ? <Button ref={actionTriggerRef} variant='secondary' onClick={() => openAction('RECONCILE')}>Đưa về hàng chờ xem xét</Button> : null}
+          {canReconcile ? <Button ref={reconcileTriggerRef} variant='secondary' onClick={() => openAction('RECONCILE')}>Đưa về hàng chờ xem xét</Button> : null}
         </div>
       </section>
 
@@ -190,7 +216,7 @@ export function LibraryReviewDetail({ api, detail, onRefresh }: LibraryReviewDet
         title={actionTitle(action)}
         description={action === 'RECONCILE' ? 'Backend đã ẩn tài nguyên khỏi các public read. Thao tác này chỉ ghi nhận việc đối soát lifecycle và đưa trạng thái về COMMUNITY_REVIEW.' : action === 'VERIFY' ? 'Nếu mọi cổng công khai hiện tại vẫn hợp lệ, tài nguyên có thể xuất hiện trong Thư viện mở.' : 'Ghi một ghi chú trung tính để giải thích quyết định từ chối.'}
         onClose={closeAction}
-        returnFocusRef={actionTriggerRef}
+        returnFocusRef={action === 'VERIFY' ? verifyTriggerRef : action === 'REJECT' ? rejectTriggerRef : reconcileTriggerRef}
         footer={<><Button variant='quiet' onClick={closeAction} disabled={isSubmitting}>Huỷ</Button><Button variant={action === 'REJECT' ? 'danger' : 'primary'} onClick={() => void confirmAction()} loading={isSubmitting}>{action === 'VERIFY' ? 'Xác nhận xác minh' : action === 'REJECT' ? 'Xác nhận từ chối' : 'Đưa về hàng chờ'}</Button></>}
       >
         {action === 'REJECT' || action === 'RECONCILE' ? <Textarea id='review-reject-note' label={action === 'REJECT' ? 'Ghi chú từ chối' : 'Ghi chú đối soát (tuỳ chọn)'} value={note} onChange={(event) => setNote(event.target.value)} error={getLibraryReviewErrorCode(actionError) === 'LIBRARY_REVIEW_NOTE_REQUIRED' ? getLibraryReviewErrorMessage(actionError) : undefined} maxLength={1800} autoFocus={action === 'REJECT'} /> : <p className={styles.confirmCopy}>Bạn đang ghi nhận quyết định cho tài nguyên này. Backend sẽ kiểm tra lại trạng thái nguồn, license và moderation trong cùng giao dịch.</p>}
@@ -204,7 +230,13 @@ function ProvenanceCard({ entry }: { entry: LibraryReviewProvenanceSummary }) {
   const healthLabel = entry.sourceHealth.applicable
     ? entry.sourceHealth.valid ? 'Nguồn hiện hợp lệ' : sourceHealthLabels[entry.sourceHealth.reason ?? ''] ?? entry.sourceHealth.reason ?? 'Nguồn không còn hợp lệ'
     : 'Không áp dụng kiểm tra Phase 06';
-  return <article className={styles.provenanceCard}><div className={styles.cardHeader}><span>{entry.sourceType}</span><span className={entry.sourceHealth.applicable && !entry.sourceHealth.valid ? styles.warningPill : styles.successPill}>{healthLabel}</span></div><dl><div><dt>Source ID</dt><dd><code>{entry.sourceId}</code></dd></div>{entry.sourceUrl ? <div><dt>Source URL</dt><dd><a href={entry.sourceUrl} target='_blank' rel='noreferrer noopener'>{entry.sourceUrl}</a></dd></div> : null}<div><dt>Attribution</dt><dd>{entry.attribution || 'Chưa có attribution'}</dd></div><div><dt>License</dt><dd>{entry.license.displayName || entry.license.licenseKey}</dd></div><div><dt>License status</dt><dd>{entry.license.active ? 'Active' : 'Inactive'} · {entry.license.redistributionAllowed === true ? 'Redistribution allowed' : 'Redistribution unsafe'}</dd></div>{entry.license.derivativeConstraints ? <div><dt>Derivative constraints</dt><dd>{entry.license.derivativeConstraints}</dd></div> : null}</dl>{entry.license.canonicalUrl ? <a className={styles.licenseLink} href={entry.license.canonicalUrl} target='_blank' rel='noreferrer noopener'>Xem giấy phép chuẩn ↗</a> : null}</article>;
+  return <article className={styles.provenanceCard}><div className={styles.cardHeader}><span>{entry.sourceType}</span><span className={entry.sourceHealth.applicable && !entry.sourceHealth.valid ? styles.warningPill : styles.successPill}>{healthLabel}</span></div><dl><div><dt>Source ID</dt><dd><code>{entry.sourceId}</code></dd></div>{entry.sourceUrl ? <div><dt>Source URL</dt><dd><a href={entry.sourceUrl} target='_blank' rel='noreferrer noopener'>{entry.sourceUrl}</a></dd></div> : null}<div><dt>Attribution</dt><dd>{entry.attribution || 'Chưa có attribution'}</dd></div><div><dt>License</dt><dd>{entry.license.displayName || entry.license.licenseKey}</dd></div><div><dt>Yêu cầu ghi công</dt><dd>{nullableBooleanLabel(entry.license.attributionRequired)}</dd></div><div><dt>License status</dt><dd>{entry.license.active ? 'Active' : 'Inactive'} · {entry.license.redistributionAllowed === true ? 'Redistribution allowed' : 'Redistribution unsafe'}</dd></div>{entry.license.derivativeConstraints ? <div><dt>Derivative constraints</dt><dd>{entry.license.derivativeConstraints}</dd></div> : null}</dl>{entry.license.canonicalUrl ? <a className={styles.licenseLink} href={entry.license.canonicalUrl} target='_blank' rel='noreferrer noopener'>Xem giấy phép chuẩn ↗</a> : null}</article>;
+}
+
+function nullableBooleanLabel(value: boolean | null): string {
+  if (value === true) return 'Có';
+  if (value === false) return 'Không';
+  return 'Chưa xác định';
 }
 
 function ReviewResourceContent({ details }: { details: LibraryResourceDetails }) {

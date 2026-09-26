@@ -6,30 +6,42 @@ export function useLibraryReviewDetail(api: LibraryReviewApiPort, resourceId: st
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const requestId = useRef(0);
+  const detailRef = useRef<LibraryReviewDetail | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<boolean> => {
     const currentRequest = ++requestId.current;
     if (!resourceId) {
       setDetail(null);
       setError(new Error('Missing review resource id'));
       setIsLoading(false);
-      return;
+      detailRef.current = null;
+      return false;
     }
     setIsLoading(true);
     setError(null);
     try {
       const result = await api.getReviewDetail(resourceId);
-      if (currentRequest !== requestId.current) return;
+      if (currentRequest !== requestId.current) return false;
+      detailRef.current = result;
       setDetail(result);
+      return true;
     } catch (cause) {
-      if (currentRequest !== requestId.current) return;
-      setDetail(null);
-      setError(cause);
+      if (currentRequest !== requestId.current) return false;
+      if (detailRef.current === null) {
+        setDetail(null);
+        setError(cause);
+      }
+      return false;
     } finally {
       if (currentRequest === requestId.current) setIsLoading(false);
     }
   }, [api, resourceId]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    detailRef.current = null;
+    setDetail(null);
+    setError(null);
+    void refresh();
+  }, [refresh]);
   return { detail, isLoading, error, refresh };
 }
