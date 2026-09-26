@@ -72,4 +72,25 @@ describe('LibraryReviewDetail', () => {
     expect(await screen.findByText('Nguồn đã hợp lệ trở lại. Không cần đưa tài nguyên về hàng chờ.')).toBeVisible();
     expect(screen.queryByText('Đã đưa tài nguyên về hàng chờ xem xét. Không có tự động xác minh lại.')).not.toBeInTheDocument();
   });
+
+  it('maps self-verification denial without claiming success', async () => {
+    const user = userEvent.setup();
+    const api = makeApi({ transitionReview: vi.fn().mockRejectedValue(new ApiClientError('self', 403, 'LIBRARY_SELF_VERIFICATION_DENIED')) });
+    renderDetail(api);
+    await user.click(screen.getByRole('button', { name: 'Xác minh' }));
+    await user.click(screen.getByRole('button', { name: 'Xác nhận xác minh' }));
+    expect(await screen.findByRole('alert')).toBeVisible();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('surfaces a review conflict without retrying the mutation', async () => {
+    const user = userEvent.setup();
+    const transitionReview = vi.fn().mockRejectedValue(new ApiClientError('conflict', 409, 'LIBRARY_REVIEW_CONFLICT'));
+    const api = makeApi({ transitionReview });
+    renderDetail(api);
+    await user.click(screen.getByRole('button', { name: 'Xác minh' }));
+    await user.click(screen.getByRole('button', { name: 'Xác nhận xác minh' }));
+    expect(await screen.findByRole('status')).toBeVisible();
+    expect(transitionReview).toHaveBeenCalledTimes(1);
+  });
 });

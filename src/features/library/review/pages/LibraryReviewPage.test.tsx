@@ -1,4 +1,5 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LibraryReviewPageView } from './LibraryReviewPage';
@@ -11,6 +12,7 @@ const moderator: AuthUser = {
   id: 'moderator-1', email: 'moderator@example.test', displayName: 'Moderator', status: 'ACTIVE', emailVerified: true, roles: ['MODERATOR'],
 };
 const member: AuthUser = { ...moderator, id: 'member-1', roles: ['MEMBER'] };
+const admin: AuthUser = { ...moderator, id: 'admin-1', roles: ['ADMIN'] };
 
 function makeApi(overrides: Partial<LibraryReviewApiPort> = {}): LibraryReviewApiPort {
   return {
@@ -52,5 +54,21 @@ describe('LibraryReviewPage', () => {
     expect(await screen.findByRole('link', { name: /Xin chào/ })).toBeVisible();
     expect(api.listReviewQueue).toHaveBeenCalledWith({ q: '', language: '', type: '', cursor: undefined, limit: 12 });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Xem thêm' })).toBeVisible());
+  });
+
+  it('allows ADMIN to load the source-invalid queue and append by opaque cursor', async () => {
+    const api = makeApi({
+      listInvalidSourceQueue: vi.fn()
+        .mockResolvedValueOnce({ items: [{ resourceId: 'invalid-1', resourceType: 'SENTENCE', primaryLanguageCode: 'vi', preview: { title: 'Nguồn không còn hợp lệ', excerpt: 'Bị ẩn' }, reviewState: 'VERIFIED', updatedAt: '2026-09-26T10:00:00.000Z', provenanceRevision: 1, sourceHealth: [{ applicable: true, valid: false, reason: 'PARENT_NOT_PUBLIC' }], publicExposure: false }], nextCursor: 'opaque-next' })
+        .mockResolvedValueOnce({ items: [{ resourceId: 'invalid-2', resourceType: 'VOCABULARY', primaryLanguageCode: 'vi', preview: { title: 'Nguồn thứ hai', excerpt: 'Bị ẩn' }, reviewState: 'VERIFIED', updatedAt: '2026-09-26T11:00:00.000Z', provenanceRevision: 1, sourceHealth: [{ applicable: true, valid: false, reason: 'CANDIDATE_INVALIDATED' }], publicExposure: false }], nextCursor: null }),
+    });
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={['/library/review?view=source-invalid']}><LibraryReviewPageView api={api} authStatus='authenticated' user={admin} /></MemoryRouter>);
+
+    expect(await screen.findByRole('link', { name: /Nguồn không còn hợp lệ/ })).toBeVisible();
+    expect(api.listInvalidSourceQueue).toHaveBeenCalledWith({ cursor: undefined, limit: 12 });
+    await user.click(screen.getByRole('button', { name: 'Xem thêm' }));
+    expect(await screen.findByRole('link', { name: /Nguồn thứ hai/ })).toBeVisible();
+    expect(api.listInvalidSourceQueue).toHaveBeenNthCalledWith(2, { cursor: 'opaque-next', limit: 12 });
   });
 });
