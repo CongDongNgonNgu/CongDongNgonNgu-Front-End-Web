@@ -1,0 +1,4 @@
+.surface { max-width: 48rem; margin: clamp(3rem, 10vw, 8rem) auto; padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); }
+.eyebrow { margin-bottom: var(--space-3); color: var(--color-brand-orange-readable); font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: .12em; }
+.surface h1 { color: var(--color-text-primary); font-size: clamp(2rem, 6vw, 4rem); letter-spacing: -.05em; line-height: 1; }
+.surface p:last-child { margin-top: var(--space-4); color: var(--color-text-secondary); line-height: var(--leading-body); }

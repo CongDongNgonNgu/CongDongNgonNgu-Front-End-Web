@@ -14,6 +14,8 @@ import { LanguageHubPage } from './features/languages/pages/LanguageHubPage';
 import { LibraryExplorerPage } from './features/library/pages/LibraryExplorerPage';
 import { LibraryContributionPage } from './features/library/pages/LibraryContributionPage';
 import { LibraryResourceDetailPage } from './features/library/pages/LibraryResourceDetailPage';
+import { LibraryReviewPage } from './features/library/review/pages/LibraryReviewPage';
+import { LibraryReviewDetailPage } from './features/library/review/pages/LibraryReviewDetailPage';
 import { CommunityPage } from './features/community/pages/CommunityPage';
 import { CommunityPostDetailPage } from './features/community/pages/CommunityPostDetailPage';
 import { CommunityCorrectionRequestPage } from './features/community/pages/CommunityCorrectionRequestPage';
@@ -43,6 +45,8 @@ function RoutedApp() {
         <Route path='/languages/:slug' element={<LanguageHubPage />} />
         <Route path='/library' element={<LibraryExplorerPage />} />
         <Route path='/library/contribute' element={<LibraryContributionPage />} />
+        <Route path='/library/review/:resourceId' element={<LibraryReviewDetailPage />} />
+        <Route path='/library/review' element={<LibraryReviewPage />} />
         <Route path='/library/:resourceId' element={<LibraryResourceDetailPage />} />
         <Route path='/community' element={<CommunityPage />} />
         <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />

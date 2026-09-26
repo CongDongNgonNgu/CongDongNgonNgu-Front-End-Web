@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedbac
 import { Icon } from '../../../components/ui/Icon/Icon';
 import { languageApi } from '../../languages/api/language-api';
 import type { LanguageCatalogItem } from '../../languages/languages.types';
+import { useAuth } from '../../auth/AuthProvider';
 import { LibraryFilterDrawer } from '../components/LibraryFilterDrawer';
 import { LibraryFilters } from '../components/LibraryFilters';
 import { LibraryResourceRow } from '../components/LibraryResourceRow';
@@ -16,15 +17,19 @@ import styles from './LibraryExplorerPage.module.css';
 interface LibraryExplorerPageProps {
   api?: LibrarySearchApiPort;
   catalogApi?: { listLanguages: (search?: string) => Promise<LanguageCatalogItem[]> };
+  showReviewerEntry?: boolean;
 }
 
 export function LibraryExplorerPage({ api = libraryApi, catalogApi = languageApi }: LibraryExplorerPageProps) {
-  return <LibraryExplorerPageView api={api} catalogApi={catalogApi} />;
+  const { user } = useAuth();
+  const showReviewerEntry = Boolean(user?.roles.some((role) => role === 'MODERATOR' || role === 'ADMIN'));
+  return <LibraryExplorerPageView api={api} catalogApi={catalogApi} showReviewerEntry={showReviewerEntry} />;
 }
 
 export function LibraryExplorerPageView({
   api = libraryApi,
   catalogApi = languageApi,
+  showReviewerEntry = false,
 }: LibraryExplorerPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => readFilters(searchParams), [searchParams]);
@@ -103,7 +108,10 @@ export function LibraryExplorerPageView({
           <p className={styles.heroDescription}>
             Một thư viện mở cho người học: nội dung ngắn gọn, đã được xác minh, với nguồn gốc và quyền sử dụng có thể kiểm chứng.
           </p>
-          <Link className={styles.contributeLink} to='/library/contribute'>Đóng góp tài nguyên <span aria-hidden='true'>↗</span></Link>
+          <div className={styles.heroActions}>
+            <Link className={styles.contributeLink} to='/library/contribute'>Đóng góp tài nguyên <span aria-hidden='true'>↗</span></Link>
+            {showReviewerEntry ? <Link className={styles.reviewLink} to='/library/review?view=pending'>Xem hàng chờ kiểm duyệt <span aria-hidden='true'>↗</span></Link> : null}
+          </div>
         </div>
         <div className={styles.heroNote} aria-label='Nguyên tắc thư viện'>
           <span className={styles.heroNoteMark} aria-hidden='true'>01</span>

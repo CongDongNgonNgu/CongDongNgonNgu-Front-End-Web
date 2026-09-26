@@ -1,0 +1,1 @@
+.surface { max-width: 52rem; margin: clamp(3rem, 10vw, 8rem) auto; padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); }
