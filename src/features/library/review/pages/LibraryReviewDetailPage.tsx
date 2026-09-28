@@ -35,7 +35,8 @@ export function LibraryReviewDetailPageView({ api, authStatus, user, resourceId 
 
 function AuthorizedReviewDetail({ api, resourceId }: { api: LibraryReviewApiPort; resourceId?: string }) {
   const detail = useLibraryReviewDetail(api, resourceId);
-  if (detail.isLoading) return <main className={styles.surface} role='status'><Skeleton lines={10} label='Đang tải chi tiết kiểm duyệt' /></main>;
+  const detailBelongsToAnotherResource = Boolean(detail.detail && resourceId && detail.detail.resource.id !== resourceId);
+  if (detail.isLoading || detailBelongsToAnotherResource) return <main className={styles.surface} role='status'><Skeleton lines={10} label='Đang tải chi tiết kiểm duyệt' /></main>;
   if (detail.error) return <main className={styles.surface}><ErrorState title='Không thể tải chi tiết kiểm duyệt' description={getLibraryReviewErrorMessage(detail.error)} onRetry={() => void detail.refresh()} retrying={detail.isLoading} /></main>;
   if (!detail.detail) return null;
   return <LibraryReviewDetail api={api} detail={detail.detail} onRefresh={detail.refresh} />;

@@ -4,6 +4,7 @@ import type { LibraryReviewApiPort, LibraryReviewDetail } from '../library-revie
 export function useLibraryReviewDetail(api: LibraryReviewApiPort, resourceId: string | undefined) {
   const [detail, setDetail] = useState<LibraryReviewDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const requestId = useRef(0);
   const detailRef = useRef<LibraryReviewDetail | null>(null);
@@ -14,16 +15,24 @@ export function useLibraryReviewDetail(api: LibraryReviewApiPort, resourceId: st
       setDetail(null);
       setError(new Error('Missing review resource id'));
       setIsLoading(false);
+      setIsRefreshing(false);
       detailRef.current = null;
       return false;
     }
-    setIsLoading(true);
+    const hasExistingDetail = detailRef.current !== null;
+    if (hasExistingDetail) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+      setIsRefreshing(false);
+    }
     setError(null);
     try {
       const result = await api.getReviewDetail(resourceId);
       if (currentRequest !== requestId.current) return false;
       detailRef.current = result;
       setDetail(result);
+      setError(null);
       return true;
     } catch (cause) {
       if (currentRequest !== requestId.current) return false;
@@ -33,15 +42,21 @@ export function useLibraryReviewDetail(api: LibraryReviewApiPort, resourceId: st
       }
       return false;
     } finally {
-      if (currentRequest === requestId.current) setIsLoading(false);
+      if (currentRequest === requestId.current) {
+        if (hasExistingDetail) setIsRefreshing(false);
+        else setIsLoading(false);
+      }
     }
   }, [api, resourceId]);
 
   useEffect(() => {
+    requestId.current += 1;
     detailRef.current = null;
     setDetail(null);
     setError(null);
+    setIsLoading(true);
+    setIsRefreshing(false);
     void refresh();
-  }, [refresh]);
-  return { detail, isLoading, error, refresh };
+  }, [resourceId, refresh]);
+  return { detail, isLoading, isRefreshing, error, refresh };
 }
