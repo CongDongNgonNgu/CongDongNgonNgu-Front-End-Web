@@ -27,6 +27,11 @@ readable CSRF cookie on mutations. Auth routes are /login, /register,
 buttons render from backend capabilities and disabled providers do not fake
 completion.
 
+The Phase 11A membership client reads `/membership/capabilities` through the
+authenticated API boundary. It renders server-projected plan and entitlement
+facts only; membership flags, expiry timestamps and payment-return claims are
+not treated as client authorization.
+
 ## CI and deployment boundary
 
 CI runs on pull requests and pushes to `main` and checks install, lint, types, unit tests, build, and dependency audit. Phase 00 configures no deployment workflow; production deployment remains a separate approved task.
