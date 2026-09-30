@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedback';
 import { Icon } from '../../../components/ui/Icon/Icon';
 import { LibraryAttributionList } from '../components/LibraryAttributionList';
+import { LibraryLearnFromResourcePanel } from '../components/LibraryLearnFromResourcePanel';
 import { libraryApi } from '../library.api';
 import type { LibraryPublicResource, LibraryResourceDetails, LibraryResourceType } from '../library.types';
 import { useLibraryResource, type LibraryResourceApiPort } from '../hooks/useLibraryResource';
@@ -80,6 +81,7 @@ function ResourceDetail({ resource }: { resource: LibraryPublicResource }) {
         </aside>
       </div>
 
+      <LibraryLearnFromResourcePanel resource={resource} />
       <LibraryAttributionList entries={resource.provenance} detail />
     </article>
   );

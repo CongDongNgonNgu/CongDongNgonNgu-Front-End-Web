@@ -25,6 +25,7 @@ export function LibraryAttributionList({ entries, detail = false }: LibraryAttri
             <div className={styles.licenseMeta}>
               {entry.license.attributionRequired ? <span>Ghi công bắt buộc</span> : <span>Ghi công không bắt buộc</span>}
               {entry.license.redistributionAllowed ? <span>Được phép chia sẻ</span> : <span>Không đủ điều kiện công khai</span>}
+              {'sourceUrl' in entry && safeExternalUrl(entry.sourceUrl) ? <a href={safeExternalUrl(entry.sourceUrl)!} target='_blank' rel='noreferrer'>Nguồn gốc ↗</a> : null}
               <a href={entry.license.canonicalUrl} target='_blank' rel='noreferrer'>Xem điều khoản</a>
             </div>
           </div>
@@ -32,4 +33,14 @@ export function LibraryAttributionList({ entries, detail = false }: LibraryAttri
       </div>
     </section>
   );
+}
+
+function safeExternalUrl(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? value : null;
+  } catch {
+    return null;
+  }
 }
