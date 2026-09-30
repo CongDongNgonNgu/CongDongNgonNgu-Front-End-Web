@@ -25,6 +25,7 @@ import { BuddyProfilePreviewPage } from './features/exchange/pages/BuddyProfileP
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AiConversationPage } from './features/ai/conversation/pages/AiConversationPage';
+import { AiCoachingPage } from './features/ai/coaching/pages/AiCoachingPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -67,6 +68,8 @@ function RoutedApp() {
         <Route path='/ai' element={<Navigate to='/ai/conversation' replace />} />
         <Route path='/ai/conversation' element={<AiConversationPage />} />
         <Route path='/ai/roleplay' element={<AiConversationPage forcedMode='roleplay' />} />
+        <Route path='/ai/writing' element={<AiCoachingPage />} />
+        <Route path='/ai/grammar' element={<AiCoachingPage />} />
         <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </AppShell>
