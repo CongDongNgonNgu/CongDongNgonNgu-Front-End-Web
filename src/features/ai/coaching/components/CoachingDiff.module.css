@@ -1,0 +1,12 @@
+.diff { margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-3); color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+.legend del, .legend ins { text-decoration-thickness: 2px; text-underline-offset: .2em; }
+.legend del { text-decoration-color: var(--color-danger); }
+.legend ins { text-decoration-color: var(--color-success); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.column { min-width: 0; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface-elevated); }
+.column h4 { margin: 0 0 var(--space-2); color: var(--color-text-secondary); font-size: var(--font-size-xs); letter-spacing: .08em; text-transform: uppercase; }
+.text { margin: 0; color: var(--color-text-primary); line-height: var(--leading-body); white-space: pre-wrap; overflow-wrap: anywhere; }
+.deleted { background: var(--color-danger-surface); text-decoration-color: var(--color-danger); text-decoration-thickness: 2px; text-underline-offset: .2em; }
+.inserted { background: var(--color-success-surface); text-decoration-color: var(--color-success); text-decoration-thickness: 2px; text-underline-offset: .2em; }
+@media (max-width: 47.999rem) { .grid { grid-template-columns: 1fr; } }

@@ -4,7 +4,7 @@ import type { AuthUser, ProviderCapability } from './auth.types';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
-interface AuthContextValue {
+export interface AuthContextValue {
   api: AuthApi;
   status: AuthStatus;
   user: AuthUser | null;
@@ -75,4 +75,8 @@ export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used inside AuthProvider');
   return context;
+}
+
+export function useOptionalAuth(): AuthContextValue | null {
+  return useContext(AuthContext);
 }

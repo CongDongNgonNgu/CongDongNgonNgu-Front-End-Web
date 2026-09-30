@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { AuthProvider, useAuth } from './features/auth/AuthProvider';
 import { AuthCallbackPage } from './features/auth/pages/AuthCallbackPage';
@@ -24,6 +24,8 @@ import { PartnerDiscoveryPage } from './features/exchange/pages/PartnerDiscovery
 import { BuddyProfilePreviewPage } from './features/exchange/pages/BuddyProfilePreviewPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { AiConversationPage } from './features/ai/conversation/pages/AiConversationPage';
+import { AiCoachingPage } from './features/ai/coaching/pages/AiCoachingPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -63,6 +65,11 @@ function RoutedApp() {
         <Route path='/onboarding' element={<OnboardingPage />} />
         <Route path='/profile' element={<OwnPassportPage />} />
         <Route path='/profiles/:userId' element={<PublicPassportPage />} />
+        <Route path='/ai' element={<Navigate to='/ai/conversation' replace />} />
+        <Route path='/ai/conversation' element={<AiConversationPage />} />
+        <Route path='/ai/roleplay' element={<AiConversationPage forcedMode='roleplay' />} />
+        <Route path='/ai/writing' element={<AiCoachingPage />} />
+        <Route path='/ai/grammar' element={<AiCoachingPage />} />
         <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </AppShell>
