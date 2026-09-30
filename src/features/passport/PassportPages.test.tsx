@@ -88,6 +88,28 @@ const publicProfile: PublicProfile = {
   interests: ['books'],
 };
 
+const learningProgress = {
+  totalXp: 0,
+  currentStreak: 0,
+  longestStreak: 0,
+  streakTimezone: 'Asia/Ho_Chi_Minh',
+  activeDays: [],
+  milestones: [],
+  recentQualifyingActivity: [],
+};
+
+const communityProgress = {
+  communityReputation: 0,
+  contributorLevel: {
+    id: 'NEWCOMER',
+    title: 'Newcomer',
+    minReputation: 0,
+    nextLevel: { id: 'HELPER', title: 'Helper', minReputation: 5 },
+  },
+  badges: [],
+  activeContributionCount: 0,
+};
+
 function createAuthApi(): AuthApi {
   const api = new AuthApi();
   vi.spyOn(api, 'bootstrap').mockResolvedValue(user);
@@ -108,6 +130,8 @@ describe('Passport pages', () => {
       getProfile: vi.fn().mockResolvedValue(ownProfile),
       updateProfile,
       getPublicProfile: vi.fn(),
+      getLearningProgress: vi.fn().mockResolvedValue(learningProgress),
+      getContributorProgress: vi.fn().mockResolvedValue(communityProgress),
     };
     renderWithAuth(<MemoryRouter initialEntries={['/profile']}><OwnPassportPage api={api} userId='user-1' /></MemoryRouter>);
 
@@ -135,6 +159,8 @@ describe('Passport pages', () => {
       getProfile: vi.fn().mockResolvedValue(ownProfile),
       updateProfile: vi.fn().mockResolvedValue(ownProfile),
       getPublicProfile: vi.fn(),
+      getLearningProgress: vi.fn().mockResolvedValue(learningProgress),
+      getContributorProgress: vi.fn().mockResolvedValue(communityProgress),
     };
     renderWithAuth(<MemoryRouter initialEntries={['/profile']}><OwnPassportPage api={api} userId='user-1' /></MemoryRouter>);
 
@@ -155,6 +181,8 @@ describe('Passport pages', () => {
       getProfile: vi.fn().mockResolvedValue(ownProfile),
       updateProfile: vi.fn().mockResolvedValue(ownProfile),
       getPublicProfile: vi.fn(),
+      getLearningProgress: vi.fn().mockResolvedValue(learningProgress),
+      getContributorProgress: vi.fn().mockResolvedValue(communityProgress),
     };
     renderWithAuth(<MemoryRouter initialEntries={['/profile']}><OwnPassportPage api={api} userId='user-1' /></MemoryRouter>);
 

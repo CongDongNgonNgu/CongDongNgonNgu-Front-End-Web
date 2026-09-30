@@ -8,6 +8,10 @@ import type {
 } from './auth.types';
 import type { LanguageCatalogItem, OwnProfile, ProfileUpdateInput } from '../onboarding/onboarding.types';
 import type { PublicProfile } from '../passport/passport.types';
+import type {
+  CommunityReputationProgress,
+  LearningProgress,
+} from '../passport/passport-progress.types';
 
 type JsonValue = object;
 type RefreshResponse = Pick<AuthSession, 'accessToken' | 'expiresIn'> &
@@ -82,6 +86,14 @@ export class AuthApi {
 
   async getProfile(): Promise<OwnProfile> {
     return this.requestWithAuth<OwnProfile>('/profile');
+  }
+
+  async getLearningProgress(): Promise<LearningProgress> {
+    return this.requestWithAuth<LearningProgress>('/learning/progress');
+  }
+
+  async getContributorProgress(): Promise<CommunityReputationProgress> {
+    return this.requestWithAuth<CommunityReputationProgress>('/reputation/progress');
   }
 
   async updateProfile(input: ProfileUpdateInput): Promise<OwnProfile> {
