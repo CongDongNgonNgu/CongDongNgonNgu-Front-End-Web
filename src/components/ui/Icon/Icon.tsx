@@ -1,11 +1,13 @@
 import {
   AlertCircle,
   ArrowLeftRight,
+  Award,
   Bookmark,
   Bell,
   BookOpen,
   Check,
   CheckCircle2,
+  CalendarCheck,
   ChevronDown,
   CircleHelp,
   Compass,
@@ -22,10 +24,13 @@ import {
   MessageCircle,
   MoreHorizontal,
   Search,
+  RefreshCw,
   Share2,
+  ShieldCheck,
   Sparkles,
   ThumbsUp,
   Users,
+  WifiOff,
   UserRound,
   X,
   type LucideIcon,
@@ -35,6 +40,8 @@ import styles from "./Icon.module.css";
 
 export type IconName =
   | 'bookmark'
+  | 'award'
+  | 'calendar-check'
   | 'check'
   | 'flag'
   | 'more-horizontal'
@@ -58,10 +65,13 @@ export type IconName =
   | "menu"
   | "message-circle"
   | "search"
+  | "refresh-cw"
   | "share"
+  | "shield-check"
   | "sparkles"
   | "user-round"
   | "users"
+  | "wifi-off"
   | "x";
 
 const icons: Record<IconName, LucideIcon> = {
@@ -72,9 +82,11 @@ const icons: Record<IconName, LucideIcon> = {
   'thumbs-up': ThumbsUp,
   "alert-circle": AlertCircle,
   "arrow-left-right": ArrowLeftRight,
+  award: Award,
   bell: Bell,
   "book-open": BookOpen,
   "check-circle": CheckCircle2,
+  "calendar-check": CalendarCheck,
   "chevron-down": ChevronDown,
   "circle-help": CircleHelp,
   compass: Compass,
@@ -89,10 +101,13 @@ const icons: Record<IconName, LucideIcon> = {
   menu: Menu,
   "message-circle": MessageCircle,
   search: Search,
+  "refresh-cw": RefreshCw,
   share: Share2,
+  "shield-check": ShieldCheck,
   sparkles: Sparkles,
   "user-round": UserRound,
   users: Users,
+  "wifi-off": WifiOff,
   x: X,
 };
 

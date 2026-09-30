@@ -121,4 +121,36 @@ describe('AuthApi', () => {
       credentials: 'include',
     }));
   });
+
+  it('reads private learning and reputation projections through protected endpoints', async () => {
+    const learning = {
+      totalXp: 10,
+      currentStreak: 1,
+      longestStreak: 1,
+      streakTimezone: 'UTC',
+      activeDays: [],
+      milestones: [],
+      recentQualifyingActivity: [],
+    };
+    const community = {
+      communityReputation: 5,
+      contributorLevel: {
+        id: 'HELPER',
+        title: 'Helper',
+        minReputation: 5,
+        nextLevel: null,
+      },
+      badges: [],
+      activeContributionCount: 1,
+    };
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(learning)
+      .mockResolvedValueOnce(community);
+    const api = new AuthApi();
+
+    await expect(api.getLearningProgress()).resolves.toEqual(learning);
+    await expect(api.getContributorProgress()).resolves.toEqual(community);
+    expect(request).toHaveBeenNthCalledWith(1, '/learning/progress', expect.objectContaining({ credentials: 'include' }));
+    expect(request).toHaveBeenNthCalledWith(2, '/reputation/progress', expect.objectContaining({ credentials: 'include' }));
+  });
 });

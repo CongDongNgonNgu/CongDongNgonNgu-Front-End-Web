@@ -17,6 +17,8 @@ import type {
   ProfileUpdateInput,
 } from '../onboarding/onboarding.types';
 import type { PassportApi, PublicProfile } from './passport.types';
+import { PassportProgressPanel } from './PassportProgressPanel';
+import type { PassportProgressApi } from './passport-progress.types';
 import {
   availabilitySummary,
   DAY_LABELS,
@@ -156,6 +158,7 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
     <PassportView
       profile={profile}
       isOwner
+      progressApi={api}
       editing={editing}
       editTriggerRef={editTriggerRef}
       profileHeroRef={profileHeroRef}
@@ -233,6 +236,7 @@ export function PublicPassportPage({ api: providedApi, userId: providedUserId }:
 interface PassportViewProps {
   profile: PassportProfile;
   isOwner: boolean;
+  progressApi?: PassportProgressApi;
   onEdit?: () => void;
   editing?: boolean;
   editTriggerRef?: RefObject<HTMLButtonElement>;
@@ -244,6 +248,7 @@ interface PassportViewProps {
 function PassportView({
   profile,
   isOwner,
+  progressApi,
   onEdit,
   editing = false,
   editTriggerRef,
@@ -289,6 +294,7 @@ function PassportView({
         <div className={styles.passportLayout}>
           <div className={styles.passportPrimary}>
             <LanguageSection languages={profile.languages} isOwner={isOwner} />
+            {isOwner && progressApi ? <PassportProgressPanel api={progressApi} /> : null}
             <CollectionsSection profile={profile} />
             <InterestsSection profile={profile} />
           </div>

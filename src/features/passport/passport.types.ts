@@ -4,6 +4,7 @@ import type {
   ProfileLanguageResponse,
   ProfileUpdateInput,
 } from '../onboarding/onboarding.types';
+import type { PassportProgressApi } from './passport-progress.types';
 
 export type PublicProfileLanguage = Omit<ProfileLanguageResponse, 'visibility'>;
 
@@ -19,7 +20,7 @@ export interface PublicProfile {
   interests: string[];
 }
 
-export interface PassportApi {
+export interface PassportApi extends PassportProgressApi {
   getLanguages: () => Promise<LanguageCatalogItem[]>;
   getProfile: () => Promise<OwnProfile>;
   updateProfile: (input: ProfileUpdateInput) => Promise<OwnProfile>;
