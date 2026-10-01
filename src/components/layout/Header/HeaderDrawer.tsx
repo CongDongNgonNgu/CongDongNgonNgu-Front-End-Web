@@ -34,6 +34,7 @@ export function HeaderDrawer({ open, isAuthenticated, onLogout, onClose, initial
         {isAuthenticated ? (
           <>
             <Link className={styles.drawerAuthButton} to='/profile' onClick={onClose}>Hộ chiếu ngôn ngữ</Link>
+            <Link className={styles.drawerAuthButton} to='/membership' onClick={onClose}>Membership</Link>
             <button className={styles.drawerAuthButton} type='button' onClick={() => { onClose(); runLogout(onLogout); }}>Đăng xuất</button>
           </>
         ) : (

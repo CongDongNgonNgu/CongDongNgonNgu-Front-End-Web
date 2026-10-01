@@ -1,0 +1,72 @@
+.page { padding: clamp(1.5rem, 4vw, 3.5rem) 0 5rem; }
+.breadcrumbs { display: flex; gap: .55rem; align-items: center; margin-bottom: clamp(2rem, 5vw, 4.5rem); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.breadcrumbs a { color: var(--color-brand-navy); text-decoration: none; }
+.breadcrumbs a:hover { text-decoration: underline; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(16rem, .7fr); gap: clamp(2rem, 7vw, 7rem); align-items: end; padding-bottom: clamp(2.5rem, 6vw, 5rem); border-bottom: 1px solid var(--color-border); }
+.eyebrow, .planKicker { margin: 0; color: var(--color-brand-orange-readable); font-size: .72rem; font-weight: var(--font-weight-bold); letter-spacing: .13em; line-height: 1.4; }
+.hero h1 { max-width: 11ch; margin: .8rem 0 1.25rem; color: var(--color-brand-navy); font-size: clamp(2.65rem, 6vw, 5.25rem); font-weight: var(--font-weight-medium); letter-spacing: -.055em; line-height: 1.02; }
+.heroDescription { max-width: 44rem; margin: 0; color: var(--color-text-secondary); font-size: clamp(1rem, 1.4vw, 1.18rem); line-height: var(--leading-body); }
+.heroNote, .serverNotice { display: flex; gap: .75rem; align-items: flex-start; padding: 1rem 1.1rem; border: 1px solid var(--color-info-border); border-radius: var(--radius-surface); background: var(--color-info-surface); color: var(--color-info-strong); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.serverNotice { margin-top: 1.5rem; }
+.pricingSection, .accountSection, .checkoutSection { margin-top: clamp(3rem, 7vw, 6rem); }
+.sectionHeading { display: flex; justify-content: space-between; gap: 2rem; align-items: end; margin-bottom: 1.5rem; }
+.sectionHeading h2 { margin: .45rem 0 0; color: var(--color-brand-navy); font-size: clamp(1.7rem, 3vw, 2.6rem); letter-spacing: -.04em; line-height: 1.1; }
+.sectionHint { max-width: 25rem; margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); text-align: right; }
+.pricingGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1rem; align-items: stretch; }
+.planCard { display: flex; flex-direction: column; min-height: 31rem; padding: clamp(1.25rem, 2.5vw, 2rem); border: 1px solid var(--color-border); }
+.memberCard { border-color: var(--color-brand-navy); box-shadow: var(--shadow-medium); }
+.selectedCard { outline: 3px solid color-mix(in srgb, var(--color-focus) 30%, transparent); outline-offset: 2px; }
+.freeCard { background: var(--color-surface-elevated); }
+.planHeader, .accountCardHeader, .checkoutHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.planHeader h3, .accountCard h3, .checkoutCard h3, .creditCard h3 { margin: .45rem 0 0; color: var(--color-brand-navy); font-size: 1.35rem; letter-spacing: -.025em; }
+.planDescription { min-height: 3.5rem; margin: 1.25rem 0 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.priceBlock { display: flex; flex-direction: column; gap: .15rem; margin: 1.75rem 0 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); }
+.priceBlock strong { color: var(--color-brand-navy); font-size: clamp(1.8rem, 3vw, 2.4rem); letter-spacing: -.045em; }
+.priceBlock span { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.benefitList, .entitlementList { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.benefitList { flex: 1; }
+.benefitList li, .entitlementList li { display: flex; gap: .6rem; align-items: flex-start; color: var(--color-text-primary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.benefitList li svg, .entitlementList li svg { flex: 0 0 auto; margin-top: .12rem; color: var(--color-success); }
+.benefitList li span, .entitlementList li span { display: grid; gap: .15rem; }
+.benefitList small, .entitlementList small { color: var(--color-text-secondary); font-size: .78rem; }
+.mutedBenefit { color: var(--color-text-secondary) !important; }
+.planSelect { align-self: flex-start; margin: 1.25rem 0 .75rem; padding: 0; border: 0; background: transparent; color: var(--color-brand-navy); font: inherit; font-size: var(--font-size-sm); text-decoration: underline; cursor: pointer; }
+.planSelect:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.planAction { margin-top: 1rem; }
+.inlineError { margin: 1rem 0 0; color: var(--color-danger-strong); font-size: var(--font-size-sm); }
+.accountGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.accountCard { min-height: 15rem; padding: 1.5rem; }
+.statusList { display: grid; gap: .8rem; margin: 1.5rem 0 0; }
+.statusList div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .7rem; border-bottom: 1px solid var(--color-border); }
+.statusList dt { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.statusList dd { margin: 0; color: var(--color-text-primary); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); text-align: right; }
+.entitlementList { margin-top: 1.5rem; }
+.creditCard { display: flex; justify-content: space-between; gap: 1.5rem; align-items: center; margin-top: 1rem; padding: 1.5rem; border-color: var(--color-info-border); background: var(--color-info-surface); }
+.creditCard h3 { margin-bottom: .5rem; }
+.creditCard p { margin: 0; color: var(--color-info-strong); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.creditCard small { display: block; margin-top: .45rem; color: var(--color-info-strong); font-size: .78rem; }
+.creditMessage { margin-top: .75rem !important; font-weight: var(--font-weight-medium); }
+.loginCallout { display: flex; justify-content: space-between; gap: 2rem; align-items: center; margin-top: 1rem; padding: clamp(1.25rem, 3vw, 2rem); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.loginCallout h2 { margin: .45rem 0 .6rem; color: var(--color-brand-navy); font-size: 1.5rem; letter-spacing: -.03em; }
+.loginCallout p:not(.eyebrow) { max-width: 40rem; margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.calloutLink, .paymentLink { color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); white-space: nowrap; }
+.checkoutCard { padding: clamp(1.25rem, 3vw, 2rem); }
+.checkoutFacts { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; margin: 1.5rem 0 1rem; color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); }
+.checkoutNote { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.attemptState { display: grid; gap: .6rem; margin: 1.5rem 0; padding: 1rem; border-left: 3px solid var(--color-brand-orange); background: var(--color-surface-muted); }
+.attemptState > div { display: flex; justify-content: space-between; gap: 1rem; }
+.attemptLabel { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.attemptState strong { color: var(--color-brand-navy); }
+.attemptState p { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.paymentLink { width: fit-content; }
+@media (max-width: 48rem) {
+  .page { padding-top: 1.25rem; }
+  .hero { grid-template-columns: 1fr; gap: 1.5rem; }
+  .hero h1 { max-width: 12ch; font-size: clamp(2.5rem, 14vw, 4rem); }
+  .sectionHeading, .loginCallout, .creditCard { display: grid; grid-template-columns: 1fr; align-items: start; }
+  .sectionHint { text-align: left; }
+  .accountGrid { grid-template-columns: 1fr; }
+  .planCard { min-height: auto; }
+  .creditCard .button { width: 100%; }
+  .statusList div, .attemptState > div { align-items: flex-start; }
+}
