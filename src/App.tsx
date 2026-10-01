@@ -30,6 +30,7 @@ import { MembershipPage } from './features/membership/MembershipPage';
 import { NotificationCenterProvider } from './features/notifications/NotificationCenterProvider';
 import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { SpeakingRoomPage } from './features/rooms/pages/SpeakingRoomPage';
+import { ChallengeDiscoveryPage } from './features/challenges/pages/ChallengeDiscoveryPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -65,6 +66,7 @@ function RoutedApp() {
           <Route path='/membership/checkout/:orderId' element={<MembershipPage />} />
           <Route path='/notifications' element={<NotificationsPage />} />
           <Route path='/rooms/:roomId' element={<SpeakingRoomPage />} />
+          <Route path='/challenges' element={<ChallengeDiscoveryPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />
           <Route path='/verify-email' element={<VerifyEmailPage />} />
