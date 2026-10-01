@@ -115,7 +115,15 @@ function processEventBlock(block: string, options: NotificationStreamConnectionO
 
 export function parseNotification(value: string): NotificationStreamItem | undefined {
   try {
-    const parsed: unknown = JSON.parse(value);
+    return parseNotificationValue(JSON.parse(value));
+  } catch {
+    return undefined;
+  }
+}
+
+export function parseNotificationValue(value: unknown): NotificationStreamItem | undefined {
+  try {
+    const parsed = value;
     if (!isRecord(parsed)) return undefined;
     if (
       !isUuidV4(parsed.id) ||
@@ -192,7 +200,11 @@ function isIsoTimestamp(value: unknown): value is string {
 }
 
 function isSafePath(value: unknown): value is string {
-  return typeof value === 'string' && value.startsWith('/') && isBoundedString(value, 240);
+  return typeof value === 'string'
+    && value.startsWith('/')
+    && !value.startsWith('//')
+    && !value.includes('\\')
+    && isBoundedString(value, 240);
 }
 
 function isUuidV4(value: unknown): value is string {

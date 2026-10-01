@@ -6,7 +6,10 @@ export interface UseNotificationStreamOptions {
   onNotification: (notification: NotificationStreamItem) => void;
   onPoll: () => void;
   userScope?: string;
+  onStatusChange?: (status: NotificationStreamStatus) => void;
 }
+
+export type NotificationStreamStatus = 'connecting' | 'connected' | 'reconnecting' | 'offline';
 
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 10_000;
@@ -15,12 +18,15 @@ const MAX_SEEN_EVENT_IDS = 256;
 
 export function useNotificationStream(
   accessToken: string | undefined,
-  { onNotification, onPoll, userScope }: UseNotificationStreamOptions,
+  options: UseNotificationStreamOptions,
 ): void {
+  const { onNotification, onPoll, userScope } = options;
   const onNotificationRef = useRef(onNotification);
   const onPollRef = useRef(onPoll);
+  const onStatusChangeRef = useRef(options.onStatusChange);
   onNotificationRef.current = onNotification;
   onPollRef.current = onPoll;
+  onStatusChangeRef.current = options.onStatusChange;
 
   useEffect(() => {
     if (!accessToken) return;
@@ -64,6 +70,7 @@ export function useNotificationStream(
     }
 
     const connect = () => {
+      onStatusChangeRef.current?.(lastEventId ? 'reconnecting' : 'connecting');
       void client
         .connect({
           accessToken,
@@ -71,13 +78,18 @@ export function useNotificationStream(
           onConnected: () => {
             retryDelay = INITIAL_RECONNECT_DELAY_MS;
             stopFallbackPolling();
+            onStatusChangeRef.current?.('connected');
           },
-          onReplayUnavailable: startFallbackPolling,
+          onReplayUnavailable: () => {
+            onStatusChangeRef.current?.('reconnecting');
+            startFallbackPolling();
+          },
           onNotification: (notification) => receiveNotification(notification, true),
           signal: controller.signal,
         })
         .catch(() => {
           if (controller.signal.aborted) return;
+          onStatusChangeRef.current?.('offline');
           startFallbackPolling();
           reconnectTimer = setTimeout(connect, retryDelay);
           retryDelay = Math.min(retryDelay * 2, MAX_RECONNECT_DELAY_MS);

@@ -1,0 +1,41 @@
+.page { display: grid; gap: var(--space-6); max-width: 60rem; margin-inline: auto; padding-block: var(--space-8) var(--space-16); }
+.topBar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-5); padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-border); }
+.backLink { display: inline-flex; min-height: 2.75rem; align-items: center; gap: var(--space-1); color: var(--color-text-secondary); font-size: var(--font-size-sm); text-decoration: none; }
+.backLink svg { transform: rotate(90deg); }
+.backLink:hover, .backLink:focus-visible { color: var(--color-brand-navy); text-decoration: underline; }
+.headingBlock { min-width: 0; }
+.kicker { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); letter-spacing: 0.08em; text-transform: uppercase; }
+.headingBlock h1 { margin: 0.25rem 0 0; font-size: clamp(1.75rem, 4vw, 2.5rem); letter-spacing: -0.03em; }
+.subtitle { margin: var(--space-1) 0 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+.actions button { gap: var(--space-2); }
+.liveRegion, .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; clip-path: inset(50%); }
+.connection, .error { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px solid var(--color-info-border); border-radius: var(--radius-control); color: var(--color-info-strong); background: var(--color-info-surface); font-size: var(--font-size-sm); }
+.connection span { flex: 1; }
+.error { border-color: var(--color-danger-border); color: var(--color-danger-strong); background: var(--color-danger-surface); }
+.filterScroller { display: flex; max-width: 100%; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: thin; }
+.filter, .filterActive { min-height: 2.75rem; flex: 0 0 auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-control); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); white-space: nowrap; }
+.filter { color: var(--color-text-secondary); background: var(--color-surface-elevated); }
+.filterActive { color: var(--color-text-on-brand); border-color: var(--color-brand-navy); background: var(--color-brand-navy); }
+.filter:hover, .filter:focus-visible { color: var(--color-brand-navy); background: var(--color-surface-muted); }
+.content { min-width: 0; padding: var(--space-4) var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); }
+.guest { display: grid; min-height: 20rem; place-items: center; align-content: center; gap: var(--space-3); padding: var(--space-8) var(--space-4); color: var(--color-text-secondary); text-align: center; }
+.guest h1 { margin: 0; color: var(--color-text-primary); }
+.guest p { max-width: 32rem; margin: 0; }
+.primaryLink { display: inline-flex; min-height: 2.75rem; align-items: center; padding: var(--space-2) var(--space-4); border-radius: var(--radius-control); color: var(--color-text-on-brand); background: var(--color-brand-navy); font-weight: var(--font-weight-semibold); text-decoration: none; }
+.primaryLink:hover, .primaryLink:focus-visible { background: var(--color-brand-navy-hover); }
+.skeleton { display: grid; gap: var(--space-3); }
+.skeleton span { height: 5rem; border-radius: var(--radius-control); background: var(--color-surface-muted); animation: notification-pulse 1.4s ease-in-out infinite alternate; }
+@keyframes notification-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .skeleton span { animation: none; } }
+
+@media (max-width: 47.999rem) {
+  .page { gap: var(--space-4); padding-block: var(--space-5) var(--space-8); }
+  .topBar { grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); }
+  .headingBlock { grid-column: 2; grid-row: 1; }
+  .backLink { grid-column: 1; grid-row: 1; align-self: start; font-size: 0; }
+  .backLink svg { width: 1.5rem; height: 1.5rem; transform: rotate(90deg); }
+  .actions { grid-column: 1 / -1; justify-content: stretch; }
+  .actions button { flex: 1 1 12rem; }
+  .content { padding: var(--space-3); }
+}
