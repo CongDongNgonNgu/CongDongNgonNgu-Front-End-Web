@@ -2,6 +2,8 @@
 .membershipSection h2 { max-width: 17ch; margin: var(--space-4) 0 0; color: var(--color-brand-navy); font-size: clamp(2rem, 3.5vw, 3rem); font-weight: var(--font-weight-medium); letter-spacing: -0.045em; line-height: 1.1; }
 .membershipCopy > p { max-width: 35rem; margin: 0; color: var(--color-text-secondary); line-height: var(--leading-body); }
 .membershipNote { margin-top: var(--space-5) !important; padding-left: var(--space-4); border-left: 3px solid var(--color-brand-orange); color: var(--color-text-primary) !important; font-size: var(--font-size-sm); }
+.membershipLink { display: inline-flex; gap: .5rem; margin-top: var(--space-5); color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); text-decoration: none; }
+.membershipLink:hover { text-decoration: underline; }
 
 @media (max-width: 47.999rem) {
   .membershipSection { grid-template-columns: 1fr; gap: var(--space-6); padding-block: 3.5rem; }

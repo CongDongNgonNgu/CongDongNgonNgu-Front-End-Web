@@ -26,6 +26,7 @@ import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AiConversationPage } from './features/ai/conversation/pages/AiConversationPage';
 import { AiCoachingPage } from './features/ai/coaching/pages/AiCoachingPage';
+import { MembershipPage } from './features/membership/MembershipPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -56,6 +57,8 @@ function RoutedApp() {
         <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
         <Route path='/exchange' element={<PartnerDiscoveryPage />} />
         <Route path='/exchange/profile/:userId' element={<BuddyProfilePreviewPage />} />
+        <Route path='/membership' element={<MembershipPage />} />
+        <Route path='/membership/checkout/:orderId' element={<MembershipPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/verify-email' element={<VerifyEmailPage />} />

@@ -42,7 +42,7 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
             {isAuthenticated ? (
               <div className={styles.accountMenuWrap}>
                 <button className={styles.accountTrigger} type='button' onClick={onAccountToggle} aria-haspopup='menu' aria-expanded={accountOpen}><Avatar name={userDisplayName} size='sm' decorative /><span>Tài khoản</span></button>
-                {accountOpen ? <div className={styles.accountMenu} role='menu' aria-label='Tài khoản'><Link className={styles.dropdownItem} role='menuitem' to='/profile'><Icon name='user-round' size={18} />Hộ chiếu ngôn ngữ</Link></div> : null}
+                {accountOpen ? <div className={styles.accountMenu} role='menu' aria-label='Tài khoản'><Link className={styles.dropdownItem} role='menuitem' to='/profile'><Icon name='user-round' size={18} />Hộ chiếu ngôn ngữ</Link><Link className={styles.dropdownItem} role='menuitem' to='/membership'><Icon name='award' size={18} />Membership</Link></div> : null}
               </div>
             ) : null}
             <HeaderAuthActions isAuthenticated={isAuthenticated} onLogout={onLogout} />
