@@ -6,6 +6,7 @@ import { additionalNavigation, headerNavigation } from '../../navigation/navigat
 import type { SearchHandler } from './header.types';
 import { HeaderAuthActions } from './HeaderAuthActions';
 import { NavigationLink } from './NavigationLink';
+import { NotificationBell } from '../../../features/notifications/NotificationBell';
 import controls from './HeaderControls.module.css';
 import styles from './DesktopHeader.module.css';
 
@@ -39,6 +40,7 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
           </nav>
           <div className={styles.headerActions}>
             <button className={controls.iconButton} type='button' onClick={onSearch} aria-label='Tìm kiếm' aria-expanded={searchOpen} aria-controls='global-search-panel'><Icon name='search' size={20} /></button>
+            {isAuthenticated ? <NotificationBell /> : null}
             {isAuthenticated ? (
               <div className={styles.accountMenuWrap}>
                 <button className={styles.accountTrigger} type='button' onClick={onAccountToggle} aria-haspopup='menu' aria-expanded={accountOpen}><Avatar name={userDisplayName} size='sm' decorative /><span>Tài khoản</span></button>

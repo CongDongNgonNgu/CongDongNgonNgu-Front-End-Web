@@ -87,4 +87,15 @@ describe('NotificationStreamClient', () => {
     expect(parsed).not.toHaveProperty('sourceEventId');
     expect(parsed).not.toHaveProperty('deliveryAttempts');
   });
+
+  it('rejects protocol-relative and backslash target paths', () => {
+    expect(parseNotification(JSON.stringify({
+      ...notification,
+      target: { kind: 'COMMUNITY_POST', path: '//external.example/path' },
+    }))).toBeUndefined();
+    expect(parseNotification(JSON.stringify({
+      ...notification,
+      target: { kind: 'COMMUNITY_POST', path: '/\\external.example\\path' },
+    }))).toBeUndefined();
+  });
 });

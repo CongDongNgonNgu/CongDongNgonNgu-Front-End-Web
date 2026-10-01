@@ -27,6 +27,8 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { AiConversationPage } from './features/ai/conversation/pages/AiConversationPage';
 import { AiCoachingPage } from './features/ai/coaching/pages/AiCoachingPage';
 import { MembershipPage } from './features/membership/MembershipPage';
+import { NotificationCenterProvider } from './features/notifications/NotificationCenterProvider';
+import { NotificationsPage } from './features/notifications/NotificationsPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -41,41 +43,44 @@ function RoutedApp() {
   const authSurface = pathname === '/login' ? 'login' : pathname === '/register' ? 'register' : 'flow';
   const authFooterTone = 'light';
   return (
-    <AppShell isAuthenticated={status === 'authenticated'} userDisplayName={user?.displayName} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
-      <Routes>
-        <Route path='/' element={<HomePage />} />
-        <Route path='/languages' element={<LanguageExplorerPage />} />
-        <Route path='/languages/:slug' element={<LanguageHubPage />} />
-        <Route path='/library' element={<LibraryExplorerPage />} />
-        <Route path='/library/contribute' element={<LibraryContributionPage />} />
-        <Route path='/library/review/:resourceId' element={<LibraryReviewDetailPage />} />
-        <Route path='/library/review' element={<LibraryReviewPage />} />
-        <Route path='/library/:resourceId' element={<LibraryResourceDetailPage />} />
-        <Route path='/community' element={<CommunityPage />} />
-        <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />
-        <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
-        <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
-        <Route path='/exchange' element={<PartnerDiscoveryPage />} />
-        <Route path='/exchange/profile/:userId' element={<BuddyProfilePreviewPage />} />
-        <Route path='/membership' element={<MembershipPage />} />
-        <Route path='/membership/checkout/:orderId' element={<MembershipPage />} />
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/register' element={<RegisterPage />} />
-        <Route path='/verify-email' element={<VerifyEmailPage />} />
-        <Route path='/forgot-password' element={<ForgotPasswordPage />} />
-        <Route path='/reset-password' element={<ResetPasswordPage />} />
-        <Route path='/auth/callback' element={<AuthCallbackPage />} />
-        <Route path='/onboarding' element={<OnboardingPage />} />
-        <Route path='/profile' element={<OwnPassportPage />} />
-        <Route path='/profiles/:userId' element={<PublicPassportPage />} />
-        <Route path='/ai' element={<Navigate to='/ai/conversation' replace />} />
-        <Route path='/ai/conversation' element={<AiConversationPage />} />
-        <Route path='/ai/roleplay' element={<AiConversationPage forcedMode='roleplay' />} />
-        <Route path='/ai/writing' element={<AiCoachingPage />} />
-        <Route path='/ai/grammar' element={<AiCoachingPage />} />
-        <Route path='*' element={<NotFoundPage />} />
-      </Routes>
-    </AppShell>
+    <NotificationCenterProvider enabled={status === 'authenticated'}>
+      <AppShell isAuthenticated={status === 'authenticated'} userDisplayName={user?.displayName} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
+        <Routes>
+          <Route path='/' element={<HomePage />} />
+          <Route path='/languages' element={<LanguageExplorerPage />} />
+          <Route path='/languages/:slug' element={<LanguageHubPage />} />
+          <Route path='/library' element={<LibraryExplorerPage />} />
+          <Route path='/library/contribute' element={<LibraryContributionPage />} />
+          <Route path='/library/review/:resourceId' element={<LibraryReviewDetailPage />} />
+          <Route path='/library/review' element={<LibraryReviewPage />} />
+          <Route path='/library/:resourceId' element={<LibraryResourceDetailPage />} />
+          <Route path='/community' element={<CommunityPage />} />
+          <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />
+          <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
+          <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
+          <Route path='/exchange' element={<PartnerDiscoveryPage />} />
+          <Route path='/exchange/profile/:userId' element={<BuddyProfilePreviewPage />} />
+          <Route path='/membership' element={<MembershipPage />} />
+          <Route path='/membership/checkout/:orderId' element={<MembershipPage />} />
+          <Route path='/notifications' element={<NotificationsPage />} />
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/register' element={<RegisterPage />} />
+          <Route path='/verify-email' element={<VerifyEmailPage />} />
+          <Route path='/forgot-password' element={<ForgotPasswordPage />} />
+          <Route path='/reset-password' element={<ResetPasswordPage />} />
+          <Route path='/auth/callback' element={<AuthCallbackPage />} />
+          <Route path='/onboarding' element={<OnboardingPage />} />
+          <Route path='/profile' element={<OwnPassportPage />} />
+          <Route path='/profiles/:userId' element={<PublicPassportPage />} />
+          <Route path='/ai' element={<Navigate to='/ai/conversation' replace />} />
+          <Route path='/ai/conversation' element={<AiConversationPage />} />
+          <Route path='/ai/roleplay' element={<AiConversationPage forcedMode='roleplay' />} />
+          <Route path='/ai/writing' element={<AiCoachingPage />} />
+          <Route path='/ai/grammar' element={<AiCoachingPage />} />
+          <Route path='*' element={<NotFoundPage />} />
+        </Routes>
+      </AppShell>
+    </NotificationCenterProvider>
   );
 }
 

@@ -1,0 +1,31 @@
+.wrap { position: relative; }
+.trigger { position: relative; display: inline-flex; min-width: 2.75rem; min-height: 2.75rem; align-items: center; justify-content: center; border: 1px solid transparent; border-radius: var(--radius-control); color: var(--color-text-secondary); background: transparent; }
+.trigger:hover, .trigger:focus-visible, .triggerActive { color: var(--color-brand-navy); background: var(--color-surface-muted); }
+.badge { position: absolute; top: 0.125rem; right: 0.125rem; min-width: 1.125rem; min-height: 1.125rem; padding: 0.125rem 0.25rem; border: 2px solid var(--color-surface-elevated); border-radius: var(--radius-pill); color: var(--color-text-on-brand); background: var(--color-brand-orange); font-size: 0.625rem; font-weight: var(--font-weight-bold); line-height: 1; text-align: center; }
+.panel { position: absolute; z-index: 35; top: calc(100% + var(--space-2)); right: 0; display: grid; width: min(27rem, calc(100vw - 2rem)); max-height: min(38rem, calc(100vh - 6rem)); overflow: auto; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); box-shadow: var(--shadow-medium); }
+.panelHeader, .panelToolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.panelHeader { padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); }
+.kicker { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); letter-spacing: 0.07em; text-transform: uppercase; }
+.panelHeader h2 { margin: 0.25rem 0 0; font-size: var(--font-size-lg); }
+.count { margin: 0.125rem 0 0; color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+.close { display: inline-flex; min-width: 2.75rem; min-height: 2.75rem; align-items: center; justify-content: center; border: 1px solid var(--color-border); border-radius: var(--radius-control); color: var(--color-text-primary); background: transparent; }
+.close:hover, .close:focus-visible { background: var(--color-surface-muted); }
+.panelToolbar { padding-block: var(--space-3); }
+.filters { display: flex; gap: var(--space-1); }
+.filter, .filterActive, .markAll { min-height: 2.5rem; padding: var(--space-2) var(--space-3); border: 1px solid transparent; border-radius: var(--radius-control); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
+.filter, .markAll { color: var(--color-text-secondary); background: transparent; }
+.filterActive { color: var(--color-brand-navy); background: var(--color-surface-active); border-color: var(--color-border-strong); }
+.filter:hover, .filter:focus-visible, .markAll:hover, .markAll:focus-visible { color: var(--color-brand-navy); background: var(--color-surface-muted); }
+.markAll:disabled { color: var(--color-text-secondary); opacity: 0.55; }
+.connection, .error { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-info-border); border-radius: var(--radius-control); color: var(--color-info-strong); background: var(--color-info-surface); font-size: var(--font-size-xs); }
+.error { color: var(--color-danger-strong); border-color: var(--color-danger-border); background: var(--color-danger-surface); }
+.allLink { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-2) var(--space-3); border-top: 1px solid var(--color-border); color: var(--color-brand-navy); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); text-align: center; text-decoration: none; }
+.allLink:hover, .allLink:focus-visible { text-decoration: underline; }
+.skeleton { display: grid; gap: var(--space-3); padding-block: var(--space-4); }
+.skeleton span { display: block; height: 4rem; border-radius: var(--radius-control); background: var(--color-surface-muted); animation: notification-pulse 1.4s ease-in-out infinite alternate; }
+.skeleton span:nth-child(2) { animation-delay: 120ms; }
+.skeleton span:nth-child(3) { animation-delay: 240ms; }
+@keyframes notification-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .skeleton span { animation: none; } }
+
+@media (max-width: 47.999rem) { .panel { position: fixed; top: 3.5rem; right: var(--gutter-mobile); left: var(--gutter-mobile); width: auto; max-height: calc(100vh - 9rem); } }

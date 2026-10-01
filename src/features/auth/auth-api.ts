@@ -144,8 +144,12 @@ export class AuthApi {
     return session;
   }
 
-  getAccessTokenForTests(): string | null {
+  getAccessToken(): string | null {
     return this.accessToken;
+  }
+
+  getAccessTokenForTests(): string | null {
+    return this.getAccessToken();
   }
 
   private async requestWithAuth<T>(

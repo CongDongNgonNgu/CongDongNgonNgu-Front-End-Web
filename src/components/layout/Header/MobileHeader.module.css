@@ -4,6 +4,9 @@
 .mobileBrand { display: inline-flex; min-width: 0; align-items: center; color: var(--color-text-primary); text-decoration: none; }
 .mobileBrand img { display: block; flex: 0 0 auto; object-fit: contain; }
 .mobileHeaderActions { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.notificationLink { position: relative; display: inline-flex; min-width: 2.75rem; min-height: 2.75rem; align-items: center; justify-content: center; border-radius: var(--radius-control); color: var(--color-text-secondary); text-decoration: none; }
+.notificationLink:hover, .notificationLink:focus-visible { color: var(--color-brand-navy); background: var(--color-surface-muted); }
+.notificationBadge { position: absolute; top: 0.125rem; right: 0.125rem; min-width: 1.125rem; min-height: 1.125rem; padding: 0.125rem 0.25rem; border: 2px solid var(--color-surface-elevated); border-radius: var(--radius-pill); color: var(--color-text-on-brand); background: var(--color-brand-orange); font-size: 0.625rem; font-weight: var(--font-weight-bold); line-height: 1; text-align: center; }
 
 @media (max-width: 47.999rem) {
   .mobileHeader { display: block; min-height: 3.5rem; }
