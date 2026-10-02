@@ -96,7 +96,7 @@ export function AiCoachingWorkspace({
         </Card>
       ) : null}
 
-      <main className={styles.content}>
+      <div className={styles.content}>
         <section className={styles.inputSection} aria-labelledby='coaching-input-title'>
           <div className={styles.sectionHeading}>
             <div><p className={styles.eyebrow}>NỘI DUNG CỦA BẠN</p><h2 id='coaching-input-title'>{modeTitle}</h2></div>
@@ -145,7 +145,7 @@ export function AiCoachingWorkspace({
         {isLoading ? <div className={styles.loading} role='status' aria-live='polite' aria-busy='true'>Đang phân tích nội dung theo ngữ cảnh học tập của bạn…</div> : null}
         {error ? <div className={styles.error} role='alert'><div><strong>Chưa thể hoàn tất lượt luyện tập</strong><p>{error}</p></div><Button variant='quiet' size='sm' onClick={onRetry} disabled={!authenticated || !targetLanguage}>Thử lại</Button></div> : null}
         {result ? <CoachingResult result={result} /> : null}
-      </main>
+      </div>
 
       <aside className={styles.communityBridge} aria-label='Học cùng cộng đồng'>
         <div><strong>Muốn người học khác góp ý sắc thái thực tế?</strong><p>AI chỉ là gợi ý học tập. Bạn có thể mang câu này tới cộng đồng để nghe thêm trải nghiệm của con người.</p></div>

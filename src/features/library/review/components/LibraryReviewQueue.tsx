@@ -121,7 +121,7 @@ export function LibraryReviewQueue({ api }: LibraryReviewQueueProps) {
         </div>
       )}
 
-      <main className={styles.results} aria-labelledby='review-queue-heading' aria-live='polite'>
+      <section className={styles.results} aria-labelledby='review-queue-heading' aria-live='polite'>
         <div className={styles.resultsHeading}>
           <div><p className={styles.eyebrow}>{mode === 'pending' ? 'PENDING COMMUNITY REVIEW' : 'SOURCE HEALTH'}</p><h2 id='review-queue-heading'>{mode === 'pending' ? 'Tài nguyên cần một quyết định' : 'Tài nguyên đã bị ẩn khỏi công khai'}</h2></div>
           <span className={styles.resultCount}>{queue.items.length} mục đã tải</span>
@@ -134,7 +134,7 @@ export function LibraryReviewQueue({ api }: LibraryReviewQueueProps) {
         {queue.items.length > 0 ? <div className={styles.queueList}>{queue.items.map((item) => mode === 'pending' ? <PendingQueueRow key={item.resourceId} item={item as LibraryReviewQueueItem} /> : <InvalidSourceRow key={item.resourceId} item={item as LibraryInvalidSourceQueueItem} />)}</div> : null}
         {queue.error && queue.items.length > 0 ? <div className={styles.inlineError} role='alert'><span>{getLibraryReviewErrorMessage(queue.error)}</span><Button variant='quiet' size='sm' onClick={() => void queue.loadMore()}>Thử lại</Button></div> : null}
         {queue.nextCursor ? <Button className={styles.loadMore} variant='secondary' loading={queue.isLoadingMore} onClick={() => void queue.loadMore()}>Xem thêm</Button> : null}
-      </main>
+      </section>
     </div>
   );
 }

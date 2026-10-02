@@ -146,7 +146,7 @@ export function SpeakingRoomPageView(props: SpeakingRoomPageViewProps) {
         <>
           {room.lifecycle !== 'LIVE' ? <RoomLifecycleState room={room} /> : null}
           <div className={styles.workspace}>
-            <main className={styles.mainColumn}>
+            <div className={styles.mainColumn}>
               <RoomContextCard room={room} />
               <section className={styles.stageSection} aria-labelledby='speaking-stage-title'>
                 <div className={styles.sectionHeading}>
@@ -178,7 +178,7 @@ export function SpeakingRoomPageView(props: SpeakingRoomPageViewProps) {
                 onRaiseHand={handleRaiseHand}
                 onJoin={handleJoin}
               />
-            </main>
+            </div>
 
             <aside className={styles.sideColumn} aria-label='Bảng điều khiển phòng'>
               <Tabs tabs={[{ id: 'chat', label: `Trò chuyện${chat.items.length ? ` · ${chat.items.length}` : ''}`, disabled: !isJoined }, { id: 'queue', label: `Hàng chờ${queue.items.length ? ` · ${queue.items.length}` : ''}`, disabled: !isJoined }]} value={activePanel} onChange={(id) => setActivePanel(id as PanelId)} />
