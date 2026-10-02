@@ -99,7 +99,7 @@ export function ConversationWorkspace({
       ) : null}
 
       <div className={styles.workspaceGrid}>
-        <main className={styles.dialogueColumn} aria-labelledby='dialogue-heading'>
+        <section className={styles.dialogueColumn} aria-labelledby='dialogue-heading'>
           <div className={styles.columnHeading}>
             <div><p className={styles.eyebrow}>DÒNG HỘI THOẠI</p><h2 id='dialogue-heading'>Luyện nói bằng văn bản</h2></div>
             <span className={styles.privacyMark}><Icon name='lock' size={16} /> Riêng tư</span>
@@ -126,7 +126,7 @@ export function ConversationWorkspace({
             <textarea id='conversation-draft' value={draft} onChange={(event) => onDraftChange(event.target.value.slice(0, 400))} onKeyDown={handleComposerKeyDown} placeholder='Nhập câu phản hồi hoặc mô tả ý bạn muốn nói…' disabled={!session || session.status === 'STOPPED' || isSending} rows={4} aria-describedby='composer-hint' />
             <div className={styles.composerBottom}><p id='composer-hint'>Enter để gửi · Shift + Enter để xuống dòng · Không dùng dữ liệu nhạy cảm</p><div className={styles.composerActions}>{session?.status !== 'STOPPED' ? <Button type='button' variant='quiet' size='sm' onClick={onStop} disabled={!session || isStopping} loading={isStopping}>Dừng phiên</Button> : null}<Button type='submit' variant='secondary' disabled={!canSend} loading={isSending}>Gửi lời thoại <span aria-hidden='true'>→</span></Button></div></div>
           </form>
-        </main>
+        </section>
 
         <aside className={styles.rail} aria-label='Thiết lập và mục tiêu phiên'>
           {renderRailContent('desktop')}

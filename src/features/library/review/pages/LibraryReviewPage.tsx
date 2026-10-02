@@ -33,9 +33,9 @@ export function isReviewer(user: AuthUser | null): boolean {
 }
 
 export function ReviewLoading() {
-  return <main className={styles.surface} role='status' aria-label='Đang kiểm tra quyền truy cập'><Skeleton lines={6} label='Đang kiểm tra quyền truy cập' /></main>;
+  return <div className={styles.surface} role='status' aria-label='Đang kiểm tra quyền truy cập'><Skeleton lines={6} label='Đang kiểm tra quyền truy cập' /></div>;
 }
 
 export function ReviewAccessDenied() {
-  return <main className={styles.surface} role='alert' aria-labelledby='review-access-denied'><p className={styles.eyebrow}>REVIEWER ACCESS</p><h1 id='review-access-denied'>Bạn chưa được cấp quyền kiểm duyệt.</h1><p>Không gian này chỉ dành cho MODERATOR và ADMIN.</p></main>;
+  return <div className={styles.surface} role='alert' aria-labelledby='review-access-denied'><p className={styles.eyebrow}>REVIEWER ACCESS</p><h1 id='review-access-denied'>Bạn chưa được cấp quyền kiểm duyệt.</h1><p>Không gian này chỉ dành cho MODERATOR và ADMIN.</p></div>;
 }

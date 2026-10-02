@@ -740,16 +740,16 @@ export function CommunityPostDetailPageView({
 
   if (postLoading) {
     return (
-      <main className="community-detail community-detail--loading" aria-busy="true">
+      <div className="community-detail community-detail--loading" aria-busy="true">
         <div className="community-detail__skeleton" />
         <div className="community-detail__skeleton community-detail__skeleton--large" />
-      </main>
+      </div>
     );
   }
 
   if (postError || !post) {
     return (
-      <main className="community-detail community-detail--state">
+      <div className="community-detail community-detail--state">
         <section className="community-detail__state" role={postError?.unavailable ? undefined : 'alert'}>
           <p className="community-detail__eyebrow">Cộng đồng</p>
           <h1 ref={postStateHeadingRef} tabIndex={-1}>{postError?.message ?? 'Bài viết không khả dụng'}</h1>
@@ -764,12 +764,12 @@ export function CommunityPostDetailPageView({
             </button>
           ) : null}
         </section>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="community-detail">
+    <div className="community-detail">
       <header className="community-detail__mobile-header">
         <button
           type="button"
@@ -1175,7 +1175,7 @@ export function CommunityPostDetailPageView({
               </button>
             </div>
       </Dialog>
-    </main>
+    </div>
   );
 }
 
@@ -1194,12 +1194,12 @@ export function CommunityPostDetailPage({
 
   if (!postId) {
     return (
-      <main className="community-detail community-detail--state">
+      <div className="community-detail community-detail--state">
         <section className="community-detail__state" role="alert">
           <h1>Bài viết không khả dụng</h1>
           <p>Đường dẫn bài viết không hợp lệ.</p>
         </section>
-      </main>
+      </div>
     );
   }
 
