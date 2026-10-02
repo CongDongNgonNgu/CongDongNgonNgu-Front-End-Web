@@ -34,6 +34,7 @@ import { ChallengeDiscoveryPage } from './features/challenges/pages/ChallengeDis
 import { EventDetailPage } from './features/events/pages/EventDetailPage';
 import { EventDiscoveryPage } from './features/events/pages/EventDiscoveryPage';
 import { AdminPage } from './features/admin/pages/AdminPage';
+import { SeoHead } from './features/seo/SeoHead';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -50,6 +51,7 @@ function RoutedApp() {
   const isAdminRoute = pathname.startsWith('/admin');
   return (
     <NotificationCenterProvider enabled={status === 'authenticated'}>
+      <SeoHead />
       <AppShell isAuthenticated={status === 'authenticated'} userDisplayName={user?.displayName} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone} chrome={isAdminRoute ? 'admin' : 'public'}>
         <Routes>
           <Route path='/' element={<HomePage />} />

@@ -1,2 +1,21 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /ai
+Disallow: /api/
+Disallow: /auth
+Disallow: /exchange
+Disallow: /library/contribute
+Disallow: /library/review
+Disallow: /login
+Disallow: /membership
+Disallow: /notifications
+Disallow: /onboarding
+Disallow: /payments
+Disallow: /profile
+Disallow: /register
+Disallow: /reset-password
+Disallow: /rooms
+Disallow: /verify-email
+Disallow: /community/ask
+Sitemap: https://cong-dong-ngon-ngu-sigma.vercel.app/sitemap.xml

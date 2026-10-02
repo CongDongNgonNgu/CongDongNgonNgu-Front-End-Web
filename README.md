@@ -3,8 +3,9 @@
 This repository is the independent web foundation for CongDongNgonNgu. Phase
 02 adds a typed auth boundary and responsive Vietnamese login, registration,
 verification, recovery, reset, and OAuth callback experiences on top of the
-existing shell. Profile, community, Firebase, PWA, and production deployment
-work remain outside this phase.
+existing shell. Profile, community, Firebase, and production deployment work
+remain outside this phase; Phase 16 owns the installable public web shell,
+cache safety, and public SEO metadata.
 
 ## Local commands
 
