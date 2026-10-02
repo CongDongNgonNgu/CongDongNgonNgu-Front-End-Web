@@ -66,6 +66,7 @@ describe("AppShell", () => {
     expect(within(drawer).getByRole("link", { name: "Trang chủ" })).toHaveAttribute("href", "/");
     expect(within(drawer).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("href", "/languages");
     expect(within(drawer).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("href", "/community");
+    expect(within(drawer).getByRole("link", { name: "Membership" })).toHaveAttribute("href", "/membership");
     expect(within(drawer).getByRole("link", { name: "Cách bắt đầu" })).toHaveAttribute("href", "/#how-it-works");
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
     expect(document.activeElement).toHaveAttribute("aria-label", "Đóng menu");
@@ -118,6 +119,11 @@ describe("AppShell", () => {
     await user.click(screen.getByRole("button", { name: "Thêm" }));
     await user.click(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/community");
+    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Thêm" }));
+    await user.click(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Membership" }));
+    expect(screen.getByTestId("location")).toHaveTextContent("/membership");
     expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
