@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import shared from './HomeShared.module.css';
 import styles from './FinalCtaSection.module.css';
 
@@ -8,8 +9,8 @@ export function FinalCtaSection() {
       <h2 id='final-cta-title'>Một ngôn ngữ mới bắt đầu từ một cuộc trò chuyện.</h2>
       <p className={styles.finalDescription}>Chọn một ngôn ngữ, đọc một câu hỏi, hoặc để lại điều bạn biết.</p>
       <div className={styles.finalActions}>
-        <a className={`${shared.buttonLink} ${shared.buttonPrimary}`} href='#languages'>Khám phá ngôn ngữ</a>
-        <a className={shared.textLink} href='#community'>Tìm hiểu cách đóng góp</a>
+        <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/#languages'>Khám phá ngôn ngữ</Link>
+        <Link className={shared.textLink} to='/#community'>Tìm hiểu cách đóng góp</Link>
       </div>
     </section>
   );

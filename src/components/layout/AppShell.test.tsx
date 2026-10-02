@@ -74,6 +74,17 @@ describe("AppShell", () => {
     expect(screen.queryByRole("dialog", { name: "Menu" })).not.toBeInTheDocument();
   });
 
+  it("keeps mobile destinations aligned with desktop routes and closes after navigation", async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    await user.click(screen.getAllByRole("button", { name: "Mở menu" })[0]);
+    await user.click(within(screen.getByRole("dialog", { name: "Menu" })).getByRole("link", { name: "Ngôn ngữ" }));
+
+    expect(screen.getByTestId("location")).toHaveTextContent("/languages");
+    expect(screen.queryByRole("dialog", { name: "Menu" })).not.toBeInTheDocument();
+  });
+
   it("supports complete desktop More menu dismissal behavior", async () => {
     const user = userEvent.setup();
     renderShell();
@@ -142,6 +153,34 @@ describe("AppShell", () => {
     const drawer = screen.getByRole("dialog", { name: "Menu" });
     expect(within(drawer).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("aria-current", "page");
     expect(within(drawer).getByRole("link", { name: "Trang chủ" })).not.toHaveAttribute("aria-current", "page");
+  });
+
+  it("marks the language destination active on a direct route load", async () => {
+    const user = userEvent.setup();
+    renderShell(false, "/languages");
+
+    await user.click(screen.getByRole("button", { name: "Thêm" }));
+    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" })).not.toHaveAttribute("aria-current", "page");
+  });
+
+  it("uses router-backed footer destinations and exposes unavailable auth-footer items as disabled", () => {
+    const { unmount } = renderShell();
+    const footer = screen.getByRole("contentinfo");
+    expect(within(footer).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("href", "/languages");
+    expect(within(footer).getByRole("link", { name: "Cách bắt đầu" })).toHaveAttribute("href", "/#how-it-works");
+    unmount();
+
+    render(
+      <MemoryRouter>
+        <AppShell authLayout>
+          <p>Nội dung xác thực</p>
+        </AppShell>
+      </MemoryRouter>,
+    );
+    const compactFooter = screen.getByRole("contentinfo");
+    expect(within(compactFooter).queryByRole("link", { name: "Bảo mật" })).not.toBeInTheDocument();
+    expect(within(compactFooter).getByText("Bảo mật")).toHaveAttribute("aria-disabled", "true");
   });
 
   it("keeps route-derived active state correct through Back and Forward", async () => {

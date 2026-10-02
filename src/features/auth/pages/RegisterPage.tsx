@@ -107,7 +107,7 @@ export function RegisterPage() {
         <PasswordField label="Xác nhận mật khẩu" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" placeholder="Nhập lại chính xác mật khẩu trên" required />
         <label className={formStyles.authConsent}>
           <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} required />
-          <span>Tôi đã đọc và đồng ý với <a className={formStyles.textLink} href="#rules">Quy tắc cộng đồng</a> và <a className={formStyles.textLink} href="#privacy">Chính sách bảo mật</a> của CongDongNgonNgu.vn.</span>
+          <span>Tôi đã đọc và đồng ý với <span className={formStyles.textLink} aria-disabled='true'>Quy tắc cộng đồng</span> và <span className={formStyles.textLink} aria-disabled='true'>Chính sách bảo mật</span> của CongDongNgonNgu.vn.</span>
         </label>
         <div className={formStyles.formActions}>
           <Button type="submit" variant="secondary" fullWidth loading={loading}>Tạo tài khoản thành viên →</Button>
