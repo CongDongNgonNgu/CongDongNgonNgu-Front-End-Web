@@ -1,0 +1,98 @@
+.card {
+  padding: 0;
+  overflow: hidden;
+  transition: border-color var(--motion-standard), box-shadow var(--motion-standard), transform var(--motion-standard);
+}
+
+.card:hover,
+.cardSelected {
+  border-color: var(--color-brand-navy);
+  box-shadow: var(--shadow-medium);
+}
+
+.cardSelected {
+  outline: 3px solid rgb(217 110 40 / 0.16);
+}
+
+.selectButton {
+  display: grid;
+  width: 100%;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+}
+
+.selectButton:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
+.cardHeader,
+.badges,
+.facts,
+.facts span {
+  display: flex;
+  align-items: center;
+}
+
+.cardHeader {
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.badges {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.language,
+.type {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.type {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.facts {
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.facts span {
+  gap: var(--space-2);
+}
+
+.facts svg {
+  flex: 0 0 auto;
+  color: var(--color-brand-navy);
+}
+
+@media (max-width: 30rem) {
+  .selectButton { padding: var(--space-4); }
+  .cardHeader { align-items: flex-start; flex-direction: column; }
+}

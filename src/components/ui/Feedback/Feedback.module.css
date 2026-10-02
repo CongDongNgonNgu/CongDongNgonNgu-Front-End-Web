@@ -50,7 +50,7 @@
   line-height: var(--leading-body);
 }
 
-.feedbackStateEmpty { color: var(--color-info); }
+.feedbackStateEmpty { color: var(--color-info-strong); }
 .feedbackStateError { color: var(--color-danger); }
 .feedbackStateError > button { margin-top: var(--space-2); }
 
