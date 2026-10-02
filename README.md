@@ -14,7 +14,15 @@ npm ci
 npm run typecheck
 npm test
 npm run build
+npm run performance:check
 ```
+
+Phase 16D keeps the home shell eager and loads secondary routes with
+route-level `React.lazy` boundaries. Run `npm run performance:check` after a
+production build to enforce the initial-load budgets measured from
+`dist/index.html`: JavaScript must stay at or below 200,000 gzip bytes and CSS
+at or below 55,000 gzip bytes. Route-specific chunks are loaded only when
+their route is visited.
 
 The local API base defaults to /api/v1 and is configurable through
 VITE_API_BASE_URL. Vite proxies that path to the independent local backend at
