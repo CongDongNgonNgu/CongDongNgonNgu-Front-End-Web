@@ -10,16 +10,18 @@ interface AppShellProps {
   authLayout?: boolean;
   authSurface?: 'login' | 'register' | 'flow';
   authFooterTone?: 'light' | 'dark';
+  chrome?: 'public' | 'admin';
 }
 
-export function AppShell({ children, isAuthenticated = false, userDisplayName, onLogout, authLayout = false, authSurface = 'flow', authFooterTone = 'light' }: AppShellProps) {
-  const shellClasses = ['app-shell', authLayout ? `auth-shell auth-shell-${authSurface}` : ''].filter(Boolean).join(' ');
+export function AppShell({ children, isAuthenticated = false, userDisplayName, onLogout, authLayout = false, authSurface = 'flow', authFooterTone = 'light', chrome = 'public' }: AppShellProps) {
+  const isAdminChrome = chrome === 'admin';
+  const shellClasses = ['app-shell', authLayout ? `auth-shell auth-shell-${authSurface}` : '', isAdminChrome ? 'admin-shell' : ''].filter(Boolean).join(' ');
   return (
     <div className={shellClasses}>
       <a className='skip-link' href='#main-content'>Bỏ qua đến nội dung chính</a>
-      <Header isAuthenticated={isAuthenticated} userDisplayName={userDisplayName} onLogout={onLogout} hideMobileActionBar={authLayout} />
-      <main className={authLayout ? 'site-main auth-site-main' : 'shell-width site-main'} id='main-content' tabIndex={-1}>{children}</main>
-      <Footer compact={authLayout} compactTone={authFooterTone} />
+      {!isAdminChrome && <Header isAuthenticated={isAuthenticated} userDisplayName={userDisplayName} onLogout={onLogout} hideMobileActionBar={authLayout} />}
+      <main className={isAdminChrome ? 'admin-site-main' : authLayout ? 'site-main auth-site-main' : 'shell-width site-main'} id='main-content' tabIndex={-1}>{children}</main>
+      {!isAdminChrome && <Footer compact={authLayout} compactTone={authFooterTone} />}
     </div>
   );
 }
