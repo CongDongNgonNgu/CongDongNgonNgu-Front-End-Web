@@ -1,0 +1,162 @@
+.panel {
+  display: grid;
+  gap: var(--space-6);
+  padding: clamp(var(--space-5), 4vw, var(--space-8));
+}
+
+.header,
+.badges,
+.eventKind,
+.hostLink,
+.facts dt,
+.boundaryNote,
+.stateNote {
+  display: flex;
+  align-items: center;
+}
+
+.header {
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.badges { flex-wrap: wrap; gap: var(--space-2); }
+
+.eventKind {
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.eventKind svg { color: var(--color-brand-navy); }
+
+.heading,
+.heading h1,
+.heading p,
+.hostSection p,
+.actionArea h2,
+.registrationState p,
+.actionError,
+.stateNote,
+.boundaryNote,
+.muted {
+  margin: 0;
+}
+
+.heading { display: grid; gap: var(--space-3); }
+
+.language,
+.kicker {
+  color: var(--color-brand-orange-readable);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heading h1 {
+  color: var(--color-text-primary);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.topic {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: var(--leading-body);
+}
+
+.hostSection {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-block: 1px solid var(--color-border);
+}
+
+.hostLink {
+  width: fit-content;
+  gap: var(--space-3);
+  color: inherit;
+  text-decoration: none;
+}
+
+.hostLink:focus-visible,
+.loginLink:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+
+.hostLink > span { display: grid; gap: var(--space-1); }
+.hostLink strong { color: var(--color-text-primary); }
+.hostLink small { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+.hostLink:hover strong { text-decoration: underline; }
+
+.facts {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.42fr) 1fr;
+  gap: var(--space-4);
+}
+
+.facts dt,
+.facts dd {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.facts dt { gap: var(--space-2); color: var(--color-text-secondary); }
+.facts dt svg { flex: 0 0 auto; color: var(--color-brand-navy); }
+.facts dd { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+.facts dd span { color: var(--color-text-secondary); font-weight: var(--font-weight-regular); }
+
+.boundaryNote,
+.stateNote {
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.boundaryNote svg { flex: 0 0 auto; color: var(--color-success-strong); }
+.stateNote svg { flex: 0 0 auto; color: var(--color-info); }
+
+.actionArea {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.actionArea h2 { color: var(--color-text-primary); font-size: var(--font-size-xl); line-height: var(--leading-tight); }
+.registrationState { display: grid; gap: var(--space-2); }
+.registrationState p { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.muted { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+
+.loginLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-control);
+  color: var(--color-text-on-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  background: var(--color-brand-navy);
+}
+
+.loginLink:hover { background: var(--color-brand-navy-hover); }
+.actionError { color: var(--color-danger-strong); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+.screenReaderOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+@media (max-width: 40rem) {
+  .panel { padding: var(--space-4); }
+  .header { align-items: flex-start; flex-direction: column; }
+  .facts div { grid-template-columns: 1fr; gap: var(--space-1); }
+}
