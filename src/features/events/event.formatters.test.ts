@@ -16,4 +16,11 @@ describe('event formatters', () => {
     expect(schedule).toContain('–');
     expect(schedule).toContain('21:00');
   });
+
+  it('follows IANA DST transitions instead of applying a fixed offset', () => {
+    expect(formatEventDate('2026-03-08T06:30:00.000Z', 'America/New_York')).toMatch(/01:30/);
+    expect(formatEventDate('2026-03-08T07:30:00.000Z', 'America/New_York')).toMatch(/03:30/);
+    expect(formatEventDate('2026-11-01T04:30:00.000Z', 'America/New_York')).toMatch(/00:30/);
+    expect(formatEventDate('2026-11-01T05:30:00.000Z', 'America/New_York')).toMatch(/01:30/);
+  });
 });
