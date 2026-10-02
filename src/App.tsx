@@ -33,6 +33,7 @@ import { SpeakingRoomPage } from './features/rooms/pages/SpeakingRoomPage';
 import { ChallengeDiscoveryPage } from './features/challenges/pages/ChallengeDiscoveryPage';
 import { EventDetailPage } from './features/events/pages/EventDetailPage';
 import { EventDiscoveryPage } from './features/events/pages/EventDiscoveryPage';
+import { AdminPage } from './features/admin/pages/AdminPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -46,9 +47,10 @@ function RoutedApp() {
     || pathname === '/onboarding';
   const authSurface = pathname === '/login' ? 'login' : pathname === '/register' ? 'register' : 'flow';
   const authFooterTone = 'light';
+  const isAdminRoute = pathname.startsWith('/admin');
   return (
     <NotificationCenterProvider enabled={status === 'authenticated'}>
-      <AppShell isAuthenticated={status === 'authenticated'} userDisplayName={user?.displayName} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone}>
+      <AppShell isAuthenticated={status === 'authenticated'} userDisplayName={user?.displayName} onLogout={logout} authLayout={authLayout} authSurface={authSurface} authFooterTone={authFooterTone} chrome={isAdminRoute ? 'admin' : 'public'}>
         <Routes>
           <Route path='/' element={<HomePage />} />
           <Route path='/languages' element={<LanguageExplorerPage />} />
@@ -85,6 +87,7 @@ function RoutedApp() {
           <Route path='/ai/roleplay' element={<AiConversationPage forcedMode='roleplay' />} />
           <Route path='/ai/writing' element={<AiCoachingPage />} />
           <Route path='/ai/grammar' element={<AiCoachingPage />} />
+          <Route path='/admin' element={<AdminPage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
       </AppShell>

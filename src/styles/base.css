@@ -56,6 +56,11 @@ a {
   padding-block: 0;
 }
 
+.admin-site-main {
+  flex: 1;
+  width: 100%;
+}
+
 .auth-site-main {
   width: 100%;
   background: var(--color-surface);
