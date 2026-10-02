@@ -82,4 +82,19 @@ describe('ConversationWorkspace', () => {
     fireEvent.keyDown(composer, { key: 'Enter', code: 'Enter', shiftKey: false });
     expect(onSend).toHaveBeenCalledTimes(1);
   });
+
+  it('renders hostile model output as text without creating an HTML sink', () => {
+    const payload = '<img src=x onerror=alert(1)><script>alert(1)</script>';
+
+    renderWorkspace({
+      session: {
+        ...session,
+        turns: [{ ...session.turns[0], content: payload }],
+      },
+    });
+
+    expect(screen.getByText(payload, { selector: 'p' })).toBeInTheDocument();
+    expect(document.querySelector('script')).toBeNull();
+    expect(document.querySelector('img[src="x"]')).toBeNull();
+  });
 });
