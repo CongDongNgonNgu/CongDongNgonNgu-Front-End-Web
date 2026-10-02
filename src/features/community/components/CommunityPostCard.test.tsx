@@ -7,7 +7,7 @@ import type { CommunityPost } from '../community.types';
 
 afterEach(cleanup);
 
-function post(): CommunityPost {
+function post(overrides: Partial<CommunityPost> = {}): CommunityPost {
   return {
     id: 'post-1',
     author: { id: 'author-1', displayName: 'Lan' },
@@ -34,6 +34,7 @@ function post(): CommunityPost {
     viewerReacted: false,
     commentCount: 0,
     isSaved: false,
+    ...overrides,
   };
 }
 
@@ -52,10 +53,10 @@ function createApi(): CommunityPostActionsApi {
   };
 }
 
-function renderCard(api: CommunityPostActionsApi) {
+function renderCard(api: CommunityPostActionsApi, postValue = post()) {
   return render(
     <MemoryRouter initialEntries={['/community']}>
-      <CommunityPostCard post={post()} api={api} authenticated onAuthRequired={vi.fn()} />
+      <CommunityPostCard post={postValue} api={api} authenticated onAuthRequired={vi.fn()} />
     </MemoryRouter>,
   );
 }
@@ -104,6 +105,20 @@ describe('CommunityPostCard', () => {
       'href',
       '/community/posts/post-1',
     );
+  });
+
+  it('keeps hostile author and post content in text nodes', () => {
+    const payload = '<img src=x onerror=alert(1)><script>alert(1)</script>';
+
+    renderCard(createApi(), post({
+      author: { id: 'author-1', displayName: payload },
+      content: payload,
+    }));
+
+    expect(screen.getByText(payload, { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByText(payload, { selector: 'p' })).toBeInTheDocument();
+    expect(document.querySelector('script')).toBeNull();
+    expect(document.querySelector('img[src="x"]')).toBeNull();
   });
 
   it('submits the supported post report fields and shows a generic submitted state', async () => {
