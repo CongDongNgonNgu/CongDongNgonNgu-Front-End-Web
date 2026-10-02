@@ -31,6 +31,8 @@ import { NotificationCenterProvider } from './features/notifications/Notificatio
 import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { SpeakingRoomPage } from './features/rooms/pages/SpeakingRoomPage';
 import { ChallengeDiscoveryPage } from './features/challenges/pages/ChallengeDiscoveryPage';
+import { EventDetailPage } from './features/events/pages/EventDetailPage';
+import { EventDiscoveryPage } from './features/events/pages/EventDiscoveryPage';
 
 function RoutedApp() {
   const { status, user, logout } = useAuth();
@@ -67,6 +69,8 @@ function RoutedApp() {
           <Route path='/notifications' element={<NotificationsPage />} />
           <Route path='/rooms/:roomId' element={<SpeakingRoomPage />} />
           <Route path='/challenges' element={<ChallengeDiscoveryPage />} />
+          <Route path='/events' element={<EventDiscoveryPage />} />
+          <Route path='/events/:eventId' element={<EventDetailPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/register' element={<RegisterPage />} />
           <Route path='/verify-email' element={<VerifyEmailPage />} />

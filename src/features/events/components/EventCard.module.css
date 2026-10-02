@@ -1,0 +1,119 @@
+.card {
+  padding: 0;
+  overflow: hidden;
+  transition: border-color var(--motion-standard), box-shadow var(--motion-standard), transform var(--motion-standard);
+}
+
+.card:hover {
+  border-color: var(--color-brand-navy);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-1px);
+}
+
+.cardLink {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardLink:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
+.header,
+.badges,
+.facts dt,
+.detailPrompt {
+  display: flex;
+  align-items: center;
+}
+
+.header {
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.header > svg { color: var(--color-brand-navy); }
+
+.badges {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.heading,
+.heading h3,
+.heading p {
+  margin: 0;
+}
+
+.heading { display: grid; gap: var(--space-2); }
+
+.language {
+  color: var(--color-brand-orange-readable);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heading h3 {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  line-height: var(--leading-tight);
+}
+
+.topic {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding-block: var(--space-4);
+  border-block: 1px solid var(--color-border);
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 0.36fr) 1fr;
+  gap: var(--space-3);
+}
+
+.facts dt,
+.facts dd {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--leading-body);
+}
+
+.facts dt {
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.facts dt svg { flex: 0 0 auto; color: var(--color-brand-navy); }
+
+.facts dd {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detailPrompt {
+  justify-content: space-between;
+  color: var(--color-brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.detailPrompt span { font-size: var(--font-size-lg); }
+
+@media (max-width: 30rem) {
+  .cardLink { padding: var(--space-4); }
+  .facts div { grid-template-columns: 1fr; gap: var(--space-1); }
+}
