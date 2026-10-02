@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { PwaExperience } from '../../features/pwa/PwaExperience';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header';
 
@@ -19,6 +20,7 @@ export function AppShell({ children, isAuthenticated = false, userDisplayName, o
   return (
     <div className={shellClasses}>
       <a className='skip-link' href='#main-content'>Bỏ qua đến nội dung chính</a>
+      <PwaExperience />
       {!isAdminChrome && <Header isAuthenticated={isAuthenticated} userDisplayName={userDisplayName} onLogout={onLogout} hideMobileActionBar={authLayout} />}
       <main className={isAdminChrome ? 'admin-site-main' : authLayout ? 'site-main auth-site-main' : 'shell-width site-main'} id='main-content' tabIndex={-1}>{children}</main>
       {!isAdminChrome && <Footer compact={authLayout} compactTone={authFooterTone} />}

@@ -1,0 +1,42 @@
+{
+  "id": "/",
+  "name": "Cộng đồng ngôn ngữ",
+  "short_name": "Ngôn ngữ",
+  "description": "Cộng đồng độc lập để học hỏi và chia sẻ ngôn ngữ cùng nhau.",
+  "lang": "vi",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f2",
+  "theme_color": "#1e4165",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand/congdongngonngu-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Khám phá ngôn ngữ",
+      "short_name": "Ngôn ngữ",
+      "url": "/languages",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Cộng đồng",
+      "short_name": "Cộng đồng",
+      "url": "/community",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
