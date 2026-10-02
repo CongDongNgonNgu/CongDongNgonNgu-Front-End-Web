@@ -13,7 +13,7 @@ import type { CommunityComposerApiPort } from '../components/CommunityComposer';
 import type { CommunityPostActionsApi } from '../components/CommunityPostCard';
 import { StructuredResponseExperience } from '../components/StructuredResponseExperience';
 import './CommunityPostDetailPage.css';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Dialog } from '../../../components/ui/Overlays';
 import { Icon } from '../../../components/ui/Icon/Icon';
 
@@ -939,7 +939,7 @@ export function CommunityPostDetailPageView({
             {shareMessage ? (
               <p role="status">
                 {shareMessage}{' '}
-                {shareHref ? <a href={shareHref}>Mở liên kết chia sẻ</a> : null}
+                {shareHref ? <Link to={shareHref}>Mở liên kết chia sẻ</Link> : null}
               </p>
             ) : null}
           </article>

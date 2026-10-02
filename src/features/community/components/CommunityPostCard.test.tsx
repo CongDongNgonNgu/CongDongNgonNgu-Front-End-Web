@@ -1,5 +1,6 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CommunityPostCard, type CommunityPostActionsApi } from './CommunityPostCard';
 import type { CommunityPost } from '../community.types';
@@ -51,11 +52,36 @@ function createApi(): CommunityPostActionsApi {
   };
 }
 
+function renderCard(api: CommunityPostActionsApi) {
+  return render(
+    <MemoryRouter initialEntries={['/community']}>
+      <CommunityPostCard post={post()} api={api} authenticated onAuthRequired={vi.fn()} />
+    </MemoryRouter>,
+  );
+}
+
 describe('CommunityPostCard', () => {
+  it('uses client-side links for the post detail and returned share path', async () => {
+    const api = createApi();
+    const user = userEvent.setup();
+
+    renderCard(api);
+
+    expect(screen.getByRole('link', { name: 'Xem chi tiết bài viết của Lan' })).toHaveAttribute(
+      'href',
+      '/community/posts/post-1',
+    );
+    await user.click(screen.getByRole('button', { name: 'Chia sẻ bài viết' }));
+    expect(await screen.findByRole('link', { name: 'Mở liên kết chia sẻ' })).toHaveAttribute(
+      'href',
+      '/community/posts/post-1',
+    );
+  });
+
   it('confirms save only after the backend response', async () => {
     const api = createApi();
     const user = userEvent.setup();
-    render(<CommunityPostCard post={post()} api={api} authenticated onAuthRequired={vi.fn()} />);
+    renderCard(api);
 
     await user.click(screen.getByRole('button', { name: 'Lưu bài viết' }));
     await waitFor(() => expect(api.savePost).toHaveBeenCalledWith('post-1'));
@@ -69,7 +95,7 @@ describe('CommunityPostCard', () => {
     });
     const api = createApi();
     const user = userEvent.setup();
-    render(<CommunityPostCard post={post()} api={api} authenticated onAuthRequired={vi.fn()} />);
+    renderCard(api);
 
     await user.click(screen.getByRole('button', { name: 'Chia sẻ bài viết' }));
     await waitFor(() => expect(api.getShareLink).toHaveBeenCalledWith('post-1'));
@@ -83,7 +109,7 @@ describe('CommunityPostCard', () => {
   it('submits the supported post report fields and shows a generic submitted state', async () => {
     const api = createApi();
     const user = userEvent.setup();
-    render(<CommunityPostCard post={post()} api={api} authenticated onAuthRequired={vi.fn()} />);
+    renderCard(api);
 
     await user.click(screen.getByRole('button', { name: 'Báo cáo bài viết' }));
     await user.selectOptions(screen.getByLabelText(/^Lý do báo cáo/), 'OTHER');

@@ -1,4 +1,5 @@
 import { Icon } from '../../components/ui/Icon/Icon';
+import { Link } from 'react-router-dom';
 import heroImage from '../../assets/language-community-hero-v2.jpg';
 import { heroImageAlt } from './home.constants';
 import shared from './HomeShared.module.css';
@@ -14,8 +15,8 @@ export function HeroSection() {
           Một cộng đồng mở để học cùng con người, thực hành với AI và xây dựng tri thức ngôn ngữ.
         </p>
         <div className={styles.heroActions}>
-          <a className={`${shared.buttonLink} ${shared.buttonPrimary}`} href='#how-it-works'>Xem cách bắt đầu</a>
-          <a className={`${shared.buttonLink} ${shared.buttonSecondary}`} href='#community'>Khám phá cộng đồng</a>
+          <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/#how-it-works'>Xem cách bắt đầu</Link>
+          <Link className={`${shared.buttonLink} ${shared.buttonSecondary}`} to='/#community'>Khám phá cộng đồng</Link>
         </div>
         <p className={styles.heroNote}>
           <Icon name='users' size={18} />

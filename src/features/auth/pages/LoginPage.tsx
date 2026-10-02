@@ -106,7 +106,7 @@ export function LoginPage() {
           <span>Bạn là thành viên mới?</span>
           <Link className={formStyles.textLink} to='/register'>Đăng ký tài khoản miễn phí</Link>
         </div>
-        <p className={formStyles.legalNote}>Bằng việc đăng nhập, bạn đồng ý với <a className={formStyles.textLink} href='#rules'>Quy tắc cộng đồng</a> và <a className={formStyles.textLink} href='#privacy'>Chính sách bảo mật</a> của CongDongNgonNgu.vn.</p>
+        <p className={formStyles.legalNote}>Bằng việc đăng nhập, bạn đồng ý với <span className={formStyles.textLink} aria-disabled='true'>Quy tắc cộng đồng</span> và <span className={formStyles.textLink} aria-disabled='true'>Chính sách bảo mật</span> của CongDongNgonNgu.vn.</p>
       </form>
     </AuthBody>
   );

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 import { DesktopHeader } from './DesktopHeader';
 import { HeaderDrawer } from './HeaderDrawer';
 import { HeaderSearchPanel } from './HeaderSearchPanel';
@@ -15,6 +16,7 @@ interface HeaderProps {
 }
 
 export function Header({ isAuthenticated = false, userDisplayName, onLogout, hideMobileActionBar = false }: HeaderProps) {
+  const { pathname, search, hash } = useLocation();
   const avatarName = resolveAvatarName(userDisplayName);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -26,6 +28,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
   const searchTriggerRef = useRef<HTMLElement | null>(null);
 
+  const closeMore = useCallback(() => setMoreOpen(false), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const openDrawer = useCallback((event: MouseEvent<HTMLButtonElement>) => {
     menuButtonRef.current = event.currentTarget;
@@ -57,6 +60,12 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
   }, [searchValue]);
 
   useEffect(() => {
+    setMoreOpen(false);
+    setAccountOpen(false);
+    setDrawerOpen(false);
+  }, [pathname, search, hash]);
+
+  useEffect(() => {
     if (!searchOpen) {
       searchTriggerRef.current?.focus();
       return;
@@ -76,6 +85,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
         onLogout={onLogout}
         moreOpen={moreOpen}
         onMoreToggle={toggleMore}
+        onMoreClose={closeMore}
         onSearch={openSearch}
         searchOpen={searchOpen}
         onAccountToggle={toggleAccount}

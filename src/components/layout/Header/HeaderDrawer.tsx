@@ -1,7 +1,6 @@
 import type { RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { Drawer } from '../../ui/Overlays';
-import { Icon } from '../../ui/Icon/Icon';
 import { additionalNavigation, headerNavigation } from '../../navigation/navigation';
 import { NavigationLink } from './NavigationLink';
 import { runLogout } from './header.utils';
@@ -26,9 +25,9 @@ export function HeaderDrawer({ open, isAuthenticated, onLogout, onClose, initial
       returnFocusRef={returnFocusRef as RefObject<HTMLElement>}
     >
       <nav className={styles.drawerNav} aria-label='Điều hướng menu di động'>
-        <Link className={`${styles.drawerNavItem} ${styles.drawerNavItemActive}`} to='/' onClick={onClose}><Icon name='home' size={20} /><span>Trang chủ</span></Link>
-        {headerNavigation.filter((item) => item.id !== 'home').map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={onClose} />)}
-        {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} onClick={onClose} />)}
+        <NavigationLink item={headerNavigation[0]} label={headerNavigation[0].shortLabel} iconName='home' className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose} />
+        {headerNavigation.filter((item) => item.id !== 'home').map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose} />)}
+        {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose} />)}
       </nav>
       <div className={styles.drawerAuth} aria-label='Tài khoản'>
         {isAuthenticated ? (

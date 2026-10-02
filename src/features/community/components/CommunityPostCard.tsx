@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ApiClientError } from '../../../services/api-client';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon/Icon';
@@ -161,13 +162,13 @@ export function CommunityPostCard({
 
         {post.topic ? <p className={styles.topic}>#{post.topic}</p> : null}
         <p className={styles.content} dir={post.targetLanguage.direction}>{post.content}</p>
-        <a
+        <Link
           className={styles.detailLink}
-          href={`/community/posts/${encodeURIComponent(post.id)}`}
+          to={`/community/posts/${encodeURIComponent(post.id)}`}
           aria-label={`Xem chi tiết bài viết của ${post.author.displayName}`}
         >
           Xem chi tiết bài viết
-        </a>
+        </Link>
 
         <div className={styles.footer}>
           <div className={styles.stats} aria-label='Thông tin tương tác'>
@@ -227,7 +228,7 @@ export function CommunityPostCard({
         {shareMessage ? (
           <p className={styles.shareConfirmation} role='status'>
             {shareMessage}{' '}
-            {shareHref ? <a href={shareHref}>Mở liên kết chia sẻ</a> : null}
+            {shareHref ? <Link to={shareHref}>Mở liên kết chia sẻ</Link> : null}
           </p>
         ) : null}
       </Card>

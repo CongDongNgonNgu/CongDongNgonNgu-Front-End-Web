@@ -4,7 +4,8 @@ import styles from "./Footer.module.css";
 
 interface FooterItem {
   label: string;
-  href: string;
+  href?: string;
+  available?: boolean;
 }
 
 const footerGroups: Array<{ title: string; items: FooterItem[] }> = [
@@ -13,29 +14,29 @@ const footerGroups: Array<{ title: string; items: FooterItem[] }> = [
     items: [
       { label: "Trang chủ", href: "/" },
       { label: "Tìm bạn học", href: "/exchange" },
-      { label: "Ngôn ngữ", href: "#languages" },
-      { label: "Cách bắt đầu", href: "#how-it-works" },
+      { label: "Ngôn ngữ", href: "/languages" },
+      { label: "Cách bắt đầu", href: "/#how-it-works" },
     ],
   },
   {
     title: "Cộng đồng",
     items: [
-      { label: "Câu chuyện học tập", href: "#community" },
-      { label: "Nguyên tắc chung", href: "#community" },
+      { label: "Câu chuyện học tập", href: "/#community" },
+      { label: "Nguyên tắc chung", href: "/#community" },
     ],
   },
 ];
 
 const compactFooterItems: FooterItem[] = [
-  { label: "Về chúng tôi", href: "#about" },
-  { label: "Quy tắc cộng đồng", href: "#community" },
-  { label: "Bảo mật", href: "#privacy" },
-  { label: "Điều khoản", href: "#terms" },
-  { label: "Hỗ trợ", href: "#support" },
+  { label: "Về chúng tôi", available: false },
+  { label: "Quy tắc cộng đồng", available: false },
+  { label: "Bảo mật", available: false },
+  { label: "Điều khoản", available: false },
+  { label: "Hỗ trợ", available: false },
 ];
 
 function FooterLink({ item }: { item: FooterItem }) {
-  if (item.href.startsWith("#")) return <a href={item.href}>{item.label}</a>;
+  if (item.available === false || !item.href) return <span className={styles.footerUnavailable} aria-disabled='true'>{item.label}</span>;
   return <Link to={item.href}>{item.label}</Link>;
 }
 

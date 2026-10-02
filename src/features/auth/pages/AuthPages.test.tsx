@@ -107,6 +107,9 @@ describe('auth pages', () => {
     expect(screen.getByLabelText(/địa chỉ email/i)).toHaveAttribute('autocomplete', 'email');
     expect(screen.getByLabelText(/^Mật khẩu/)).toHaveAttribute('autocomplete', 'current-password');
     expect(screen.getByText(/Bằng việc đăng nhập/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Đăng ký tài khoản miễn phí' })).toHaveAttribute('href', '/register');
+    expect(screen.getByRole('link', { name: 'Quên mật khẩu?' })).toHaveAttribute('href', '/forgot-password');
+    expect(screen.getByText('Quy tắc cộng đồng')).toHaveAttribute('aria-disabled', 'true');
     await waitFor(() => expect(screen.getByRole('button', { name: /Google/i })).toBeDisabled());
   });
 
@@ -213,6 +216,8 @@ describe('auth pages', () => {
     expect(screen.getByText('Lưu ý xác thực hòm thư')).toBeVisible();
     expect(screen.getByText('Quy chuẩn mật khẩu dễ nhớ & an toàn:')).toBeVisible();
     expect(screen.getByRole('checkbox', { name: /Tôi đã đọc và đồng ý/i })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Đăng nhập ngay' })).toHaveAttribute('href', '/login');
+    expect(screen.getByText('Chính sách bảo mật')).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Tôn trọng & bảo mật quyền riêng tư')).toBeVisible();
   });
 

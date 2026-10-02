@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Avatar } from '../../ui/Surface';
 import { DropdownMenu } from '../../ui/Overlays';
 import { Icon } from '../../ui/Icon/Icon';
@@ -16,14 +16,14 @@ interface DesktopHeaderProps {
   onLogout?: () => Promise<void> | void;
   moreOpen: boolean;
   onMoreToggle: () => void;
+  onMoreClose: () => void;
   onSearch: SearchHandler;
   searchOpen: boolean;
   onAccountToggle: () => void;
   accountOpen: boolean;
 }
 
-export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, moreOpen, onMoreToggle, onSearch, searchOpen, onAccountToggle, accountOpen }: DesktopHeaderProps) {
-  const { pathname } = useLocation();
+export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, moreOpen, onMoreToggle, onMoreClose, onSearch, searchOpen, onAccountToggle, accountOpen }: DesktopHeaderProps) {
   return (
     <div className={styles.desktopHeader}>
       <div className='shell-width'>
@@ -34,8 +34,8 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
           </Link>
           <nav className={styles.desktopNav} aria-label='Điều hướng chính'>
             <ul className={styles.desktopNavList}>
-              {headerNavigation.map((item) => <li key={item.id}><NavigationLink item={item} className={pathname === item.href ? styles.navLinkActive : styles.navLink} /></li>)}
-              <li><DropdownMenu open={moreOpen} label='Thêm' onToggle={onMoreToggle}>{additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.dropdownItem} />)}</DropdownMenu></li>
+              {headerNavigation.map((item) => <li key={item.id}><NavigationLink item={item} className={styles.navLink} activeClassName={styles.navLinkActive} /></li>)}
+              <li><DropdownMenu open={moreOpen} label='Thêm' onToggle={onMoreToggle} onClose={onMoreClose}>{additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.dropdownItem} activeClassName={styles.dropdownItemActive} onClick={onMoreClose} />)}</DropdownMenu></li>
             </ul>
           </nav>
           <div className={styles.headerActions}>
