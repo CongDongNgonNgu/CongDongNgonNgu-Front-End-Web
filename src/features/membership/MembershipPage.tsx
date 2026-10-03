@@ -148,6 +148,10 @@ export function MembershipPageView({ api, authStatus, orderId, forgedReturn = fa
   const redeemPlan = catalog?.plans[0] ?? null;
 
   async function handlePurchase(plan: MembershipCatalogPlan): Promise<void> {
+    if (catalog?.payment.qrAvailable !== true) {
+      setCheckoutError('Thanh toán QR hiện chưa khả dụng. Bạn có thể tiếp tục dùng Free hoặc tín dụng đóng góp.');
+      return;
+    }
     if (authStatus !== 'authenticated') {
       navigate('/login', { state: { from: location.pathname } });
       return;
@@ -240,7 +244,12 @@ export function MembershipPageView({ api, authStatus, orderId, forgedReturn = fa
                 <p className={styles.eyebrow}>BẢNG QUYỀN LỢI</p>
                 <h2 id='membership-pricing-title'>Chọn mức hỗ trợ phù hợp</h2>
               </div>
-              <p className={styles.sectionHint}>Giá và chu kỳ dưới đây là dữ liệu hiện hành từ máy chủ.</p>
+              <div>
+                <p className={styles.sectionHint}>Giá và chu kỳ dưới đây là dữ liệu hiện hành từ máy chủ.</p>
+                <Badge tone={catalog.payment.qrAvailable ? 'success' : 'warning'}>
+                  {catalog.payment.qrAvailable ? 'QR thanh toán đang khả dụng' : 'Thanh toán QR chưa mở'}
+                </Badge>
+              </div>
             </div>
             <div className={styles.pricingGrid}>
               <PlanCard
@@ -266,11 +275,11 @@ export function MembershipPageView({ api, authStatus, orderId, forgedReturn = fa
                   action={(
                     <Button
                       fullWidth
-                      disabled={authStatus === 'loading' || activeMembership === true || formatMembershipAmount(plan.price.amountMinor, plan.price.currency) === null}
+                      disabled={authStatus === 'loading' || activeMembership === true || catalog.payment.qrAvailable !== true || formatMembershipAmount(plan.price.amountMinor, plan.price.currency) === null}
                       loading={checkoutLoading && selectedPlanKey === planKey(plan)}
                       onClick={() => void handlePurchase(plan)}
                     >
-                      {activeMembership ? 'Gói hiện tại đang hoạt động' : authStatus === 'authenticated' ? 'Tiếp tục checkout' : 'Đăng nhập để mua'}
+                      {activeMembership ? 'Gói hiện tại đang hoạt động' : catalog.payment.qrAvailable !== true ? 'Thanh toán QR chưa mở' : authStatus === 'authenticated' ? 'Tiếp tục checkout' : 'Đăng nhập để mua'}
                     </Button>
                   )}
                 />
