@@ -59,6 +59,11 @@ export interface MembershipCatalog {
     benefits: MembershipPublicBenefit[];
   };
   plans: MembershipCatalogPlan[];
+  payment: {
+    available: boolean;
+    qrAvailable: boolean;
+    provider: 'payos' | null;
+  };
   evaluatedAt: string;
 }
 

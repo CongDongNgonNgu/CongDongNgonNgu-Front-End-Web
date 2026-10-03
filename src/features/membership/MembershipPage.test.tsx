@@ -44,6 +44,7 @@ const catalog: MembershipCatalog = {
       periodCount: 1,
     },
   }],
+  payment: { available: true, qrAvailable: true, provider: 'payos' },
   evaluatedAt: '2026-10-01T12:00:00.000Z',
 };
 
@@ -179,6 +180,20 @@ describe('MembershipPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(/chưa được bật/i);
     expect(screen.queryByRole('link', { name: /mở trang thanh toán/iu })).not.toBeInTheDocument();
     expect(screen.queryByText('Đã thanh toán')).not.toBeInTheDocument();
+  });
+
+  it('uses the server payment capability and does not offer checkout while QR is disabled', async () => {
+    const api = makeApi({
+      getCatalog: vi.fn().mockResolvedValue({
+        ...catalog,
+        payment: { available: false, qrAvailable: false, provider: null },
+      }),
+    });
+    renderPage(api, 'authenticated');
+
+    expect((await screen.findAllByText('Thanh toán QR chưa mở')).length).toBe(2);
+    expect(screen.getByRole('button', { name: 'Thanh toán QR chưa mở' })).toBeDisabled();
+    expect(api.createOrder).not.toHaveBeenCalled();
   });
 
   it('prevents a double click from creating duplicate orders', async () => {
