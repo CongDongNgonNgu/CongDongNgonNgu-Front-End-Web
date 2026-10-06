@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PwaExperience } from '../../features/pwa/PwaExperience';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header';
+import { useHashScroll } from './useHashScroll';
 
 interface AppShellProps {
   children: ReactNode;
@@ -15,6 +16,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, isAuthenticated = false, userDisplayName, onLogout, authLayout = false, authSurface = 'flow', authFooterTone = 'light', chrome = 'public' }: AppShellProps) {
+  useHashScroll();
   const isAdminChrome = chrome === 'admin';
   const shellClasses = ['app-shell', authLayout ? `auth-shell auth-shell-${authSurface}` : '', isAdminChrome ? 'admin-shell' : ''].filter(Boolean).join(' ');
   return (
