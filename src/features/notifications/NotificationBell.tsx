@@ -4,8 +4,10 @@ import { Icon } from '../../components/ui/Icon/Icon';
 import { NotificationFeed } from './NotificationFeed';
 import { useOptionalNotificationCenter } from './NotificationCenterProvider';
 import styles from './NotificationBell.module.css';
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 
 export function NotificationBell() {
+  const { t, formatNumber } = useUiLocale();
   const center = useOptionalNotificationCenter();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -51,7 +53,7 @@ export function NotificationBell() {
         ref={triggerRef}
         className={[styles.trigger, open ? styles.triggerActive : ''].filter(Boolean).join(' ')}
         type='button'
-        aria-label={center.unreadCount ? `Thông báo, ${center.unreadCount} chưa đọc` : 'Thông báo'}
+        aria-label={center.unreadCount ? t('shell.notificationsUnread', { count: formatNumber(center.unreadCount) }) : t('shell.notifications')}
         aria-haspopup='dialog'
         aria-expanded={open}
         aria-controls='notification-panel'

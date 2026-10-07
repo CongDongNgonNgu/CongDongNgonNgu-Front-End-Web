@@ -7,6 +7,7 @@ import { MobileActionBar } from './MobileActionBar';
 import { MobileHeader } from './MobileHeader';
 import { resolveAvatarName } from './header.utils';
 import styles from './Header.module.css';
+import { useUiLocale } from '../../../features/ui-locale/UiLocaleProvider';
 
 interface HeaderProps {
   isAuthenticated?: boolean;
@@ -16,11 +17,12 @@ interface HeaderProps {
 }
 
 export function Header({ isAuthenticated = false, userDisplayName, onLogout, hideMobileActionBar = false }: HeaderProps) {
+  const { t } = useUiLocale();
   const { pathname, search, hash } = useLocation();
-  const avatarName = resolveAvatarName(userDisplayName);
+  const avatarName = userDisplayName?.trim() ? resolveAvatarName(userDisplayName) : t('shell.member');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-  const [searchAnnouncement, setSearchAnnouncement] = useState('');
+  const [searchAnnouncement, setSearchAnnouncement] = useState<{ query: string } | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -48,7 +50,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
   const openSearch = useCallback((event?: MouseEvent<HTMLButtonElement>) => {
     if (event) searchTriggerRef.current = event.currentTarget;
     setSearchOpen(true);
-    setSearchAnnouncement('');
+    setSearchAnnouncement(null);
     setMoreOpen(false);
     setAccountOpen(false);
     setDrawerOpen(false);
@@ -56,7 +58,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
   const closeSearch = useCallback(() => setSearchOpen(false), []);
   const submitSearch = useCallback(() => {
     const value = searchValue.trim();
-    setSearchAnnouncement(value ? `Đã nhận từ khóa “${value}”.` : 'Nhập một từ khóa để bắt đầu.');
+    setSearchAnnouncement({ query: value });
   }, [searchValue]);
 
   useEffect(() => {
@@ -96,8 +98,8 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
       {searchOpen ? (
         <HeaderSearchPanel
           value={searchValue}
-          announcement={searchAnnouncement}
-          onChange={(value) => { setSearchValue(value); setSearchAnnouncement(''); }}
+          announcement={searchAnnouncement ? searchAnnouncement.query ? t('shell.searchReceived', { query: searchAnnouncement.query }) : t('shell.searchRequired') : ''}
+          onChange={(value) => { setSearchValue(value); setSearchAnnouncement(null); }}
           onSubmit={submitSearch}
           onClose={closeSearch}
         />
