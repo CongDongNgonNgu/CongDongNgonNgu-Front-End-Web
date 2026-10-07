@@ -6,6 +6,10 @@ import { PwaExperience } from './PwaExperience';
 afterEach(cleanup);
 
 describe('PwaExperience', () => {
+  it('exposes application status as a named semantic region', () => {
+    render(<PwaExperience online installSurface='none' updateReady={false} />);
+    expect(screen.getByRole('region', { name: 'Trạng thái ứng dụng' })).toBeInTheDocument();
+  });
   it('truthfully explains that protected actions need network while offline', () => {
     render(<PwaExperience online={false} installSurface="none" updateReady={false} />);
 

@@ -1,49 +1,54 @@
 import { Link } from "react-router-dom";
 import { Icon } from "../../ui/Icon/Icon";
 import styles from "./Footer.module.css";
+import { useUiLocale } from '../../../features/ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../../../features/ui-locale/ui-locale';
+import { UiLocaleSelector } from '../Header/UiLocaleSelector';
 
 interface FooterItem {
-  label: string;
+  label: TranslationKey;
   href?: string;
   available?: boolean;
 }
 
-const footerGroups: Array<{ title: string; items: FooterItem[] }> = [
+const footerGroups: Array<{ title: TranslationKey; items: FooterItem[] }> = [
   {
-    title: "Khám phá",
+    title: 'navigation.home',
     items: [
-      { label: "Trang chủ", href: "/" },
-      { label: "Tìm bạn học", href: "/exchange" },
-      { label: "Ngôn ngữ", href: "/languages" },
-      { label: "Cách bắt đầu", href: "/#how-it-works" },
+      { label: 'navigation.homeShort', href: "/" },
+      { label: 'navigation.exchange', href: "/exchange" },
+      { label: 'navigation.languages', href: "/languages" },
+      { label: 'navigation.how-it-works', href: "/#how-it-works" },
     ],
   },
   {
-    title: "Cộng đồng",
+    title: 'navigation.community',
     items: [
-      { label: "Câu chuyện học tập", href: "/#community" },
-      { label: "Nguyên tắc chung", href: "/#community" },
+      { label: 'shell.learningStories', href: "/#community" },
+      { label: 'shell.guidelines', href: "/#community" },
     ],
   },
 ];
 
 const compactFooterItems: FooterItem[] = [
-  { label: "Về chúng tôi", available: false },
-  { label: "Quy tắc cộng đồng", available: false },
-  { label: "Bảo mật", available: false },
-  { label: "Điều khoản", available: false },
-  { label: "Hỗ trợ", available: false },
+  { label: 'shell.about', available: false },
+  { label: 'shell.communityRules', available: false },
+  { label: 'shell.privacy', available: false },
+  { label: 'shell.terms', available: false },
+  { label: 'shell.support', available: false },
 ];
 
 function FooterLink({ item }: { item: FooterItem }) {
-  if (item.available === false || !item.href) return <span className={styles.footerUnavailable} aria-disabled='true'>{item.label}</span>;
-  return <Link to={item.href}>{item.label}</Link>;
+  const { t } = useUiLocale();
+  if (item.available === false || !item.href) return <span className={styles.footerUnavailable} aria-disabled='true'>{t(item.label)}</span>;
+  return <Link to={item.href}>{t(item.label)}</Link>;
 }
 
-function FooterGroup({ title, items }: { title: string; items: FooterItem[] }) {
+function FooterGroup({ title, items }: { title: TranslationKey; items: FooterItem[] }) {
+  const { t } = useUiLocale();
   return (
     <details className={styles.footerGroup} open>
-      <summary><span>{title}</span><Icon name="chevron-down" size={18} /></summary>
+      <summary><span>{t(title)}</span><Icon name="chevron-down" size={18} /></summary>
       <ul>
         {items.map((item) => <li key={item.label}><FooterLink item={item} /></li>)}
       </ul>
@@ -52,6 +57,7 @@ function FooterGroup({ title, items }: { title: string; items: FooterItem[] }) {
 }
 
 export function Footer({ compact = false, compactTone = 'light' }: { compact?: boolean; compactTone?: 'light' | 'dark' }) {
+  const { t } = useUiLocale();
   const footerClasses = [
     styles.siteFooter,
     compact ? styles.compactFooter : '',
@@ -63,13 +69,13 @@ export function Footer({ compact = false, compactTone = 'light' }: { compact?: b
       <div className="shell-width">
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
-            <Link className={styles.footerBrandLink} to="/" aria-label="Cộng đồng ngôn ngữ, Trang chủ">
+            <Link className={styles.footerBrandLink} to="/" aria-label={t('shell.brandHome')}>
               <img src="/brand/congdongngonngu-mark.png" alt="" width="512" height="512" />
-              <span>Cộng đồng ngôn ngữ</span>
+              <span>{t('shell.brand')}</span>
             </Link>
-            <p>Cùng nhau học hỏi và chia sẻ ngôn ngữ, với sự tò mò và tôn trọng khác biệt.</p>
+            <p>{t('shell.footerDescription')}</p>
           </div>
-          <nav className={styles.compactLinks} aria-label="Liên kết chân trang">
+          <nav className={styles.compactLinks} aria-label={t('shell.footerLinks')}>
             {compactFooterItems.map((item) => <FooterLink key={item.label} item={item} />)}
           </nav>
           <div className={styles.footerGroups}>
@@ -77,11 +83,8 @@ export function Footer({ compact = false, compactTone = 'light' }: { compact?: b
           </div>
         </div>
         <div className={styles.footerBottom}>
-          <label htmlFor="footer-locale">Ngôn ngữ giao diện</label>
-          <select id="footer-locale" defaultValue="vi">
-            <option value="vi">Tiếng Việt</option>
-          </select>
-          <button className={styles.shareButton} type="button" aria-label="Chia sẻ CongDongNgonNgu.vn"><Icon name="share" size={18} /></button>
+          <div className={styles.localeControl}><UiLocaleSelector /></div>
+          <button className={styles.shareButton} type="button" aria-label={t('shell.share')}><Icon name="share" size={18} /></button>
           <p>© 2026 CongDongNgonNgu.vn</p>
         </div>
       </div>

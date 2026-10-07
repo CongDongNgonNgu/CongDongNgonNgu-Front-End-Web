@@ -1,3 +1,4 @@
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import type { HTMLAttributes, ReactNode } from 'react';
 import type { InstallSurface } from './pwa.utils';
 import { usePwaExperience } from './usePwaExperience';
@@ -20,6 +21,7 @@ function Surface({ children, className = '', ...props }: { children: ReactNode; 
 }
 
 export function PwaExperience({ online, installSurface, updateReady, onInstall, onUpdate }: PwaExperienceProps) {
+  const { t } = useUiLocale();
   const pwa = usePwaExperience();
   const isOnline = online ?? pwa.online;
   const surface = installSurface ?? pwa.installSurface;
@@ -27,12 +29,12 @@ export function PwaExperience({ online, installSurface, updateReady, onInstall, 
   const showInstall = isOnline && surface !== 'none' && surface !== 'installed';
 
   return (
-    <div className={styles.stack} aria-label='Trạng thái ứng dụng'>
+    <div className={styles.stack} role='region' aria-label={t('shell.pwa.status')}>
       {!isOnline && (
         <Surface role='status' aria-live='polite' className={styles.statusSurface}>
           <div>
-            <strong>Đang ngoại tuyến</strong>
-            <p>Đăng nhập, cộng đồng, AI và thanh toán cần kết nối mạng.</p>
+            <strong>{t('shell.pwa.offline')}</strong>
+            <p>{t('shell.pwa.offlineDescription')}</p>
           </div>
           <span className={styles.statusDot} aria-hidden='true' />
         </Surface>
@@ -41,39 +43,39 @@ export function PwaExperience({ online, installSurface, updateReady, onInstall, 
       {hasUpdate && (
         <Surface role='status' aria-live='polite' className={styles.statusSurface}>
           <div>
-            <strong>Phiên bản mới đã sẵn sàng</strong>
-            <p>Cập nhật để tiếp tục với trải nghiệm mới nhất.</p>
+            <strong>{t('shell.pwa.updateReady')}</strong>
+            <p>{t('shell.pwa.updateDescription')}</p>
           </div>
           <button className={styles.primaryAction} type='button' onClick={onUpdate ?? pwa.update}>
-            Cập nhật ứng dụng
+            {t('shell.pwa.update')}
           </button>
         </Surface>
       )}
 
       {showInstall && (
-        <Surface aria-label='Hướng dẫn cài đặt ứng dụng' className={styles.installSurface}>
+        <Surface aria-label={t('shell.pwa.installGuide')} className={styles.installSurface}>
           <div className={styles.installCopy}>
-            <span className={styles.eyebrow}>Cộng đồng ngôn ngữ</span>
+            <span className={styles.eyebrow}>{t('shell.brand')}</span>
             {surface === 'ios-guide' ? (
               <>
-                <strong>Thêm ứng dụng vào Màn hình chính</strong>
-                <p>Trong Safari, chọn Chia sẻ rồi chọn Thêm vào Màn hình chính.</p>
+                <strong>{t('shell.pwa.iosTitle')}</strong>
+                <p>{t('shell.pwa.iosDescription')}</p>
               </>
             ) : (
               <>
-                <strong>Cài ứng dụng để truy cập nhanh hơn</strong>
-                <p>Gọn nhẹ, dễ mở lại và vẫn tôn trọng các vùng dữ liệu riêng tư.</p>
+                <strong>{t('shell.pwa.installTitle')}</strong>
+                <p>{t('shell.pwa.installDescription')}</p>
               </>
             )}
           </div>
           <div className={styles.actions}>
             {surface === 'browser-prompt' && (
               <button className={styles.primaryAction} type='button' onClick={onInstall ?? pwa.install}>
-                Cài ứng dụng
+                {t('shell.pwa.install')}
               </button>
             )}
             <button className={styles.secondaryAction} type='button' onClick={pwa.dismissInstall}>
-              Đóng hướng dẫn cài đặt
+              {t('shell.pwa.closeInstall')}
             </button>
           </div>
         </Surface>

@@ -2,12 +2,14 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
+import { UiLocaleProvider } from '../../ui-locale/UiLocaleProvider';
+import { UI_LOCALE_STORAGE_KEY } from '../../ui-locale/ui-locale';
 import { ApiClientError } from '../../../services/api-client';
 import { LibraryLearnFromResourcePanel } from './LibraryLearnFromResourcePanel';
 import type { LibraryPublicResource } from '../library.types';
 import type { AiLearningResult } from '../../ai/learning/ai-learning.types';
 
-afterEach(() => cleanup());
+afterEach(() => { cleanup(); localStorage.clear(); });
 
 const resource: LibraryPublicResource = {
   id: 'resource-09e', resourceType: 'SENTENCE', primaryLanguageCode: 'en', secondaryLanguageCode: null, cefrLevel: 'A2', topics: ['daily-life'], reviewState: 'VERIFIED',
@@ -84,4 +86,15 @@ describe('LibraryLearnFromResourcePanel', () => {
     expect(screen.getByRole('link', { name: /Đăng nhập/ })).toHaveAttribute('href', '/login');
     expect(api.learn).not.toHaveBeenCalled();
   });
+});
+
+it('uses an English generic error instead of unknown backend exception text', async () => {
+  localStorage.setItem(UI_LOCALE_STORAGE_KEY, 'en');
+  const api: LearningApi = { learn: vi.fn(async () => { throw new ApiClientError('private-provider-secret', 500, 'UNKNOWN'); }) };
+  const user = userEvent.setup();
+  render(<UiLocaleProvider><MemoryRouter><LibraryLearnFromResourcePanel resource={resource} api={api} authenticated /></MemoryRouter></UiLocaleProvider>);
+  await user.click(screen.getByRole('button', { name: /Learn from this resource/ }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Could not connect to the learning service. Please try again later.');
+  expect(screen.queryByText('private-provider-secret')).not.toBeInTheDocument();
+  expect(api.learn).toHaveBeenCalledWith({ resourceId: 'resource-09e' });
 });

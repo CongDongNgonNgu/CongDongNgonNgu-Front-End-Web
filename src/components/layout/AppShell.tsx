@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../features/ui-locale/UiLocaleProvider';
 import type { ReactNode } from 'react';
 import { PwaExperience } from '../../features/pwa/PwaExperience';
 import { Footer } from './Footer/Footer';
@@ -16,12 +17,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, isAuthenticated = false, userDisplayName, onLogout, authLayout = false, authSurface = 'flow', authFooterTone = 'light', chrome = 'public' }: AppShellProps) {
+  const { t } = useUiLocale();
   useHashScroll();
   const isAdminChrome = chrome === 'admin';
   const shellClasses = ['app-shell', authLayout ? `auth-shell auth-shell-${authSurface}` : '', isAdminChrome ? 'admin-shell' : ''].filter(Boolean).join(' ');
   return (
     <div className={shellClasses}>
-      <a className='skip-link' href='#main-content'>Bỏ qua đến nội dung chính</a>
+      <a className='skip-link' href='#main-content'>{t('shell.skip')}</a>
       <PwaExperience />
       {!isAdminChrome && <Header isAuthenticated={isAuthenticated} userDisplayName={userDisplayName} onLogout={onLogout} hideMobileActionBar={authLayout} />}
       <main className={isAdminChrome ? 'admin-site-main' : authLayout ? 'site-main auth-site-main' : 'shell-width site-main'} id='main-content' tabIndex={-1}>{children}</main>

@@ -9,9 +9,11 @@ interface DrawerProps {
   children: ReactNode;
   initialFocusRef?: RefObject<HTMLElement>;
   returnFocusRef?: RefObject<HTMLElement>;
+  closeLabel?: string;
+  navigationLabel?: string;
 }
 
-export function Drawer({ open, title, onClose, children, initialFocusRef, returnFocusRef }: DrawerProps) {
+export function Drawer({ open, title, onClose, children, initialFocusRef, returnFocusRef, closeLabel = 'Đóng menu', navigationLabel = 'Điều hướng' }: DrawerProps) {
   const titleId = "drawer-title";
   const wasOpen = useRef(false);
 
@@ -41,10 +43,10 @@ export function Drawer({ open, title, onClose, children, initialFocusRef, return
       <aside className={styles.drawer} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className={styles.drawerHeader}>
           <div>
-            <p className={styles.drawerKicker}>Điều hướng</p>
+            <p className={styles.drawerKicker}>{navigationLabel}</p>
             <h2 id={titleId}>{title}</h2>
           </div>
-          <button ref={initialFocusRef as RefObject<HTMLButtonElement>} className={styles.iconButton} type="button" onClick={onClose} aria-label="Đóng menu"><Icon name="x" size={20} /></button>
+          <button ref={initialFocusRef as RefObject<HTMLButtonElement>} className={styles.iconButton} type="button" onClick={onClose} aria-label={closeLabel}><Icon name="x" size={20} /></button>
         </div>
         <div className={styles.drawerBody}>{children}</div>
       </aside>

@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import type { LibraryAttributionCue, LibraryPublicProvenance } from '../library.types';
 import styles from './LibraryAttributionList.module.css';
 
@@ -9,11 +10,12 @@ interface LibraryAttributionListProps {
 }
 
 export function LibraryAttributionList({ entries, detail = false }: LibraryAttributionListProps) {
+  const { t } = useUiLocale();
   return (
     <section className={styles.section} aria-labelledby={detail ? 'resource-license-heading' : undefined}>
       <div className={styles.heading}>
-        <span className={styles.kicker}>Open reference</span>
-        <h2 id={detail ? 'resource-license-heading' : undefined}>Nguồn và giấy phép</h2>
+        <span className={styles.kicker}>{t('library.attributionEyebrow')}</span>
+        <h2 id={detail ? 'resource-license-heading' : undefined}>{t('library.sources')}</h2>
       </div>
       <div className={styles.list}>
         {entries.map((entry, index) => (
@@ -23,10 +25,10 @@ export function LibraryAttributionList({ entries, detail = false }: LibraryAttri
               <p className={styles.licenseName}>{entry.license.displayName}</p>
             </div>
             <div className={styles.licenseMeta}>
-              {entry.license.attributionRequired ? <span>Ghi công bắt buộc</span> : <span>Ghi công không bắt buộc</span>}
-              {entry.license.redistributionAllowed ? <span>Được phép chia sẻ</span> : <span>Không đủ điều kiện công khai</span>}
-              {'sourceUrl' in entry && safeExternalUrl(entry.sourceUrl) ? <a href={safeExternalUrl(entry.sourceUrl)!} target='_blank' rel='noreferrer'>Nguồn gốc ↗</a> : null}
-              <a href={entry.license.canonicalUrl} target='_blank' rel='noreferrer'>Xem điều khoản</a>
+              {entry.license.attributionRequired ? <span>{t('library.attributionRequired')}</span> : <span>{t('library.attributionOptional')}</span>}
+              {entry.license.redistributionAllowed ? <span>{t('library.sharingAllowed')}</span> : <span>{t('library.publicIneligible')}</span>}
+              {'sourceUrl' in entry && safeExternalUrl(entry.sourceUrl) ? <a href={safeExternalUrl(entry.sourceUrl)!} target='_blank' rel='noreferrer'>{t('library.originalSource')}</a> : null}
+              <a href={entry.license.canonicalUrl} target='_blank' rel='noreferrer'>{t('library.licenseTerms')}</a>
             </div>
           </div>
         ))}

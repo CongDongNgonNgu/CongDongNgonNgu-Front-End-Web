@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Icon } from '../../../components/ui/Icon/Icon';
@@ -10,6 +11,7 @@ interface LibraryFilterDrawerProps {
 }
 
 export function LibraryFilterDrawer({ open, onClose, children }: LibraryFilterDrawerProps) {
+  const { t } = useUiLocale();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -54,7 +56,7 @@ export function LibraryFilterDrawer({ open, onClose, children }: LibraryFilterDr
   if (!open) return null;
   return (
     <div className={styles.layer}>
-      <button className={styles.backdrop} type='button' aria-label='Đóng bộ lọc' onClick={onClose} />
+      <button className={styles.backdrop} type='button' aria-label={t('library.closeFilters')} onClick={onClose} />
       <div
         ref={panelRef}
         id='library-filter-drawer'
@@ -65,16 +67,16 @@ export function LibraryFilterDrawer({ open, onClose, children }: LibraryFilterDr
       >
         <div className={styles.header}>
           <div>
-            <span className={styles.kicker}>Knowledge Explorer</span>
-            <h2 id='library-filter-drawer-title'>Bộ lọc tìm kiếm</h2>
+            <span className={styles.kicker}>{t('library.drawerEyebrow')}</span>
+            <h2 id='library-filter-drawer-title'>{t('library.filterTitle')}</h2>
           </div>
-          <button ref={closeButtonRef} className={styles.closeButton} type='button' onClick={onClose} aria-label='Đóng bộ lọc'>
+          <button ref={closeButtonRef} className={styles.closeButton} type='button' onClick={onClose} aria-label={t('library.closeFilters')}>
             <Icon name='x' size={20} />
           </button>
         </div>
         <div className={styles.content}>{children}</div>
         <div className={styles.footer}>
-          <Button type='button' fullWidth onClick={onClose}>Xem kết quả</Button>
+          <Button type='button' fullWidth onClick={onClose}>{t('library.viewResults')}</Button>
         </div>
       </div>
     </div>
