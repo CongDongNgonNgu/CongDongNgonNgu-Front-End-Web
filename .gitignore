@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+artifacts/ui-locale/
 .env
 .env.*
 !.env.example
