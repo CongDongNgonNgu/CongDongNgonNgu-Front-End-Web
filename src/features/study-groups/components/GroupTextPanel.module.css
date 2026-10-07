@@ -1,0 +1,42 @@
+.panel form {
+  display: grid;
+  gap: var(--space-3);
+}
+.panel form button {
+  justify-self: start;
+}
+.texts {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+.texts article {
+  padding: var(--space-5);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  min-width: 0;
+}
+.texts header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.texts time {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: var(--leading-body);
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.panel button {
+  min-height: 44px;
+}

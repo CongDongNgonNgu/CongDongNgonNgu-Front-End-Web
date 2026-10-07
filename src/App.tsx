@@ -40,6 +40,9 @@ const EventDetailPage = lazy(() => import('./features/events/pages/EventDetailPa
 const EventDiscoveryPage = lazy(() => import('./features/events/pages/EventDiscoveryPage').then(({ EventDiscoveryPage }) => ({ default: EventDiscoveryPage })));
 const AdminPage = lazy(() => import('./features/admin/pages/AdminPage').then(({ AdminPage }) => ({ default: AdminPage })));
 
+const StudyGroupsPage = lazy(() => import('./features/study-groups/pages/StudyGroupsPage').then(({ StudyGroupsPage }) => ({ default: StudyGroupsPage })));
+const StudyGroupPage = lazy(() => import('./features/study-groups/pages/StudyGroupPage').then(({ StudyGroupPage }) => ({ default: StudyGroupPage })));
+
 function RouteLoading() {
   const { t } = useUiLocale();
   return <p className='shell-width' role='status' aria-live='polite'>{t('common.pageLoading')}</p>;
@@ -73,6 +76,9 @@ function RoutedApp() {
             <Route path='/library/review' element={<LibraryReviewPage />} />
             <Route path='/library/:resourceId' element={<LibraryResourceDetailPage />} />
             <Route path='/community' element={<CommunityPage />} />
+            <Route path='/community/groups' element={<StudyGroupsPage />} />
+            <Route path='/community/groups/invitations' element={<StudyGroupsPage />} />
+            <Route path='/community/groups/:groupId' element={<StudyGroupPage />} />
             <Route path='/community/ask/correction' element={<CommunityCorrectionRequestPage />} />
             <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
             <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />

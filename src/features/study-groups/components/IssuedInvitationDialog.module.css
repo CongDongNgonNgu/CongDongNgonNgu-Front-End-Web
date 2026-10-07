@@ -1,0 +1,13 @@
+.content {
+  display: grid;
+  gap: var(--space-4);
+  overflow-wrap: anywhere;
+}
+.content input {
+  font-size: var(--font-size-md);
+  min-width: 0;
+}
+.content button {
+  justify-self: start;
+  min-height: 44px;
+}
