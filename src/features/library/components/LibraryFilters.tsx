@@ -1,21 +1,11 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useEffect, useState } from 'react';
 import type { LanguageCatalogItem } from '../../languages/languages.types';
 import { CEFR_LEVELS } from '../../languages/languages.types';
 import { LIBRARY_RESOURCE_TYPES, type LibraryFilters as LibraryFilterValues } from '../library.types';
+import { resourceTypeLabelKeys } from '../library.presentation';
 import styles from './LibraryFilters.module.css';
 
-const resourceTypeLabels: Record<(typeof LIBRARY_RESOURCE_TYPES)[number], string> = {
-  VOCABULARY: 'Từ vựng',
-  SENTENCE: 'Câu mẫu',
-  TRANSLATION: 'Bản dịch',
-  GRAMMAR_ITEM: 'Ngữ pháp',
-  DIALOGUE: 'Hội thoại',
-  IDIOM: 'Thành ngữ',
-  SLANG: 'Tiếng lóng',
-  CULTURAL_NOTE: 'Ghi chú văn hoá',
-  PRONUNCIATION: 'Phát âm',
-  LEARNING_COLLECTION: 'Bộ sưu tập',
-};
 
 interface LibraryFiltersProps {
   values: LibraryFilterValues;
@@ -34,6 +24,7 @@ export function LibraryFilters({
   onChange,
   onClear,
 }: LibraryFiltersProps) {
+  const { t } = useUiLocale();
   const [topicDraft, setTopicDraft] = useState(values.topic);
   const hasFilters = Boolean(values.language || values.type || values.topic || values.level);
 
@@ -48,19 +39,19 @@ export function LibraryFilters({
   return (
     <div className={styles.filterGroup}>
       <div className={styles.filterHeading}>
-        <span className={styles.filterKicker}>Refine</span>
-        <h2>Bộ lọc</h2>
+        <span className={styles.filterKicker}>{t('library.refine')}</span>
+        <h2>{t('library.filters')}</h2>
       </div>
 
       <label className={styles.field} htmlFor={`${idPrefix}-language`}>
-        <span>Ngôn ngữ</span>
+        <span>{t('library.language')}</span>
         <select
           id={`${idPrefix}-language`}
           value={values.language}
           onChange={(event) => onChange('language', event.target.value)}
           disabled={isLoadingLanguages && languages.length === 0}
         >
-          <option value=''>Tất cả ngôn ngữ</option>
+          <option value=''>{t('library.allLanguages')}</option>
           {languages.map((language) => (
             <option key={language.code} value={language.code}>
               {language.nativeName} · {language.code.toUpperCase()}
@@ -70,15 +61,15 @@ export function LibraryFilters({
       </label>
 
       <label className={styles.field} htmlFor={`${idPrefix}-type`}>
-        <span>Loại tài nguyên</span>
+        <span>{t('library.resourceType')}</span>
         <select id={`${idPrefix}-type`} value={values.type} onChange={(event) => onChange('type', event.target.value)}>
-          <option value=''>Tất cả loại</option>
-          {LIBRARY_RESOURCE_TYPES.map((type) => <option key={type} value={type}>{resourceTypeLabels[type]}</option>)}
+          <option value=''>{t('library.allTypes')}</option>
+          {LIBRARY_RESOURCE_TYPES.map((type) => <option key={type} value={type}>{t(type === 'CULTURAL_NOTE' ? 'library.typeCultureNote' : resourceTypeLabelKeys[type])}</option>)}
         </select>
       </label>
 
       <label className={styles.field} htmlFor={`${idPrefix}-topic`}>
-        <span>Chủ đề</span>
+        <span>{t('library.topic')}</span>
         <input
           id={`${idPrefix}-topic`}
           type='text'
@@ -91,21 +82,21 @@ export function LibraryFilters({
               commitTopic();
             }
           }}
-          placeholder='Ví dụ: travel'
+          placeholder={t('library.topicExample')}
           inputMode='search'
         />
       </label>
 
       <label className={styles.field} htmlFor={`${idPrefix}-level`}>
-        <span>Trình độ CEFR</span>
+        <span>{t('library.level')}</span>
         <select id={`${idPrefix}-level`} value={values.level} onChange={(event) => onChange('level', event.target.value)}>
-          <option value=''>Mọi trình độ</option>
+          <option value=''>{t('library.allLevels')}</option>
           {CEFR_LEVELS.map((level) => <option key={level} value={level}>{level}</option>)}
         </select>
       </label>
 
       <button className={styles.clearButton} type='button' onClick={onClear} disabled={!hasFilters}>
-        Xoá bộ lọc
+        {t('library.clearFilters')}
       </button>
     </div>
   );

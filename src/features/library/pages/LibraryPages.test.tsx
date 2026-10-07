@@ -7,9 +7,16 @@ import { LibraryResourceDetailPage } from './LibraryResourceDetailPage';
 import type { LibraryPublicResource, LibraryPublicSearchItem } from '../library.types';
 import type { LibrarySearchApiPort } from '../hooks/useLibrarySearch';
 import type { LibraryResourceApiPort } from '../hooks/useLibraryResource';
+import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
+
+function LocaleSwitch() {
+  const { setLocale } = useUiLocale();
+  return <><button onClick={() => setLocale('en')}>English</button><button onClick={() => setLocale('vi')}>Tiếng Việt</button></>;
+}
 
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   document.body.style.overflow = '';
 });
 
@@ -215,6 +222,22 @@ const detailResource: LibraryPublicResource = {
 };
 
 describe('Library resource detail page', () => {
+  it('switches interface copy without translating content, changing a direct URL or refetching', async () => {
+    const api = { getResource: vi.fn().mockResolvedValue(detailResource) };
+    const user = userEvent.setup();
+    render(<UiLocaleProvider><MemoryRouter initialEntries={['/library/detail-1?language=vi#source']}>
+      <LocaleSwitch /><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes><LocationProbe />
+    </MemoryRouter></UiLocaleProvider>);
+    expect(await screen.findByRole('heading', { name: 'từ điển' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'English' }));
+    expect(screen.getByRole('heading', { name: 'Resource content' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Sources and licenses' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'từ điển' })).toHaveAttribute('lang', 'vi');
+    expect(screen.getByLabelText('location-search')).toHaveTextContent('?language=vi');
+    expect(api.getResource).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: 'Tiếng Việt' }));
+    expect(screen.getByRole('heading', { name: 'Nội dung tài nguyên' })).toBeVisible();
+  });
   it('renders read-only content and safe license cues without internal metadata', async () => {
     const api: LibraryResourceApiPort = { getResource: vi.fn().mockResolvedValue(detailResource) };
     render(
@@ -229,4 +252,41 @@ describe('Library resource detail page', () => {
     expect(screen.getAllByText('A public dictionary resource.')[0]).toBeVisible();
     expect(screen.queryByText('public-source-1')).not.toBeInTheDocument();
   });
+});
+
+it('localizes all public browse controls while retaining content filters and API values', async () => {
+  const api = { listResources: vi.fn().mockResolvedValue({ items: [searchItem('one')], nextCursor: null }) };
+  const catalogApi = { listLanguages: vi.fn().mockResolvedValue(languages) };
+  const user = userEvent.setup();
+  render(<UiLocaleProvider><MemoryRouter initialEntries={['/library?language=vi&type=VOCABULARY']}><LocaleSwitch /><LibraryExplorerPageView api={api} catalogApi={catalogApi} /><LocationProbe /></MemoryRouter></UiLocaleProvider>);
+  await screen.findByText('xin chào');
+  await user.click(screen.getByRole('button', { name: 'English' }));
+  expect(screen.getByLabelText('Content language')).toHaveValue('vi');
+  expect(screen.getByLabelText('Resource type')).toHaveValue('VOCABULARY');
+  expect(screen.getByRole('button', { name: 'Clear filters' })).toBeVisible();
+  expect(screen.getByLabelText('location-search')).toHaveTextContent('?language=vi&type=VOCABULARY');
+  expect(api.listResources).toHaveBeenCalledTimes(1);
+  expect(screen.getByText('xin chào')).toHaveAttribute('lang', 'vi');
+  await user.click(screen.getByRole('button', { name: /^Filters/ }));
+  const dialog = screen.getByRole('dialog', { name: 'Search filters' });
+  expect(within(dialog).getByRole('button', { name: 'Close filters' })).toHaveFocus();
+  await user.keyboard('{Escape}');
+  expect(screen.getByRole('button', { name: /^Filters/ })).toHaveFocus();
+});
+
+it('retains different source and translated content languages under an English interface', async () => {
+  const resource: LibraryPublicResource = { ...detailResource, resourceType: 'TRANSLATION', primaryLanguageCode: 'ar', secondaryLanguageCode: 'vi', details: { resourceType: 'TRANSLATION', sourceText: 'مرحبا', translatedText: 'xin chào' } };
+  const api = { getResource: vi.fn().mockResolvedValue(resource) };
+  const user = userEvent.setup();
+  render(<UiLocaleProvider><MemoryRouter initialEntries={['/library/detail-1']}><LocaleSwitch /><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes></MemoryRouter></UiLocaleProvider>);
+  await screen.findByRole('heading', { name: 'مرحبا' });
+  await user.click(screen.getByRole('button', { name: 'English' }));
+  const source = screen.getAllByText('مرحبا').find(element => element.tagName === 'P');
+  expect(source).toHaveAttribute('lang', 'ar');
+  expect(source).toHaveAttribute('dir', 'auto');
+  const translated = screen.getAllByText('xin chào').find(element => element.hasAttribute('lang'));
+  expect(translated).toHaveAttribute('lang', 'vi');
+  expect(screen.getByText('Source')).toBeVisible();
+  expect(screen.getAllByText('Translation')).toHaveLength(2);
+  expect(api.getResource).toHaveBeenCalledTimes(1);
 });

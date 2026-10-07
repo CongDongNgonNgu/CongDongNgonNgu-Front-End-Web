@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
@@ -11,7 +12,8 @@ import { LibraryFilters } from '../components/LibraryFilters';
 import { LibraryResourceRow } from '../components/LibraryResourceRow';
 import { libraryApi } from '../library.api';
 import { LIBRARY_RESOURCE_TYPES, type LibraryFilters as LibraryFilterValues } from '../library.types';
-import { getLibrarySearchErrorMessage, useLibrarySearch, type LibrarySearchApiPort } from '../hooks/useLibrarySearch';
+import { useLibrarySearch, type LibrarySearchApiPort } from '../hooks/useLibrarySearch';
+import { librarySearchErrorKey } from '../library.errors';
 import styles from './LibraryExplorerPage.module.css';
 
 interface LibraryExplorerPageProps {
@@ -31,6 +33,7 @@ export function LibraryExplorerPageView({
   catalogApi = languageApi,
   showReviewerEntry = false,
 }: LibraryExplorerPageProps) {
+  const { t } = useUiLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => readFilters(searchParams), [searchParams]);
   const [searchInput, setSearchInput] = useState(filters.q);
@@ -63,13 +66,13 @@ export function LibraryExplorerPageView({
     const previousTitle = document.title;
     const meta = document.querySelector('meta[name=description]');
     const previousDescription = meta?.getAttribute('content');
-    document.title = 'Thư viện mở | CongDongNgonNgu.vn';
-    meta?.setAttribute('content', 'Khám phá tài nguyên ngôn ngữ đã được xác minh, có nguồn và giấy phép rõ ràng.');
+    document.title = t('library.documentTitle');
+    meta?.setAttribute('content', t('library.documentDescription'));
     return () => {
       document.title = previousTitle;
       if (meta && typeof previousDescription === 'string') meta.setAttribute('content', previousDescription);
     };
-  }, []);
+  }, [t]);
 
   const updateFilter = (key: keyof LibraryFilterValues, value: string) => {
     const next = new URLSearchParams(searchParams);
@@ -95,53 +98,53 @@ export function LibraryExplorerPageView({
 
   return (
     <div className={styles.page}>
-      <nav className={styles.breadcrumbs} aria-label='Breadcrumb'>
-        <Link to='/'>Trang chủ</Link>
+      <nav className={styles.breadcrumbs} aria-label={t('library.breadcrumb')}>
+        <Link to='/'>{t('library.home')}</Link>
         <span aria-hidden='true'>/</span>
-        <span aria-current='page'>Thư viện mở</span>
+        <span aria-current='page'>{t('library.name')}</span>
       </nav>
 
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>KNOWLEDGE EXPLORER · PHASE 08</p>
-          <h1>Tìm đúng từ, đúng ngữ cảnh.</h1>
+          <p className={styles.eyebrow}>{t('library.explorerEyebrow')}</p>
+          <h1>{t('library.heroTitle')}</h1>
           <p className={styles.heroDescription}>
-            Một thư viện mở cho người học: nội dung ngắn gọn, đã được xác minh, với nguồn gốc và quyền sử dụng có thể kiểm chứng.
+            {t('library.heroDescription')}
           </p>
           <div className={styles.heroActions}>
-            <Link className={styles.contributeLink} to='/library/contribute'>Đóng góp tài nguyên <span aria-hidden='true'>↗</span></Link>
-            {showReviewerEntry ? <Link className={styles.reviewLink} to='/library/review?view=pending'>Xem hàng chờ kiểm duyệt <span aria-hidden='true'>↗</span></Link> : null}
+            <Link className={styles.contributeLink} to='/library/contribute'>{t('library.contribute')} <span aria-hidden='true'>↗</span></Link>
+            {showReviewerEntry ? <Link className={styles.reviewLink} to='/library/review?view=pending'>{t('library.reviewQueue')} <span aria-hidden='true'>↗</span></Link> : null}
           </div>
         </div>
-        <div className={styles.heroNote} aria-label='Nguyên tắc thư viện'>
+        <div className={styles.heroNote} aria-label={t('library.principles')}>
           <span className={styles.heroNoteMark} aria-hidden='true'>01</span>
-          <p>Chỉ tài nguyên công khai, đã xác minh và còn đủ điều kiện giấy phép mới xuất hiện trong kết quả.</p>
+          <p>{t('library.publicPolicy')}</p>
         </div>
       </header>
 
       <form className={styles.searchBar} role='search' onSubmit={submitSearch}>
         <Icon name='search' size={20} className={styles.searchIcon} />
-        <label htmlFor='library-keyword'>Tìm trong thư viện</label>
+        <label htmlFor='library-keyword'>{t('library.searchLabel')}</label>
         <input
           id='library-keyword'
           type='search'
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
-          placeholder='Tìm từ, câu, ngữ pháp, văn hoá…'
+          placeholder={t('library.searchPlaceholder')}
           autoComplete='off'
         />
-        <Button type='submit'>Tìm kiếm</Button>
+        <Button type='submit'>{t('library.search')}</Button>
       </form>
 
       <div className={styles.mobileToolbar}>
         <Button variant='secondary' type='button' onClick={() => setDrawerOpen(true)} aria-expanded={drawerOpen} aria-controls='library-filter-drawer'>
-          <Icon name='menu' size={18} /> Bộ lọc{activeFilterCount ? ` (${activeFilterCount})` : ''}
+          <Icon name='menu' size={18} /> {t('library.filters')}{activeFilterCount ? ` (${activeFilterCount})` : ''}
         </Button>
-        <span>{search.items.length} kết quả đang hiển thị</span>
+        <span>{t('library.visibleResults', { count: search.items.length })}</span>
       </div>
 
       <div className={styles.contentGrid}>
-        <aside className={styles.desktopFilters} aria-label='Bộ lọc thư viện'>
+        <aside className={styles.desktopFilters} aria-label={t('library.filtersLabel')}>
           <LibraryFilters
             values={filters}
             languages={languages}
@@ -150,24 +153,24 @@ export function LibraryExplorerPageView({
             onChange={updateFilter}
             onClear={clearFilters}
           />
-          {languageError ? <p className={styles.filterNotice}>Danh mục ngôn ngữ chưa tải được; bạn vẫn có thể tìm kiếm theo nội dung.</p> : null}
+          {languageError ? <p className={styles.filterNotice}>{t('library.languageUnavailable')}</p> : null}
         </aside>
 
         <section className={styles.results} aria-labelledby='library-results-heading' aria-live='polite'>
           <div className={styles.resultsHeading}>
             <div>
-              <p className={styles.eyebrow}>PUBLIC REFERENCE INDEX</p>
-              <h2 id='library-results-heading'>Tài nguyên đã xác minh</h2>
+              <p className={styles.eyebrow}>{t('library.publicIndex')}</p>
+              <h2 id='library-results-heading'>{t('library.resultsHeading')}</h2>
             </div>
-            <span className={styles.resultCount}>{search.items.length} kết quả</span>
+            <span className={styles.resultCount}>{t('library.resultsCount', { count: search.items.length })}</span>
           </div>
 
-          {search.isLoading && search.items.length === 0 ? <div className={styles.loadingCard}><Skeleton lines={6} label='Đang tải thư viện' /></div> : null}
+          {search.isLoading && search.items.length === 0 ? <div className={styles.loadingCard}><Skeleton lines={6} label={t('library.loading')} /></div> : null}
           {!search.isLoading && search.error && search.items.length === 0 ? (
-            <ErrorState title='Không thể tải thư viện' description={getLibrarySearchErrorMessage(search.error)} onRetry={() => void search.refresh()} />
+            <ErrorState title={t('library.loadError')} description={t(librarySearchErrorKey(search.error))} onRetry={() => void search.refresh()} />
           ) : null}
           {!search.isLoading && !search.error && search.items.length === 0 ? (
-            <EmptyState title='Chưa có tài nguyên phù hợp' description='Thử một từ khoá khác hoặc xoá bớt bộ lọc để mở rộng kết quả.' icon='library' />
+            <EmptyState title={t('library.empty')} description={t('library.emptyDescription')} icon='library' />
           ) : null}
 
           {search.items.length > 0 ? (
@@ -178,13 +181,13 @@ export function LibraryExplorerPageView({
 
           {search.error && search.items.length > 0 ? (
             <div className={styles.inlineNotice} role='alert'>
-              <span>{getLibrarySearchErrorMessage(search.error)}</span>
-              <Button variant='quiet' size='sm' onClick={() => void (search.nextCursor ? search.loadMore() : search.refresh())}>Thử lại</Button>
+              <span>{t(librarySearchErrorKey(search.error))}</span>
+              <Button variant='quiet' size='sm' onClick={() => void (search.nextCursor ? search.loadMore() : search.refresh())}>{t('library.retry')}</Button>
             </div>
           ) : null}
           {search.nextCursor ? (
             <Button variant='secondary' className={styles.loadMore} loading={search.isLoadingMore} onClick={() => void search.loadMore()}>
-              Xem thêm tài nguyên
+              {t('library.loadMore')}
             </Button>
           ) : null}
         </section>
