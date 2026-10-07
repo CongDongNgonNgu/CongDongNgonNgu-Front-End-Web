@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { NotificationCenterProvider } from './features/notifications/NotificationCenterProvider';
 import { SeoHead } from './features/seo/SeoHead';
+import { UiLocaleProvider, useUiLocale } from './features/ui-locale/UiLocaleProvider';
 
 const AuthCallbackPage = lazy(() => import('./features/auth/pages/AuthCallbackPage').then(({ AuthCallbackPage }) => ({ default: AuthCallbackPage })));
 const ForgotPasswordPage = lazy(() => import('./features/auth/pages/ForgotPasswordPage').then(({ ForgotPasswordPage }) => ({ default: ForgotPasswordPage })));
@@ -40,7 +41,8 @@ const EventDiscoveryPage = lazy(() => import('./features/events/pages/EventDisco
 const AdminPage = lazy(() => import('./features/admin/pages/AdminPage').then(({ AdminPage }) => ({ default: AdminPage })));
 
 function RouteLoading() {
-  return <p className='shell-width' role='status' aria-live='polite'>Đang tải trang…</p>;
+  const { t } = useUiLocale();
+  return <p className='shell-width' role='status' aria-live='polite'>{t('common.pageLoading')}</p>;
 }
 
 function RoutedApp() {
@@ -108,10 +110,10 @@ function RoutedApp() {
 
 export function App() {
   return (
-    <BrowserRouter>
+    <UiLocaleProvider><BrowserRouter>
       <AuthProvider>
         <RoutedApp />
       </AuthProvider>
-    </BrowserRouter>
+    </BrowserRouter></UiLocaleProvider>
   );
 }
