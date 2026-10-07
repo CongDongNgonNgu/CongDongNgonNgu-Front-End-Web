@@ -14,6 +14,7 @@ const FOCUSABLE_SELECTOR = [
 
 interface DialogProps {
   open: boolean;
+  closeLabel?: string;
   title: string;
   onClose: () => void;
   children: ReactNode;
@@ -24,7 +25,9 @@ interface DialogProps {
   returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
-export function Dialog({ open, title, onClose, children, labelledBy, description, footer, variant = 'default', returnFocusRef }: DialogProps) {
+export function Dialog({ open, title, onClose, children, labelledBy, description, footer, variant = 'default', returnFocusRef, closeLabel = 'Đóng hộp thoại' }: DialogProps) {
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   const generatedTitleId = useId();
   const titleId = labelledBy ?? generatedTitleId;
   const descriptionId = description ? `${generatedTitleId}-description` : undefined;
@@ -42,14 +45,14 @@ export function Dialog({ open, title, onClose, children, labelledBy, description
     const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
     (firstFocusable ?? dialogRef.current)?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") closeRef.current();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousBodyOverflow;
     };
-  }, [open, onClose]);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -92,7 +95,7 @@ export function Dialog({ open, title, onClose, children, labelledBy, description
             <h2 id={titleId}>{title}</h2>
             {description ? <p id={descriptionId} className={styles.dialogDescription}>{description}</p> : null}
           </div>
-          <Button variant="quiet" size="sm" className={styles.dialogClose} onClick={onClose} aria-label="Đóng hộp thoại"><Icon name="x" size={18} /></Button>
+          <Button variant="quiet" size="sm" className={styles.dialogClose} onClick={onClose} aria-label={closeLabel}><Icon name="x" size={18} /></Button>
         </div>
         <div className={styles.dialogBody}>{children}</div>
         {footer ? <div className={styles.dialogFooter}>{footer}</div> : null}

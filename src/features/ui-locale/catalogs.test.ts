@@ -9,7 +9,7 @@ describe('static locale catalogs', () => {
     expect(SUPPORTED_UI_LOCALES).toEqual(['vi', 'en']);
     expect(Object.keys(catalogs.en).sort()).toEqual(Object.keys(catalogs.vi).sort());
     for (const [key, text] of Object.entries(catalogs.vi)) {
-      expect(key).toMatch(/^(common|shell|navigation|library|errors)(\.[a-zA-Z][a-zA-Z0-9-]*)+$/);
+      expect(key).toMatch(/^(common|shell|navigation|library|errors|groups)(\.[a-zA-Z][a-zA-Z0-9-]*)+$/);
       expect(text.trim()).not.toBe('');
       const english = catalogs.en[key as keyof typeof catalogs.en];
       expect(english.trim(), key).not.toBe('');

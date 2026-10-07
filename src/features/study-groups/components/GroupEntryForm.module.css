@@ -1,0 +1,14 @@
+.form {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 36rem;
+}
+.form p {
+  color: var(--color-text-secondary);
+  line-height: var(--leading-body);
+  margin: 0;
+}
+.form button {
+  justify-self: start;
+  min-height: 44px;
+}

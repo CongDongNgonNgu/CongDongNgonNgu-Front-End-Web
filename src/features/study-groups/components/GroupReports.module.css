@@ -1,0 +1,29 @@
+.list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+.list li {
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface-elevated);
+  overflow-wrap: anywhere;
+}
+.list code {
+  word-break: break-all;
+}
+.list p {
+  white-space: pre-wrap;
+  line-height: var(--leading-body);
+}
+.list div {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+.list button {
+  min-height: 44px;
+}

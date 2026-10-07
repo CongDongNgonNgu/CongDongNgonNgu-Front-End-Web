@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
@@ -45,6 +46,7 @@ export function CommunityPageView({
   authenticated,
   onAuthRequired,
 }: CommunityPageViewProps) {
+  const { t } = useUiLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const languageCode = searchParams.get('languageCode') ?? '';
   const [languages, setLanguages] = useState<LanguageCatalogItem[]>([]);
@@ -119,6 +121,7 @@ export function CommunityPageView({
         </p>
       </header>
 
+      <p><Link to='/community/groups'>{t('groups.title')}</Link></p>
       <div className={styles.contentGrid}>
         <section className={styles.feedColumn} aria-labelledby='community-feed-heading'>
           <section className={styles.composerPrompt} aria-label='Tạo bài viết'>
