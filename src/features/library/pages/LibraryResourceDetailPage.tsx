@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedback';
 import { Icon } from '../../../components/ui/Icon/Icon';
+import { LibraryRelatedResources } from '../components/LibraryRelatedResources';
+import type { LibraryRelatedApiPort } from '../library.types';
 import { LibraryAttributionList } from '../components/LibraryAttributionList';
 import { LibraryLearnFromResourcePanel } from '../components/LibraryLearnFromResourcePanel';
 import { libraryApi } from '../library.api';
@@ -13,13 +15,13 @@ import type { TranslationKey } from '../../ui-locale/ui-locale';
 import styles from './LibraryResourceDetailPage.module.css';
 
 interface LibraryResourceDetailPageProps {
-  api?: LibraryResourceApiPort;
+  api?: LibraryResourceApiPort & Partial<LibraryRelatedApiPort>;
 }
 
 export function LibraryResourceDetailPage({ api = libraryApi }: LibraryResourceDetailPageProps) {
   const { t } = useUiLocale();
   const { resourceId } = useParams<{ resourceId: string }>();
-  const state = useLibraryResource({ api, resourceId });
+  const state = useLibraryResource({ api, resourceId, revalidateOnReturn: Boolean(api.getRelatedResources) });
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -44,7 +46,12 @@ export function LibraryResourceDetailPage({ api = libraryApi }: LibraryResourceD
       {!state.isLoading && !state.error && !state.resource ? (
         <EmptyState title={t('library.notFound')} description={t('library.notFoundDescription')} icon='library' />
       ) : null}
-      {!state.isLoading && state.resource ? <ResourceDetail resource={state.resource} /> : null}
+      {!state.isLoading && state.resource && state.resource.id.toLowerCase() === resourceId?.toLowerCase() ? (
+        <ResourceDetail resource={state.resource} />
+      ) : null}
+      {api.getRelatedResources && resourceId ? (
+        <LibraryRelatedResources key={resourceId.toLowerCase()} resourceId={resourceId.toLowerCase()} enabled={!state.isLoading && !state.error && state.resource?.id.toLowerCase() === resourceId.toLowerCase()} onRefreshAnchor={state.refresh} api={api as LibraryResourceApiPort & LibraryRelatedApiPort} />
+      ) : null}
     </div>
   );
 }

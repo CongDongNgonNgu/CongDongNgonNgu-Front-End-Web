@@ -7,15 +7,17 @@ type AttributionEntry = LibraryAttributionCue | LibraryPublicProvenance;
 interface LibraryAttributionListProps {
   entries: AttributionEntry[];
   detail?: boolean;
+  compact?: boolean;
 }
 
-export function LibraryAttributionList({ entries, detail = false }: LibraryAttributionListProps) {
+export function LibraryAttributionList({ entries, detail = false, compact = false }: LibraryAttributionListProps) {
   const { t } = useUiLocale();
+  const Heading = compact ? 'h4' : 'h2';
   return (
-    <section className={styles.section} aria-labelledby={detail ? 'resource-license-heading' : undefined}>
+    <section className={`${styles.section} ${compact ? styles.compact : ''}`} aria-labelledby={detail ? 'resource-license-heading' : undefined}>
       <div className={styles.heading}>
         <span className={styles.kicker}>{t('library.attributionEyebrow')}</span>
-        <h2 id={detail ? 'resource-license-heading' : undefined}>{t('library.sources')}</h2>
+        <Heading id={detail ? 'resource-license-heading' : undefined}>{t('library.sources')}</Heading>
       </div>
       <div className={styles.list}>
         {entries.map((entry, index) => (
@@ -28,7 +30,7 @@ export function LibraryAttributionList({ entries, detail = false }: LibraryAttri
               {entry.license.attributionRequired ? <span>{t('library.attributionRequired')}</span> : <span>{t('library.attributionOptional')}</span>}
               {entry.license.redistributionAllowed ? <span>{t('library.sharingAllowed')}</span> : <span>{t('library.publicIneligible')}</span>}
               {'sourceUrl' in entry && safeExternalUrl(entry.sourceUrl) ? <a href={safeExternalUrl(entry.sourceUrl)!} target='_blank' rel='noreferrer'>{t('library.originalSource')}</a> : null}
-              <a href={entry.license.canonicalUrl} target='_blank' rel='noreferrer'>{t('library.licenseTerms')}</a>
+              {safeExternalUrl(entry.license.canonicalUrl) ? <a href={safeExternalUrl(entry.license.canonicalUrl)!} target='_blank' rel='noreferrer'>{t('library.licenseTerms')}</a> : null}
             </div>
           </div>
         ))}

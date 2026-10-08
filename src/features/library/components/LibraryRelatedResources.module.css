@@ -1,0 +1,13 @@
+﻿.section { margin-top: var(--space-10); padding-top: var(--space-8); border-top: 1px solid var(--color-border); }
+.header { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: var(--space-4); }
+.header h2 { font-size: var(--font-size-xl); color: var(--color-text-primary); }
+.header p { max-width: 48rem; margin-top: var(--space-2); color: var(--color-text-secondary); line-height: var(--leading-body); }
+.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); margin-block: var(--space-6); }
+.filters label { display: grid; gap: var(--space-2); min-width: 0; color: var(--color-text-primary); font-size: var(--font-size-sm); }
+.filters select { min-width: 0; width: 100%; min-height: 2.75rem; padding: var(--space-2); border: 1px solid var(--color-border-strong); border-radius: var(--radius-control); background: var(--color-surface-elevated); color: var(--color-text-primary); font: inherit; }
+.filters select:focus-visible, .actions a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: var(--space-1); }
+.list { list-style: none; padding: 0; margin: 0; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-6); }
+.actions a { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); text-underline-offset: var(--space-1); }
+@media (max-width: 63.999rem) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 22rem) { .filters { grid-template-columns: minmax(0, 1fr); } .actions { flex-direction: column; align-items: stretch; } }

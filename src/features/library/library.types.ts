@@ -96,3 +96,21 @@ export interface LibraryPublicResource {
   createdAt: string;
   updatedAt: string;
 }
+
+export const LIBRARY_RELATION_TYPES = ['SAME_CONCEPT', 'PREREQUISITE', 'FOLLOW_UP', 'DIRECT_TRANSLATION', 'COLLECTION_MEMBER'] as const;
+export type LibraryRelationType = typeof LIBRARY_RELATION_TYPES[number];
+export interface LibraryRelatedQuery {
+  language?: string;
+  type?: LibraryResourceType;
+  level?: CefrLevel;
+  relation?: LibraryRelationType;
+  cursor?: string;
+  limit?: number;
+}
+export interface LibraryRelatedPage {
+  items: Array<{ resource: LibraryPublicResource; relation: { type: LibraryRelationType } }>;
+  nextCursor: string | null;
+}
+export interface LibraryRelatedApiPort {
+  getRelatedResources: (resourceId: string, query?: LibraryRelatedQuery) => Promise<LibraryRelatedPage>;
+}
