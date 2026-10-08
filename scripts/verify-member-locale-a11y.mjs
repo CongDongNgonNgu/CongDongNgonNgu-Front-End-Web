@@ -141,5 +141,5 @@ finally {
   await writeFile(resolve(output,'a11y-report.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify({status:report.status,checks:report.checks.length,failed:report.checks.filter(check=>check.status==='FAIL').map(check=>({name:check.name,violations:check.violations?.map(v=>({id:v.id,targets:v.nodes.map(n=>n.target)})),invalid:check.invalid,descriptions:check.descriptions})),failure:report.failure,contrast:report.contrastSummary,pageErrors:report.pageErrors,externalRequests:report.externalRequests,report:resolve(output,'a11y-report.json')},null,2));
   process.exitCode=report.status==='PASS'?0:1;
-  await fixture.close(); await browser.close();
+  await browser.close(); await fixture.close();
 }

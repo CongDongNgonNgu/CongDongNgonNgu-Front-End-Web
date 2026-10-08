@@ -384,5 +384,5 @@ try {
   report.finishedAt = new Date().toISOString();
   await writeFile(resolve(outputDir, 'runtime-report.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify({ status: report.status, checks: report.checks.length, screenshots: report.screenshots.length, externalRequests: report.externalRequests.length, pageErrors: report.pageErrors.length, failure: report.failure, report: resolve(outputDir,'runtime-report.json') }, null, 2));
-  fixture.releaseLoading(); await fixture.close(); await browser.close();
+  fixture.releaseLoading(); await browser.close(); await fixture.close();
 }
