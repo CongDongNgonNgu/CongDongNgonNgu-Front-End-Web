@@ -365,5 +365,5 @@ it('discards a late related response from before anchor revalidation', async () 
   await waitFor(() => expect(api.getRelatedResources).toHaveBeenCalledTimes(2));
   await act(async () => { resolveOld({ items: [{ resource: { ...detailResource, id: 'stale-target', details: { resourceType: 'VOCABULARY', term: 'Stale target', definition: 'Never display this stale content.', partOfSpeech: null, exampleSentence: null } }, relation: { type: 'SAME_CONCEPT' } }], nextCursor: 'old-cursor' }); });
   expect(screen.queryByText('Stale target')).not.toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: 'Trang liên kết tiếp theo' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Xem trang liên quan tiếp theo' })).not.toBeInTheDocument();
 });
