@@ -1,4 +1,6 @@
-import { GOAL_OPTIONS, SKILL_OPTIONS, TIMEZONES } from '../onboarding/onboarding.constants';
+import { translate, type UiLocale } from '../ui-locale/ui-locale';
+import { languageDisplayName } from '../ui-locale/language-display';
+import { localizedOnboardingOptions } from '../onboarding/onboarding.constants';
 import type {
   AvailabilityWindow,
   DeclaredProficiency,
@@ -46,9 +48,6 @@ export const DAY_LABELS: Record<number, string> = {
   7: 'Chủ nhật',
 };
 
-const GOAL_LABELS = new Map<string, string>(GOAL_OPTIONS.map((option) => [option.value, option.label]));
-const SKILL_LABELS = new Map<string, string>(SKILL_OPTIONS.map((option) => [option.value, option.label]));
-const TIMEZONE_LABELS = new Map<string, string>(TIMEZONES.map((option) => [option.value, option.label]));
 
 export function draftFromProfile(profile: OwnProfile): PassportDraft {
   return {
@@ -84,42 +83,46 @@ export function profileUpdateFromDraft(draft: PassportDraft): ProfileUpdateInput
   };
 }
 
-export function languageLabel(language: LanguageCatalogItem | undefined, code: string): string {
-  return language?.nativeName || language?.englishName || code.toUpperCase();
+export function languageLabel(language: LanguageCatalogItem | undefined, code: string, locale: UiLocale = 'vi'): string {
+  return language ? languageDisplayName(language, locale) : code.toUpperCase();
 }
 
 export function secondaryLanguageLabel(language: LanguageCatalogItem | undefined, code: string): string {
   if (!language) return code.toUpperCase();
-  const names = [language.vietnameseName, language.englishName]
-    .filter((name, index, list) => Boolean(name) && list.indexOf(name) === index && name !== language.nativeName);
-  return names.join(' · ');
+  return language.nativeName;
 }
 
-export function goalLabel(goal: string): string {
-  return GOAL_LABELS.get(goal) ?? humanize(goal);
+export function goalLabel(goal: string, locale: UiLocale = 'vi'): string {
+  const options = localizedOnboardingOptions(locale).GOAL_OPTIONS;
+  return options.find((option) => option.value === goal)?.label ?? goal;
 }
 
-export function skillLabel(skill: ProfileSkill): string {
-  return SKILL_LABELS.get(skill) ?? humanize(skill);
+export function skillLabel(skill: ProfileSkill, locale: UiLocale = 'vi'): string {
+  const options = localizedOnboardingOptions(locale).SKILL_OPTIONS;
+  return options.find((option) => option.value === skill)?.label ?? skill;
 }
 
-export function timezoneLabel(timezone: string | null): string {
-  if (!timezone) return 'Chưa chọn múi giờ';
-  return TIMEZONE_LABELS.get(timezone) ?? timezone;
+export function timezoneLabel(timezone: string | null, locale: UiLocale = 'vi'): string {
+  const t = (key: Parameters<typeof translate>[1]) => translate(locale, key);
+  if (!timezone) return t('onboarding.no.timezone.selected');
+  const options = localizedOnboardingOptions(locale).TIMEZONES;
+  return options.find((option) => option.value === timezone)?.label ?? timezone;
 }
 
-export function proficiencyLabel(proficiency: string): string {
-  return PROFICIENCY_LABELS[proficiency as DeclaredProficiency] ?? proficiency;
+export function proficiencyLabel(proficiency: string, locale: UiLocale = 'vi'): string {
+  return localizedPassportLabels(locale).PROFICIENCY_LABELS[proficiency as DeclaredProficiency] ?? proficiency;
 }
 
-export function availabilitySummary(availability: readonly AvailabilityWindow[]): string {
-  if (availability.length === 0) return 'Chưa chia sẻ khung giờ';
+export function availabilitySummary(availability: readonly AvailabilityWindow[], locale: UiLocale = 'vi'): string {
+  const t = (key: Parameters<typeof translate>[1]) => translate(locale, key);
+  if (availability.length === 0) return t('onboarding.no.availability.shared');
   const dayCount = new Set(availability.map((window) => window.dayOfWeek)).size;
-  return dayCount + ' ngày phù hợp · ' + availability.length + ' khung giờ';
+  return dayCount + t('onboarding.suitable.days') + availability.length + t('onboarding.time.windows');
 }
 
-export function formatAvailabilityWindow(window: AvailabilityWindow): string {
-  return (DAY_LABELS[window.dayOfWeek] ?? 'Ngày khác') + ' · ' + window.startTime + '–' + window.endTime;
+export function formatAvailabilityWindow(window: AvailabilityWindow, locale: UiLocale = 'vi'): string {
+  const t = (key: Parameters<typeof translate>[1]) => translate(locale, key);
+  return (localizedPassportLabels(locale).DAY_LABELS[window.dayOfWeek] ?? t('onboarding.other.day')) + ' · ' + window.startTime + '–' + window.endTime;
 }
 
 export function humanize(value: string): string {
@@ -130,4 +133,31 @@ export function humanize(value: string): string {
 
 export function isDeclaredProficiency(value: string): value is DeclaredProficiency {
   return PROFICIENCY_VALUES.includes(value as DeclaredProficiency);
+}
+
+export function localizedPassportLabels(locale: UiLocale) {
+const ROLE_LABELS = {
+  native: translate(locale, 'onboarding.native'),
+  known: translate(locale, 'onboarding.known'),
+  learning: translate(locale, 'onboarding.learning'),
+};
+const PROFICIENCY_LABELS = {
+  NATIVE: translate(locale, 'onboarding.native'),
+  A1: translate(locale, 'onboarding.a1.beginner'),
+  A2: translate(locale, 'onboarding.a2.elementary'),
+  B1: translate(locale, 'onboarding.b1.intermediate'),
+  B2: translate(locale, 'onboarding.b2.upper.intermediate'),
+  C1: translate(locale, 'onboarding.c1.advanced'),
+  C2: translate(locale, 'onboarding.c2.proficient'),
+};
+const DAY_LABELS: Record<number, string> = {
+  1: translate(locale, 'onboarding.monday'),
+  2: translate(locale, 'onboarding.tuesday'),
+  3: translate(locale, 'onboarding.wednesday'),
+  4: translate(locale, 'onboarding.thursday'),
+  5: translate(locale, 'onboarding.friday'),
+  6: translate(locale, 'onboarding.saturday'),
+  7: translate(locale, 'onboarding.sunday'),
+};
+return { ROLE_LABELS, PROFICIENCY_LABELS, DAY_LABELS };
 }

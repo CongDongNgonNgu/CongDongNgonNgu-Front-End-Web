@@ -1,7 +1,9 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../../ui-locale/ui-locale';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
-import { authErrorMessage } from '../auth-errors';
+import { authErrorKey } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { PasswordField } from '../PasswordField';
 import { useAuth } from '../AuthProvider';
@@ -11,13 +13,14 @@ import feedbackStyles from '../AuthFeedback.module.css';
 import flowStyles from '../AuthFlow.module.css';
 
 export function ResetPasswordPage() {
+  const { t } = useUiLocale();
   const { api } = useAuth();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [complete, setComplete] = useState(searchParams.get('complete') === '1');
-  const [error, setError] = useState(token ? '' : 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
+  const [error, setError] = useState<TranslationKey | ''>(token ? '' : "auth.the.password.reset.link.is.invalid.or");
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -26,12 +29,12 @@ export function ResetPasswordPage() {
     if (!token) return;
     setError('');
     if (password.length < 12) {
-      setError('Mật khẩu cần có ít nhất 12 ký tự.');
+      setError("auth.your.password.must.contain.at.least.n12");
       formRef.current?.querySelector<HTMLInputElement>('input')?.focus();
       return;
     }
     if (password !== confirmation) {
-      setError('Hai mật khẩu chưa khớp.');
+      setError("auth.the.passwords.do.not.match");
       formRef.current?.querySelectorAll<HTMLInputElement>('input')[1]?.focus();
       return;
     }
@@ -40,7 +43,7 @@ export function ResetPasswordPage() {
       await api.resetPassword(token, password);
       setComplete(true);
     } catch (reason) {
-      setError(authErrorMessage(reason));
+      setError(authErrorKey(reason));
     } finally {
       setLoading(false);
     }
@@ -48,54 +51,54 @@ export function ResetPasswordPage() {
 
   return (
     <AuthBody
-      eyebrow={complete ? 'Hoàn tất khôi phục' : token ? 'Tạo mật khẩu mới' : 'Liên kết khôi phục'}
-      title={complete ? 'Đặt lại mật khẩu thành công!' : token ? 'Tạo mật khẩu mới' : 'Liên kết đã hết hạn hoặc không hợp lệ'}
-      description={complete ? 'Mật khẩu mới của bạn đã được lưu an toàn. Bạn có thể đăng nhập ngay bây giờ.' : token ? 'Mật khẩu mới của bạn cần đáp ứng các tiêu chuẩn bảo mật để bảo vệ tài khoản trao đổi ngôn ngữ.' : 'Vì lý do an ninh, liên kết khôi phục chỉ có giá trị sử dụng một lần trong vòng 15 phút.'}
-      editorialEyebrow='Bảo mật tài khoản'
-      editorialTitle='Bảo vệ những điều bạn đã học'
-      editorialDescription='Mọi bước khôi phục đều được thiết kế để bảo vệ hồ sơ học tập và dữ liệu trao đổi ngôn ngữ của bạn.'
+      eyebrow={complete ? t("auth.recovery.complete") : token ? t("auth.create.a.new.password") : t("auth.recovery.link")}
+      title={complete ? t("auth.password.reset.successful") : token ? t("auth.create.a.new.password") : t("auth.the.link.is.expired.or.invalid")}
+      description={complete ? t("auth.your.new.password.has.been.saved.securely") : token ? t("auth.your.new.password.must.meet.security.requirements") : t("auth.for.security.a.recovery.link.can.only")}
+      editorialEyebrow={t("auth.account.security")}
+      editorialTitle={t("auth.protect.what.you.have.learned")}
+      editorialDescription={t("auth.every.recovery.step.is.designed.to.protect")}
       editorialItems={[
-        { icon: 'lock', title: 'Liên kết dùng một lần', description: 'Liên kết khôi phục có thời hạn và không thể dùng lại sau khi hoàn tất.' },
-        { icon: 'check-circle', title: 'Mật khẩu mạnh, dễ nhớ', description: 'Chọn một cụm từ riêng tư, dài và khó đoán với người khác.' },
-        { icon: 'circle-help', title: 'Luôn có hỗ trợ', description: 'Bạn có thể quay lại đăng nhập hoặc gửi yêu cầu khôi phục mới bất cứ lúc nào.' },
+        { icon: 'lock', title: t("auth.singleuse.link"), description: t("auth.recovery.links.expire.and.cannot.be.reused") },
+        { icon: 'check-circle', title: t("auth.strong.memorable.password"), description: t("auth.choose.a.long.private.phrase.that.is") },
+        { icon: 'circle-help', title: t("auth.support.is.always.available"), description: t("auth.you.can.return.to.sign.in.or") },
       ]}
-      editorialPrompt={<p>Đã nhớ mật khẩu? <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập →</Link></p>}
+      editorialPrompt={<p>{t("auth.remembered.your.password")} <Link className={formStyles.textLink} to='/login'>{t("auth.back.to.sign.in")}</Link></p>}
       recoveryRail={<RecoveryStatusRail activeStep={complete ? 5 : token ? 3 : 4} />}
-      mobileReassuranceTitle='Bảo vệ quyền riêng tư'
-      mobileReassuranceText='CongDongNgonNgu.vn không bao giờ yêu cầu bạn cung cấp mật khẩu qua điện thoại, tin nhắn SMS hoặc biểu mẫu ngoài hệ thống.'
+      mobileReassuranceTitle={t("auth.protect.your.privacy")}
+      mobileReassuranceText={t("auth.congdongngonnguvn.never.asks.for.your.password.by")}
     >
       <div className={flowStyles.authState}>
         {complete ? (
           <>
             <span className={flowStyles.flowIcon} aria-hidden='true'>✓</span>
-            <h3 className={flowStyles.flowStateTitle}>Mật khẩu đã được cập nhật thành công.</h3>
-            <p className={feedbackStyles.statusMessage} role='status'>Tất cả phiên đăng nhập trên thiết bị lạ đã được đăng xuất tự động.</p>
-            <Link className={formStyles.textLink} to='/login'>Đăng nhập bằng mật khẩu mới</Link>
+            <h3 className={flowStyles.flowStateTitle}>{t("auth.your.password.was.updated.successfully")}</h3>
+            <p className={feedbackStyles.statusMessage} role='status'>{t("auth.sessions.on.unfamiliar.devices.have.been.signed")}</p>
+            <Link className={formStyles.textLink} to='/login'>{t("auth.sign.in.with.your.new.password")}</Link>
           </>
         ) : !token ? (
           <>
             <div className={flowStyles.flowErrorCard} role='alert'>
-              <strong>Liên kết đã hết hạn hoặc không hợp lệ</strong>
-              <span>Vui lòng gửi lại yêu cầu khôi phục mới để tiếp tục.</span>
+              <strong>{t("auth.the.link.is.expired.or.invalid")}</strong>
+              <span>{t("auth.please.send.a.new.recovery.request.to")}</span>
             </div>
-            <Link className={flowStyles.flowButton} to='/forgot-password'>Yêu cầu liên kết mới →</Link>
-            <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập</Link>
+            <Link className={flowStyles.flowButton} to='/forgot-password'>{t("auth.request.a.new.link")}</Link>
+            <Link className={formStyles.textLink} to='/login'>{t("auth.back.to.sign.in.n2")}</Link>
           </>
         ) : (
           <form ref={formRef} className={formStyles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'reset-error' : undefined}>
-            {error ? <p className={feedbackStyles.errorMessage} id='reset-error' role='alert'>{error}</p> : null}
+            {error ? <p className={feedbackStyles.errorMessage} id='reset-error' role='alert'>{t(error)}</p> : null}
             <PasswordField
-              label='Mật khẩu mới'
+              label={t("auth.new.password")}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete='new-password'
-              placeholder='Nhập mật khẩu mới'
-              hint={<span className={formStyles.passwordHintCard}><strong>Tiêu chuẩn mật khẩu dễ nhớ &amp; an toàn:</strong><span>Tối thiểu 8 ký tự bất kỳ.</span><span>Nên kết hợp chữ cái và số để bảo vệ quyền riêng tư tốt hơn.</span></span>}
+              placeholder={t("auth.enter.a.new.password")}
+              hint={<span className={formStyles.passwordHintCard}><strong>{t("auth.memorable.and.secure.password.standards")}</strong><span>{t('auth.reset.minimumHint')}</span><span>{t("auth.consider.combining.letters.and.numbers.to.better")}</span></span>}
               required
             />
-            <PasswordField label='Xác nhận mật khẩu mới' value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete='new-password' placeholder='Nhập lại mật khẩu mới' required />
-            <Button type='submit' variant='secondary' fullWidth loading={loading}>Lưu mật khẩu mới và tiếp tục →</Button>
-            <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập</Link>
+            <PasswordField label={t("auth.confirm.new.password")} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete='new-password' placeholder={t("auth.reenter.the.new.password")} required />
+            <Button type='submit' variant='secondary' fullWidth loading={loading}>{t("auth.save.new.password.and.continue")}</Button>
+            <Link className={formStyles.textLink} to='/login'>{t("auth.back.to.sign.in.n2")}</Link>
           </form>
         )}
       </div>

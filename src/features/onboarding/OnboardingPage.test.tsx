@@ -1,3 +1,4 @@
+import { UiLocaleProvider, useUiLocale } from '../ui-locale/UiLocaleProvider';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -88,7 +89,7 @@ describe('OnboardingPage', () => {
     await ui.type(search, '日本');
     expect(screen.getByRole('option', { name: /日本語/ })).toBeVisible();
     await ui.click(screen.getByRole('option', { name: /日本語/ }));
-    expect(screen.getByText(/日本語 \(Đã biết\)/)).toBeVisible();
+    expect(screen.getByText(/Tiếng Nhật \(Đã biết\)/)).toBeVisible();
 
     await ui.click(getLanguageChoice('Tiếng Việt', /Ngôn ngữ bản ngữ/));
     expect(getLanguageChoice('Tiếng Việt', /Ngôn ngữ bản ngữ/)).toHaveAttribute('aria-pressed', 'true');
@@ -238,4 +239,35 @@ describe('OnboardingPage', () => {
     await waitFor(() => expect(screen.getByText('Trang chủ kiểm thử')).toBeVisible());
     expect(screen.queryByRole('heading', { name: 'Bạn nói ngôn ngữ nào?' })).not.toBeInTheDocument();
   });
+});
+
+function LocaleSwitch() { const { setLocale, locale } = useUiLocale(); return <button onClick={() => setLocale(locale === 'vi' ? 'en' : 'vi')}>Switch locale</button>; }
+it('preserves onboarding search, selected canonical languages, route and session while switching locale', async () => {
+ const api = createApi(); const ui = userEvent.setup();
+ render(<UiLocaleProvider><MemoryRouter initialEntries={['/onboarding']}><AuthProvider api={api}><LocaleSwitch /><OnboardingPage api={api} userId={user.id} /></AuthProvider></MemoryRouter></UiLocaleProvider>);
+ await waitForReady();
+ await ui.click(getLanguageChoice('Tiếng Việt', /Ngôn ngữ bản ngữ/));
+ await ui.type(screen.getByRole('combobox'), 'jap');
+ await ui.click(screen.getByRole('button', {name:'Switch locale'}));
+ expect(screen.getByRole('heading', {name:'Which languages do you speak?'})).toBeVisible();
+ expect(screen.getByRole('combobox')).toHaveValue('jap');
+ expect(within(screen.getAllByRole('group', {name:/Native languages/}).at(-1)!).getByRole('button', {name:/Vietnamese/})).toHaveAttribute('aria-pressed','true');
+ expect(api.updateProfile).not.toHaveBeenCalled();
+ expect(api.bootstrap).toHaveBeenCalledTimes(1);
+ await ui.click(screen.getByRole('button', {name:/Continue/}));
+ await ui.click(within(screen.getAllByRole('group', {name:'Learning languages'}).at(-1)!).getByRole('button', {name:/English/}));
+ expect(document.documentElement.lang).toBe('en');
+ await ui.click(screen.getByRole('button', {name:'Switch locale'}));
+ expect(screen.getByRole('heading', {name:'Bạn muốn học ngôn ngữ nào?'})).toBeVisible();
+ expect(getLanguageChoice('English', /Ngôn ngữ bạn muốn học/)).toHaveAttribute('aria-pressed','true');
+ expect(JSON.stringify(window.localStorage)).toContain('vi');
+});
+
+it('updates visible validation across locale switch and hides raw load errors', async()=>{
+ const api=createApi(); const ui=userEvent.setup();
+ render(<UiLocaleProvider><MemoryRouter><AuthProvider api={api}><LocaleSwitch/><OnboardingPage api={api} userId={user.id}/></AuthProvider></MemoryRouter></UiLocaleProvider>);
+ await waitForReady(); await ui.click(screen.getByRole('button',{name:/Tiếp tục/}));
+ await ui.click(screen.getByRole('button',{name:'Switch locale'}));
+ expect(screen.getByRole('alert')).toHaveTextContent('Please choose at least one language you speak.');
+ expect(api.updateProfile).not.toHaveBeenCalled();
 });

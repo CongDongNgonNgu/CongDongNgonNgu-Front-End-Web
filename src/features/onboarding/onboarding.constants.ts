@@ -1,3 +1,4 @@
+import { translate, type UiLocale } from '../ui-locale/ui-locale';
 import type { ProfileSkill } from './onboarding.types';
 
 export const ONBOARDING_STEPS = [
@@ -46,3 +47,18 @@ export const DAYS = [
   { value: 6, label: 'Thứ bảy' },
   { value: 7, label: 'Chủ nhật' },
 ];
+
+export function localizedOnboardingOptions(locale: UiLocale) {
+  const onboarding_stepsKeys = [{"label":"onboarding.languages.you.speak","eyebrow":"onboarding.language.setup","title":"onboarding.which.languages.do.you.speak","description":"onboarding.welcome.to.the.community.tell.us.which.languages.you.already.know.so.we.can.connect.you.with.suitable.learners.and.content"},{"label":"onboarding.learning.languages.step","eyebrow":"onboarding.learning.goals","title":"onboarding.which.languages.do.you.want.to.learn","description":"onboarding.choose.one.or.more.languages.so.we.can.suggest.suitable.content.and.learning.partners"},{"label":"onboarding.current.proficiency","eyebrow":"onboarding.language.familiarity","title":"onboarding.what.is.your.current.proficiency","description":"onboarding.a.quick.estimate.is.enough.you.can.update.it.as.you.learn.more"},{"label":"onboarding.goals.skills","eyebrow":"onboarding.how.you.want.to.learn","title":"onboarding.how.do.you.want.to.learn","description":"onboarding.choose.what.you.want.to.achieve.and.the.skills.you.want.to.practice.with.the.community"},{"label":"onboarding.flexible.learning.schedule","eyebrow":"onboarding.more.information","title":"onboarding.tell.us.a.little.about.your.schedule","description":"onboarding.this.section.is.entirely.optional.share.more.to.make.finding.learning.partners.at.a.similar.pace.easier"}] as const;
+  const goal_optionsKeys = [{"label":"onboarding.confident.conversations","description":"onboarding.chat.more.naturally"},{"label":"onboarding.travel","description":"onboarding.feel.comfortable.on.your.trips"},{"label":"onboarding.work","description":"onboarding.expand.your.career.opportunities"},{"label":"onboarding.reading.content","description":"onboarding.understand.books.news.and.culture"},{"label":"onboarding.making.friends","description":"onboarding.meet.other.learners"},{"label":"onboarding.exams","description":"onboarding.prepare.for.an.exam"}] as const;
+  const skill_optionsKeys = [{"label":"onboarding.speaking"},{"label":"onboarding.listening"},{"label":"onboarding.reading"},{"label":"onboarding.writing"},{"label":"onboarding.grammar"},{"label":"onboarding.vocabulary"}] as const;
+  const timezonesKeys = [{"label":"onboarding.vietnam.utc.offset07.offset00"},{"label":"onboarding.china.utc.offset08.offset00"},{"label":"onboarding.japan.utc.offset09.offset00"},{"label":"onboarding.south.korea.utc.offset09.offset00"},{"label":"onboarding.france.utc.offset01.offset00"},{"label":"onboarding.germany.utc.offset01.offset00"},{"label":"onboarding.us.east.coast.utc.offset05.offset00"},{"label":"onboarding.us.west.coast.utc.offset08.offset00"}] as const;
+  const daysKeys = [{"label":"onboarding.monday"},{"label":"onboarding.tuesday"},{"label":"onboarding.wednesday"},{"label":"onboarding.thursday"},{"label":"onboarding.friday"},{"label":"onboarding.saturday"},{"label":"onboarding.sunday"}] as const;
+  return {
+    ONBOARDING_STEPS: ONBOARDING_STEPS.map((option, index) => ({ ...option, label: translate(locale, onboarding_stepsKeys[index].label), eyebrow: translate(locale, onboarding_stepsKeys[index].eyebrow), title: translate(locale, onboarding_stepsKeys[index].title), description: translate(locale, onboarding_stepsKeys[index].description) })),
+    GOAL_OPTIONS: GOAL_OPTIONS.map((option, index) => ({ ...option, label: translate(locale, goal_optionsKeys[index].label), description: translate(locale, goal_optionsKeys[index].description) })),
+    SKILL_OPTIONS: SKILL_OPTIONS.map((option, index) => ({ ...option, label: translate(locale, skill_optionsKeys[index].label) })),
+    TIMEZONES: TIMEZONES.map((option, index) => ({ ...option, label: translate(locale, timezonesKeys[index].label) })),
+    DAYS: DAYS.map((option, index) => ({ ...option, label: translate(locale, daysKeys[index].label) })),
+  };
+}

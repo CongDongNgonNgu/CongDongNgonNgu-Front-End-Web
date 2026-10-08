@@ -1,3 +1,4 @@
+import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +14,7 @@ import type {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 function relationship(state: RelationshipState): ExchangeRelationshipResponse {
@@ -120,7 +122,7 @@ describe('BuddyProfilePreviewPageView', () => {
     expect(screen.getAllByText('English')[0]).toBeVisible();
     expect(screen.getByText('Tiếng Việt')).toBeVisible();
     expect(screen.getByText('Giao tiếp tự tin')).toBeVisible();
-    expect(screen.getByText('Music')).toBeVisible();
+    expect(screen.getByText('music')).toBeVisible();
     expect(screen.queryByText(/@example|Asia\/|08:00/i)).not.toBeInTheDocument();
 
     const button = screen.getByRole('button', { name: 'Kết nối' });
@@ -161,7 +163,8 @@ describe('BuddyProfilePreviewPageView', () => {
 
     await screen.findByRole('heading', { name: 'Kenji S.' });
     await user.click(screen.getByRole('button', { name: 'Từ chối' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Kết nối tạm thời không khả dụng');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Không thể cập nhật kết nối lúc này. Vui lòng thử lại.');
+    expect(screen.queryByText('Kết nối tạm thời không khả dụng')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Chấp nhận kết nối' })).toBeVisible();
   });
 
@@ -237,3 +240,68 @@ function deferred<T>() {
   });
   return { promise, resolve };
 }
+
+function LocaleSwitch() { const { setLocale } = useUiLocale(); return <><button onClick={() => setLocale('en')}>Switch English</button><button onClick={() => setLocale('vi')}>Switch Vietnamese</button></>; }
+
+it('switches detail and safety copy, preserves content and maps unsafe action errors', async () => {
+  localStorage.clear();
+  const user = userEvent.setup();
+  const api = makeApi();
+  api.getBuddyProfile = vi.fn().mockResolvedValue({ ...profile(), goals: ['custom_goal'], interests: ['my_music_文字'] });
+  api.requestConnection = vi.fn().mockRejectedValue(new Error('unsafe-private-detail'));
+  render(<UiLocaleProvider><MemoryRouter initialEntries={['/exchange/profile/target-1']}><LocaleSwitch /><BuddyProfilePreviewPageView api={api} authenticated userId='target-1' /></MemoryRouter></UiLocaleProvider>);
+  await screen.findByRole('heading', { name: 'Kenji S.' });
+  const calls = vi.mocked(api.getBuddyProfile).mock.calls.length;
+  await user.click(screen.getByRole('button', { name: 'Switch English' }));
+  expect(screen.getByRole('heading', { name: 'Exchange languages' })).toBeVisible();
+  expect(screen.getByText('custom_goal')).toBeVisible();
+  expect(screen.getByText('my_music_文字')).toBeVisible();
+  expect(screen.getByRole('link', { name: 'Find a learning partner' })).toHaveAttribute('href', '/exchange');
+  expect(api.getBuddyProfile).toHaveBeenCalledTimes(calls);
+  await user.click(screen.getByRole('button', { name: 'Connect' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Could not update the connection right now. Please try again.');
+  expect(screen.queryByText('unsafe-private-detail')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Switch Vietnamese' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Không thể cập nhật kết nối lúc này. Vui lòng thử lại.');
+  await user.click(screen.getByRole('button', { name: 'Switch English' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Could not update the connection right now. Please try again.');
+  await user.click(screen.getByRole('button', { name: 'Safety' }));
+  await user.click(screen.getByRole('menuitem', { name: 'Report profile' }));
+  await user.selectOptions(screen.getByRole('combobox', { name: /Report reason/ }), 'OTHER');
+  await user.type(screen.getByLabelText('Additional context'), 'context_文字');
+  await user.click(screen.getByRole('button', { name: 'Submit report' }));
+  await waitFor(() => expect(api.reportUser).toHaveBeenCalledWith('target-1', { category: 'OTHER', context: 'context_文字' }));
+  expect(await screen.findByRole('heading', { name: 'Report received' })).toBeVisible();
+  localStorage.clear();
+});
+it('renders English unavailable profile with safe retry copy', async () => {
+  localStorage.setItem('congdongngonngu.ui-locale.v1', 'en');
+  const api = makeApi();
+  api.getBuddyProfile = vi.fn().mockRejectedValue(new Error('unsafe-private-detail'));
+  render(<UiLocaleProvider><MemoryRouter><BuddyProfilePreviewPageView api={api} authenticated userId='target-1' /></MemoryRouter></UiLocaleProvider>);
+  expect(await screen.findByRole('heading', { name: 'Could not load the learning partner profile' })).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Reload profile' })).toBeVisible();
+  expect(screen.queryByText('unsafe-private-detail')).not.toBeInTheDocument();
+  localStorage.clear();
+});
+
+it('uses persisted English for empty detail summaries and native/assessed proficiency without changing codes', async () => {
+  localStorage.setItem('congdongngonngu.ui-locale.v1', 'en');
+  const api = makeApi();
+  const data = profile();
+  data.languages[0].declaredProficiency = 'NATIVE';
+  data.languages[0].assessedProficiency = 'C2';
+  data.goals = [];
+  data.interests = [];
+  data.timezoneSummary = null;
+  data.availabilitySummary = null;
+  api.getBuddyProfile = vi.fn().mockResolvedValue(data);
+  render(<UiLocaleProvider><MemoryRouter><BuddyProfilePreviewPageView api={api} authenticated userId='target-1' /></MemoryRouter></UiLocaleProvider>);
+  await screen.findByRole('heading', { name: 'Kenji S.' });
+  expect(screen.getByText(/Native.*Assessed C2/)).toBeVisible();
+  expect(screen.getByText('No goals shared yet')).toBeVisible();
+  expect(screen.getByText('No interests shared yet')).toBeVisible();
+  expect(screen.getAllByText('Not shared yet')).toHaveLength(2);
+  expect(data.languages[0].declaredProficiency).toBe('NATIVE');
+  expect(data.languages[0].assessedProficiency).toBe('C2');
+});

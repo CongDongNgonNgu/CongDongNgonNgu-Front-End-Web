@@ -1,3 +1,5 @@
+import type { TranslationKey } from '../ui-locale/ui-locale';
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import { useCallback, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ErrorState } from '../../components/ui/Feedback';
@@ -14,7 +16,7 @@ import { ProficiencyStep } from './components/ProficiencyStep';
 import { useLanguagePicker } from './hooks/useLanguagePicker';
 import { useOnboardingHistory } from './hooks/useOnboardingHistory';
 import { useOnboardingSession } from './hooks/useOnboardingSession';
-import { ONBOARDING_STEPS } from './onboarding.constants';
+import { localizedOnboardingOptions } from './onboarding.constants';
 import {
   buildProfileUpdate,
   isOnboardingComplete,
@@ -39,15 +41,17 @@ interface OnboardingPageProps {
 }
 
 export function OnboardingPage({ api: providedApi, userId: providedUserId }: OnboardingPageProps) {
+  const { t, locale } = useUiLocale();
+  const { ONBOARDING_STEPS } = localizedOnboardingOptions(locale);
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const onboardingApi = providedApi ?? auth.api;
   const resolvedUserId = providedUserId ?? auth.user?.id ?? '';
   const storage = useMemo(getClientStorage, []);
-  const [stepError, setStepError] = useState('');
+  const [stepError, setStepError] = useState<TranslationKey | ''>('');
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
+  const [saveError, setSaveError] = useState<TranslationKey | ''>('');
   const [interestValue, setInterestValue] = useState('');
   const [availabilityDay, setAvailabilityDay] = useState(2);
   const [availabilityStart, setAvailabilityStart] = useState('19:00');
@@ -133,7 +137,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
 
   function addAvailability(): void {
     if (timeToMinutes(availabilityStart) >= timeToMinutes(availabilityEnd)) {
-      setStepError('Thời gian kết thúc cần muộn hơn thời gian bắt đầu.');
+      setStepError('onboarding.the.end.time.must.be.later.than.the.start.time');
       return;
     }
     updateDraft((current) => ({
@@ -151,7 +155,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
       completeNavigation();
     } catch (error: unknown) {
       if (error instanceof ApiClientError && error.status === 401) void auth.refresh().catch(() => undefined);
-      setSaveError('Chưa thể lưu thiết lập lúc này. Kiểm tra kết nối và thử lại.');
+      setSaveError('onboarding.unable.to.save.setup.right.now.check.your.connection.and.try.again');
     } finally {
       setSaving(false);
     }
@@ -174,10 +178,10 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
   function handleSubmit(event: FormEvent<HTMLFormElement> | MouseEvent<HTMLButtonElement>, skipOptional = false): void {
     event.preventDefault();
     const validationStep = skipOptional ? 3 : draft.step;
-    const errors = validateDraftForStep(draft, validationStep);
+    const errors = validateDraftForStep(draft, validationStep, true);
     const firstError = errors.spokenLanguages ?? errors.learningLanguages ?? errors.levels ?? errors.goals ?? errors.skills ?? errors.availability;
     if (firstError) {
-      setStepError(firstError);
+      setStepError(firstError as TranslationKey);
       focusFirstInvalid(errors);
       return;
     }
@@ -196,12 +200,12 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
     return (
       <section className={styles.loadingFrame} aria-labelledby='onboarding-load-error'>
         <ErrorState
-          title='Không tải được danh sách ngôn ngữ'
-          description='Danh sách ngôn ngữ hoặc hồ sơ của bạn chưa sẵn sàng. Thử tải lại để tiếp tục thiết lập.'
+          title={t('onboarding.unable.to.load.languages')}
+          description={t('onboarding.the.language.list.or.your.profile.is.not.ready.reload.to.continue.setup')}
           onRetry={loadData}
-          retryLabel='Thử tải lại danh sách'
+          retryLabel={t('onboarding.reload.languages')}
         />
-        <p className={styles.srOnly} id='onboarding-load-error'>{loadError}</p>
+        <p className={styles.srOnly} id='onboarding-load-error'>{t('onboarding.unable.to.load.languages')}</p>
       </section>
     );
   }
@@ -276,8 +280,8 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
               />
             ) : null}
 
-            {stepError ? <p className={styles.formError} role='alert'>{stepError}</p> : null}
-            {saveError ? <p className={styles.formError} role='alert'>{saveError}</p> : null}
+            {stepError ? <p className={styles.formError} role='alert'>{t(stepError)}</p> : null}
+            {saveError ? <p className={styles.formError} role='alert'>{t(saveError)}</p> : null}
 
             <OnboardingActions
               step={draft.step}
@@ -295,8 +299,9 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
 }
 
 function OnboardingLoading() {
+  const { t, locale } = useUiLocale();
   return (
-    <section className={styles.loadingFrame} aria-busy='true' aria-label='Đang tải thiết lập onboarding'>
+    <section className={styles.loadingFrame} aria-busy='true' aria-label={t('onboarding.loading.onboarding.setup')}>
       <div className={styles.loadingLines}><span /><span /><span /><span /></div>
     </section>
   );

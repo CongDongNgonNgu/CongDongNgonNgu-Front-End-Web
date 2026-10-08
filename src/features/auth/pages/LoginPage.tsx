@@ -1,8 +1,10 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../../ui-locale/ui-locale';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { TextInput } from '../../../components/ui/FormControls/TextInput';
-import { authErrorMessage } from '../auth-errors';
+import { authErrorKey } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { PasswordField } from '../PasswordField';
 import { ProviderButtons } from '../ProviderButtons';
@@ -11,14 +13,16 @@ import formStyles from '../AuthForm.module.css';
 import feedbackStyles from '../AuthFeedback.module.css';
 
 export function LoginPage() {
+  const { t } = useUiLocale();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
-  const [error, setError] = useState('');
-  const [fieldError, setFieldError] = useState('');
+  const [error, setError] = useState<TranslationKey | ''>('');
+  const [fieldError, setFieldError] = useState<TranslationKey | ''>('');
+  const [invalidField, setInvalidField] = useState<'email' | 'password' | null>(null);
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const locationState = location.state as { from?: unknown } | null;
@@ -32,12 +36,14 @@ export function LoginPage() {
     event.preventDefault();
     setError('');
     if (!email.includes('@') || !email.includes('.')) {
-      setFieldError('Vui lòng nhập email hợp lệ.');
+      setFieldError("auth.please.enter.a.valid.email.address");
+      setInvalidField('email');
       formRef.current?.querySelector<HTMLInputElement>('input[type=email]')?.focus();
       return;
     }
     if (!password) {
-      setFieldError('Vui lòng nhập mật khẩu.');
+      setFieldError("auth.please.enter.your.password");
+      setInvalidField('password');
       formRef.current?.querySelector<HTMLInputElement>('[autocomplete=current-password]')?.focus();
       return;
     }
@@ -47,7 +53,7 @@ export function LoginPage() {
       await login({ email: email.trim().toLowerCase(), password });
       navigate(returnPath, { replace: true });
     } catch (reason) {
-      setError(authErrorMessage(reason));
+      setError(authErrorKey(reason));
     } finally {
       setLoading(false);
     }
@@ -56,57 +62,57 @@ export function LoginPage() {
   return (
     <AuthBody
       variant='login'
-      eyebrow='Chào mừng trở lại'
-      title='Đăng nhập'
-      description='Nhập thông tin tài khoản của bạn để truy cập không gian học tập.'
-      editorialEyebrow='Chào mừng trở lại'
-      editorialTitle='Tiếp tục hành trình kết nối ngôn ngữ'
-      editorialDescription='Đăng nhập để tham gia trao đổi kiến thức, luyện tập giao tiếp thực tế và đóng góp vào thư viện ngôn ngữ mở cùng các thành viên khắp nơi trên thế giới.'
+      eyebrow={t("auth.welcome.back")}
+      title={t("auth.sign.in")}
+      description={t("auth.enter.your.account.details.to.access.your")}
+      editorialEyebrow={t("auth.welcome.back")}
+      editorialTitle={t("auth.continue.your.journey.of.language.connections")}
+      editorialDescription={t("auth.sign.in.to.exchange.knowledge.practise.real")}
       editorialItems={[
-        { icon: 'users', title: 'Học tập cùng con người thực', description: 'Không gian an toàn để đặt câu hỏi, nhận sửa lỗi tỉ mỉ từ người bản xứ và người học giàu kinh nghiệm.' },
-        { icon: 'book-open', title: 'Tài nguyên mở, vì cộng đồng', description: 'Mọi đóng góp về từ vựng, ngữ cảnh và câu thoại đều được lưu trữ minh bạch để hỗ trợ người đi sau.' },
-        { icon: 'users', title: 'Tôn trọng và đồng cảm', description: 'Mỗi ngôn ngữ là một nhịp điệu riêng, kết nối dựa trên sự tò mò và thấu hiểu văn hóa.' },
+        { icon: 'users', title: t("auth.learn.with.real.people"), description: t("auth.a.safe.space.to.ask.questions.and") },
+        { icon: 'book-open', title: t("auth.open.resources.for.the.community"), description: t("auth.vocabulary.contexts.and.dialogue.contributions.are.stored") },
+        { icon: 'users', title: t("auth.respect.and.empathy"), description: t("auth.every.language.has.its.own.rhythm.connections") },
       ]}
-      editorialPrompt={<p>Chưa có tài khoản? <Link className={formStyles.textLink} to='/register'>Tham gia hoàn toàn miễn phí. Tạo tài khoản mới →</Link></p>}
+      editorialPrompt={<p>{t("auth.no.account.yet")} <Link className={formStyles.textLink} to='/register'>{t("auth.join.for.free.create.a.new.account")}</Link></p>}
     >
       <form ref={formRef} className={formStyles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'login-error' : undefined}>
-        {error ? <p className={feedbackStyles.errorMessage} id='login-error' role='alert'>{error}</p> : null}
+        {error ? <p className={feedbackStyles.errorMessage} id='login-error' role='alert'>{t(error)}</p> : null}
         <TextInput
-          label='Địa chỉ email'
+          label={t("auth.email.address")}
           type='email'
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           autoComplete='email'
           inputMode='email'
-          placeholder='ten@vidu.vn'
-          hint='Email đã đăng ký tại CongDongNgonNgu.vn'
+          placeholder={t('auth.login.emailPlaceholder')}
+          hint={t("auth.your.registered.email.at.congdongngonnguvn")}
           required
-          error={fieldError && !email.includes('@') ? fieldError : undefined}
+          error={fieldError && invalidField === 'email' ? t(fieldError) : undefined}
         />
         <PasswordField
-          label='Mật khẩu'
+          label={t("auth.password")}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           autoComplete='current-password'
           required
-          error={fieldError && email.includes('@') && !password ? fieldError : undefined}
+          error={fieldError && invalidField === 'password' ? t(fieldError) : undefined}
         />
         <div className={formStyles.passwordLinks}>
-          <Link className={formStyles.textLink} to='/forgot-password'>Quên mật khẩu?</Link>
+          <Link className={formStyles.textLink} to='/forgot-password'>{t("auth.forgot.password")}</Link>
         </div>
         <label className={formStyles.authConsent}>
           <input type='checkbox' checked={remember} onChange={(event) => setRemember(event.target.checked)} />
-          <span>Ghi nhớ đăng nhập trên thiết bị này</span>
+          <span>{t("auth.remember.signin.on.this.device")}</span>
         </label>
         <div className={formStyles.formActions}>
-          <Button type='submit' variant='secondary' fullWidth loading={loading}>Đăng nhập vào tài khoản →</Button>
+          <Button type='submit' variant='secondary' fullWidth loading={loading}>{t("auth.sign.in.to.your.account")}</Button>
           <ProviderButtons />
         </div>
         <div className={formStyles.authLinks}>
-          <span>Bạn là thành viên mới?</span>
-          <Link className={formStyles.textLink} to='/register'>Đăng ký tài khoản miễn phí</Link>
+          <span>{t("auth.new.member")}</span>
+          <Link className={formStyles.textLink} to='/register'>{t("auth.create.a.free.account")}</Link>
         </div>
-        <p className={formStyles.legalNote}>Bằng việc đăng nhập, bạn đồng ý với <span className={formStyles.textLink} aria-disabled='true'>Quy tắc cộng đồng</span> và <span className={formStyles.textLink} aria-disabled='true'>Chính sách bảo mật</span> của CongDongNgonNgu.vn.</p>
+        <p className={formStyles.legalNote}>{t("auth.by.signing.in.you.agree.to.the")} <span className={formStyles.textLink} aria-disabled='true'>{t("auth.community.guidelines")}</span> {" "}{t("auth.and")} <span className={formStyles.textLink} aria-disabled='true'>{t("auth.privacy.policy")}</span> {" "}{t("auth.of.congdongngonnguvn")}</p>
       </form>
     </AuthBody>
   );

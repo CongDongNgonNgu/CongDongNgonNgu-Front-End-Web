@@ -1,3 +1,6 @@
+import { languageDisplayName } from '../ui-locale/language-display';
+import type { TranslationKey } from '../ui-locale/ui-locale';
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
@@ -5,7 +8,7 @@ import { ErrorState, EmptyState } from '../../components/ui/Feedback';
 import { Icon } from '../../components/ui/Icon/Icon';
 import { Avatar, Badge, Chip } from '../../components/ui/Surface';
 import { useAuth } from '../auth/AuthProvider';
-import { GOAL_OPTIONS, SKILL_OPTIONS, TIMEZONES } from '../onboarding/onboarding.constants';
+import { localizedOnboardingOptions } from '../onboarding/onboarding.constants';
 import { PROFICIENCY_VALUES } from '../onboarding/onboarding.types';
 import type {
   DeclaredProficiency,
@@ -20,17 +23,15 @@ import type { PassportApi, PublicProfile } from './passport.types';
 import { PassportProgressPanel } from './PassportProgressPanel';
 import type { PassportProgressApi } from './passport-progress.types';
 import {
+  localizedPassportLabels,
   availabilitySummary,
-  DAY_LABELS,
   draftFromProfile,
   formatAvailabilityWindow,
   goalLabel,
   isDeclaredProficiency,
   languageLabel,
-  PROFICIENCY_LABELS,
   proficiencyLabel,
   profileUpdateFromDraft,
-  ROLE_LABELS,
   secondaryLanguageLabel,
   skillLabel,
   timezoneLabel,
@@ -54,6 +55,8 @@ interface PublicPassportPageProps {
 }
 
 export function OwnPassportPage({ api: providedApi, userId: providedUserId }: OwnPassportPageProps) {
+  const { t, locale } = useUiLocale();
+  const { GOAL_OPTIONS, SKILL_OPTIONS, TIMEZONES } = localizedOnboardingOptions(locale);
   const auth = useAuth();
   const location = useLocation();
   const api = providedApi ?? auth.api;
@@ -61,11 +64,10 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
   const [profile, setProfile] = useState<OwnProfile | null>(null);
   const [catalog, setCatalog] = useState<LanguageCatalogItem[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [loadError, setLoadError] = useState('');
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
-  const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState<TranslationKey | ''>('');
+  const [saveMessage, setSaveMessage] = useState<TranslationKey | ''>('');
   const editTriggerRef = useRef<HTMLButtonElement>(null);
   const profileHeroRef = useRef<HTMLElement>(null);
   const editorSectionRef = useRef<HTMLElement>(null);
@@ -75,7 +77,6 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
   const loadProfile = useCallback(() => {
     if (!userId) return;
     setLoadState('loading');
-    setLoadError('');
     Promise.all([
       api.getProfile(),
       api.getLanguages().catch(() => []),
@@ -85,9 +86,8 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
         setCatalog(nextCatalog);
         setLoadState('ready');
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         setLoadState('error');
-        setLoadError(error instanceof Error ? error.message : 'Unable to load the language passport.');
       });
   }, [api, userId]);
 
@@ -109,19 +109,19 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
     }
   }, [editing]);
 
-  if (!providedUserId && auth.status === 'loading') return <PassportLoading label='Đang tải hộ chiếu ngôn ngữ' />;
+  if (!providedUserId && auth.status === 'loading') return <PassportLoading label={t('onboarding.loading.language.passport')} />;
   if (!userId) return <Navigate to='/login' replace state={{ from: location.pathname }} />;
-  if (loadState === 'loading') return <PassportLoading label='Đang tải hộ chiếu ngôn ngữ' />;
+  if (loadState === 'loading') return <PassportLoading label={t('onboarding.loading.language.passport')} />;
   if (loadState === 'error' || !profile) {
     return (
       <PassportStateFrame>
         <ErrorState
-          title='Chưa tải được hộ chiếu ngôn ngữ'
-          description='Hồ sơ của bạn chưa sẵn sàng. Hãy thử tải lại để tiếp tục.'
+          title={t('onboarding.unable.to.load.language.passport')}
+          description={t('onboarding.your.profile.is.not.ready.try.reloading.to.continue')}
           onRetry={loadProfile}
-          retryLabel='Tải lại hồ sơ'
+          retryLabel={t('onboarding.reload.profile')}
         />
-        <p className={styles.screenReaderOnly}>{loadError}</p>
+
       </PassportStateFrame>
     );
   }
@@ -132,11 +132,11 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
     try {
       const nextProfile = await api.updateProfile(input);
       setProfile(nextProfile);
-      setSaveMessage('Đã lưu thay đổi');
+      setSaveMessage('onboarding.changes.saved');
       returnFocusTarget.current = 'trigger';
       setEditing(false);
-    } catch (error: unknown) {
-      setSaveError(error instanceof Error ? error.message : 'Chưa thể lưu thay đổi lúc này.');
+    } catch {
+      setSaveError('onboarding.unable.to.save.changes.right.now');
     } finally {
       setSaving(false);
     }
@@ -162,14 +162,14 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
       editing={editing}
       editTriggerRef={editTriggerRef}
       profileHeroRef={profileHeroRef}
-      saveMessage={saveMessage}
+      saveMessage={saveMessage ? t(saveMessage) : ''}
       onEdit={openEditor}
       body={editing ? (
         <PassportEditor
           profile={profile}
           catalog={catalog}
           saving={saving}
-          saveError={saveError}
+          saveError={saveError ? t(saveError) : ''}
           editorSectionRef={editorSectionRef}
           editorHeadingRef={editorHeadingRef}
           onCancel={closeEditor}
@@ -181,26 +181,24 @@ export function OwnPassportPage({ api: providedApi, userId: providedUserId }: Ow
 }
 
 export function PublicPassportPage({ api: providedApi, userId: providedUserId }: PublicPassportPageProps) {
+  const { t, locale } = useUiLocale();
   const auth = useAuth();
   const params = useParams<{ userId: string }>();
   const api = providedApi ?? auth.api;
   const userId = providedUserId ?? params.userId ?? '';
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [loadError, setLoadError] = useState('');
 
   const loadProfile = useCallback(() => {
     if (!userId) return;
     setLoadState('loading');
-    setLoadError('');
     api.getPublicProfile(userId)
       .then((nextProfile) => {
         setProfile(nextProfile);
         setLoadState('ready');
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         setLoadState('error');
-        setLoadError(error instanceof Error ? error.message : 'Unable to load the public passport.');
       });
   }, [api, userId]);
 
@@ -211,21 +209,21 @@ export function PublicPassportPage({ api: providedApi, userId: providedUserId }:
   if (!userId) {
     return (
       <PassportStateFrame>
-        <EmptyState title='Không tìm thấy hồ sơ' description='Liên kết hồ sơ này chưa có đủ thông tin.' />
+        <EmptyState title={t('onboarding.profile.not.found')} description={t('onboarding.this.profile.link.is.missing.information')} />
       </PassportStateFrame>
     );
   }
-  if (loadState === 'loading') return <PassportLoading label='Đang tải hồ sơ công khai' />;
+  if (loadState === 'loading') return <PassportLoading label={t('onboarding.loading.public.profile')} />;
   if (loadState === 'error' || !profile) {
     return (
       <PassportStateFrame>
         <ErrorState
-          title='Chưa tải được hồ sơ công khai'
-          description='Hồ sơ có thể đã bị gỡ hoặc chưa sẵn sàng. Hãy thử tải lại.'
+          title={t('onboarding.unable.to.load.public.profile')}
+          description={t('onboarding.this.profile.may.have.been.removed.or.is.not.ready.try.reloading')}
           onRetry={loadProfile}
-          retryLabel='Tải lại hồ sơ'
+          retryLabel={t('onboarding.reload.profile')}
         />
-        <p className={styles.screenReaderOnly}>{loadError}</p>
+
       </PassportStateFrame>
     );
   }
@@ -256,6 +254,7 @@ function PassportView({
   saveMessage,
   body,
 }: PassportViewProps) {
+  const { t, locale } = useUiLocale();
   const ownProfile = isOwner ? profile as OwnProfile : null;
   return (
     <section className={styles.passportPage} aria-labelledby='passport-title'>
@@ -263,9 +262,9 @@ function PassportView({
         <div className={styles.identityBlock}>
           <Avatar name={profile.user.displayName} size='lg' />
           <div>
-            <p className={styles.eyebrow}>{isOwner ? 'Hộ chiếu của bạn' : 'Hộ chiếu công khai'}</p>
+            <p className={styles.eyebrow}>{isOwner ? t('onboarding.your.passport') : t('onboarding.public.passport')}</p>
             <h1 id='passport-title'>{profile.user.displayName}</h1>
-            <p className={styles.identitySubtitle}>Một hồ sơ mở cho những cuộc gặp gỡ qua ngôn ngữ.</p>
+            <p className={styles.identitySubtitle}>{t('onboarding.an.open.profile.for.meeting.people.through.language')}</p>
           </div>
         </div>
         {isOwner ? (
@@ -279,11 +278,10 @@ function PassportView({
               onClick={onEdit}
             >
               <Icon name='user-round' size={18} />
-              {editing ? 'Đang chỉnh sửa' : 'Chỉnh sửa hồ sơ'}
+              {editing ? t('onboarding.editing') : t('onboarding.edit.profile')}
             </Button>
             <Link className={styles.quietLink} to={'/profiles/' + encodeURIComponent(profile.user.id)}>
-              Xem hồ sơ công khai
-            </Link>
+               {t('onboarding.view.public.profile')} </Link>
           </div>
         ) : null}
       </header>
@@ -299,43 +297,43 @@ function PassportView({
             <InterestsSection profile={profile} />
           </div>
 
-          <aside className={styles.passportRail} aria-label='Thông tin kết nối và riêng tư'>
+          <aside className={styles.passportRail} aria-label={t('onboarding.connection.and.privacy.information')}>
             <div className={styles.railCard}>
               <div className={styles.railCardHeader}>
-                <h2>Nhịp kết nối</h2>
+                <h2>{t('onboarding.connection.schedule')}</h2>
                 <Icon name='compass' size={18} />
               </div>
               {ownProfile ? (
                 <>
                   <div className={styles.railHighlight}>
-                    <span>Khung giờ của bạn</span>
-                    <strong>{availabilitySummary(ownProfile.availability)}</strong>
-                    <small>{timezoneLabel(ownProfile.timezone)}</small>
+                    <span>{t('onboarding.your.availability')}</span>
+                    <strong>{availabilitySummary(ownProfile.availability, locale)}</strong>
+                    <small>{timezoneLabel(ownProfile.timezone, locale)}</small>
                   </div>
                   {ownProfile.availability.length > 0 ? (
                     <ul className={styles.railAvailabilityList}>
-                      {ownProfile.availability.map((window) => <li key={window.dayOfWeek + '-' + window.startTime + '-' + window.endTime}>{formatAvailabilityWindow(window)}</li>)}
+                      {ownProfile.availability.map((window) => <li key={window.dayOfWeek + '-' + window.startTime + '-' + window.endTime}>{formatAvailabilityWindow(window, locale)}</li>)}
                     </ul>
                   ) : null}
                 </>
               ) : (
                 <div className={styles.railHighlight}>
-                  <span>Khung giờ cụ thể</span>
-                  <strong>Không hiển thị công khai</strong>
-                  <small>Hồ sơ này chỉ mở những nội dung được phép chia sẻ.</small>
+                  <span>{t('onboarding.specific.availability')}</span>
+                  <strong>{t('onboarding.not.shown.publicly')}</strong>
+                  <small>{t('onboarding.this.profile.shows.only.information.allowed.to.be.shared')}</small>
                 </div>
               )}
             </div>
 
             <div className={styles.railCard}>
               <div className={styles.railCardHeader}>
-                <h2>Bảo vệ danh tính</h2>
+                <h2>{t('onboarding.protecting.your.identity')}</h2>
                 <Icon name='lock' size={18} />
               </div>
               <p className={styles.railText}>
                 {isOwner
-                  ? 'Bạn kiểm soát việc từng ngôn ngữ xuất hiện trên hồ sơ công khai. Email và dữ liệu tài khoản không thuộc hộ chiếu.'
-                  : 'Email, mã nhà cung cấp, vai trò tài khoản và ngôn ngữ riêng tư không xuất hiện ở đây.'}
+                  ? t('onboarding.you.control.whether.each.language.appears.on.your.public.profile.email.and.account.data.are.not.part.of.your.passport')
+                  : t('onboarding.email.provider.identifiers.account.roles.and.private.languages.do.not.appear.here')}
               </p>
             </div>
           </aside>
@@ -346,20 +344,21 @@ function PassportView({
 }
 
 function LanguageSection({ languages, isOwner }: { languages: PassportLanguage[]; isOwner: boolean }) {
+  const { t, locale } = useUiLocale();
   const groups: Array<{ role: LanguageRole; title: string; description: string }> = [
-    { role: 'native', title: 'Ngôn ngữ bản ngữ', description: 'Những ngôn ngữ tạo nên nền tảng của bạn.' },
-    { role: 'known', title: 'Ngôn ngữ đã biết', description: 'Những ngôn ngữ bạn có thể sử dụng và chia sẻ.' },
-    { role: 'learning', title: 'Ngôn ngữ đang học', description: 'Những ngôn ngữ đang dẫn bạn đến mục tiêu mới.' },
+    { role: 'native', title: t('onboarding.native.languages'), description: t('onboarding.languages.that.form.your.foundation') },
+    { role: 'known', title: t('onboarding.known.languages'), description: t('onboarding.languages.you.can.use.and.share') },
+    { role: 'learning', title: t('onboarding.learning.languages.group'), description: t('onboarding.languages.leading.you.toward.new.goals') },
   ];
   return (
     <section className={styles.passportSection + ' ' + styles.contentCard} aria-labelledby='passport-languages-title'>
       <div className={styles.sectionHeader}>
         <div>
-          <p className={styles.eyebrow}>Ngôn ngữ</p>
-          <h2 id='passport-languages-title'>Những ngôn ngữ tạo nên bạn</h2>
+          <p className={styles.eyebrow}>{t('onboarding.languages')}</p>
+          <h2 id='passport-languages-title'>{t('onboarding.the.languages.that.make.you.who.you.are')}</h2>
         </div>
         <span className={styles.sectionTools}>
-          <span className={styles.sectionCount}>{languages.length} {isOwner ? 'mối quan hệ' : 'ngôn ngữ công khai'}</span>
+          <span className={styles.sectionCount}>{languages.length} {isOwner ? t('onboarding.language.relationships') : t('onboarding.public.languages')}</span>
           <Icon name='languages' size={20} />
         </span>
       </div>
@@ -377,7 +376,7 @@ function LanguageSection({ languages, isOwner }: { languages: PassportLanguage[]
                   {matching.map((language) => <LanguageRow key={language.code + '-' + group.role} language={language} isOwner={isOwner} />)}
                 </div>
               ) : (
-                <p className={styles.groupEmpty}>Chưa có ngôn ngữ trong nhóm này.</p>
+                <p className={styles.groupEmpty}>{t('onboarding.no.languages.in.this.group.yet')}</p>
               )}
             </div>
           );
@@ -388,22 +387,21 @@ function LanguageSection({ languages, isOwner }: { languages: PassportLanguage[]
 }
 
 function LanguageRow({ language, isOwner }: { language: PassportLanguage; isOwner: boolean }) {
-  const secondary = [language.vietnameseName, language.englishName]
-    .filter((name, index, names) => Boolean(name) && names.indexOf(name) === index && name !== language.nativeName)
-    .join(' · ');
+  const { t, locale } = useUiLocale();
+  const secondary = language.nativeName;
   return (
     <article className={styles.languageRow} dir={language.direction}>
       <div className={styles.languageName}>
-        <strong>{language.nativeName}</strong>
+        <strong>{languageDisplayName(language, locale)}</strong>
         <span>{secondary || language.code.toUpperCase()}</span>
       </div>
       <div className={styles.languageMeta}>
-        <Badge tone='info'>{proficiencyLabel(language.declaredProficiency)}</Badge>
-        {language.assessedProficiency ? <Badge tone='success'>Đã đánh giá {language.assessedProficiency}</Badge> : null}
-        {language.isPrimaryLearningTarget ? <Badge tone='warning'>Mục tiêu chính</Badge> : null}
+        <Badge tone='info'>{proficiencyLabel(language.declaredProficiency, locale)}</Badge>
+        {language.assessedProficiency ? <Badge tone='success'>{t('onboarding.assessed')} {language.assessedProficiency}</Badge> : null}
+        {language.isPrimaryLearningTarget ? <Badge tone='warning'>{t('onboarding.primary.target')}</Badge> : null}
         {isOwner && 'visibility' in language ? (
           <Badge tone={language.visibility === 'PUBLIC' ? 'success' : 'neutral'}>
-            {language.visibility === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
+            {language.visibility === 'PUBLIC' ? t('onboarding.public') : t('onboarding.private')}
           </Badge>
         ) : null}
       </div>
@@ -412,43 +410,46 @@ function LanguageRow({ language, isOwner }: { language: PassportLanguage; isOwne
 }
 
 function CollectionsSection({ profile }: { profile: PassportProfile }) {
+  const { t, locale } = useUiLocale();
   return (
     <section className={styles.passportSection + ' ' + styles.contentCard} aria-labelledby='passport-collections-title'>
       <div className={styles.sectionHeader}>
         <div>
-          <p className={styles.eyebrow}>Điều bạn muốn mang theo</p>
-          <h2 id='passport-collections-title'>Mục tiêu, kỹ năng và sở thích</h2>
+          <p className={styles.eyebrow}>{t('onboarding.what.you.want.to.take.with.you')}</p>
+          <h2 id='passport-collections-title'>{t('onboarding.goals.skills.and.interests')}</h2>
         </div>
         <Icon name='sparkles' size={24} />
       </div>
       <div className={styles.collectionGrid}>
-        <CollectionList title='Mục tiêu học' values={profile.goals.map(goalLabel)} empty='Chưa thêm mục tiêu.' />
-        <CollectionList title='Kỹ năng ưu tiên' values={profile.skills.map(skillLabel)} empty='Chưa chọn kỹ năng.' />
+        <CollectionList title={t('onboarding.learning.goals.section')} values={profile.goals.map((goal) => goalLabel(goal, locale))} empty={t('onboarding.no.goals.added.yet')} />
+        <CollectionList title={t('onboarding.priority.skills')} values={profile.skills.map((skill) => skillLabel(skill, locale))} empty={t('onboarding.no.skills.selected.yet')} />
       </div>
     </section>
   );
 }
 
 function InterestsSection({ profile }: { profile: PassportProfile }) {
+  const { t, locale } = useUiLocale();
   return (
     <section className={styles.passportSection + ' ' + styles.contentCard} aria-labelledby='passport-interests-title'>
       <div className={styles.sectionHeader}>
         <div>
-          <p className={styles.eyebrow}>Chủ đề mở lời</p>
-          <h2 id='passport-interests-title'>Sở thích và điều muốn chia sẻ</h2>
+          <p className={styles.eyebrow}>{t('onboarding.conversation.starters')}</p>
+          <h2 id='passport-interests-title'>{t('onboarding.interests.and.things.to.share')}</h2>
         </div>
         <Icon name='users' size={20} />
       </div>
       <div className={styles.interestDisplay}>
         {profile.interests.length > 0
           ? profile.interests.map((interest) => <span className={styles.displayChip} key={interest}>{interest}</span>)
-          : <p className={styles.mutedText}>Chưa thêm sở thích.</p>}
+          : <p className={styles.mutedText}>{t('onboarding.no.interests.added.yet')}</p>}
       </div>
     </section>
   );
 }
 
 function CollectionList({ title, values, empty }: { title: string; values: string[]; empty: string }) {
+  const { t, locale } = useUiLocale();
   return (
     <div className={styles.collectionBlock}>
       <h3>{title}</h3>
@@ -480,12 +481,15 @@ function PassportEditor({
   onCancel: () => void;
   onSave: (input: ProfileUpdateInput) => Promise<void>;
 }) {
+  const { t, locale } = useUiLocale();
+  const { DAY_LABELS, ROLE_LABELS, PROFICIENCY_LABELS } = localizedPassportLabels(locale);
+  const { GOAL_OPTIONS, SKILL_OPTIONS, TIMEZONES } = localizedOnboardingOptions(locale);
   const [draft, setDraft] = useState<PassportDraft>(() => draftFromProfile(profile));
   const [interestValue, setInterestValue] = useState('');
   const [newDay, setNewDay] = useState(2);
   const [newStart, setNewStart] = useState('19:00');
   const [newEnd, setNewEnd] = useState('20:00');
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState<TranslationKey | ''>('');
   const catalogByCode = useMemo(() => new Map(catalog.map((language) => [language.code, language])), [catalog]);
   const availableLanguages = catalog.filter((language) => !draft.languages.some((item) => item.languageCode === language.code));
 
@@ -552,18 +556,18 @@ function PassportEditor({
 
   function addAvailability(): void {
     if (timeToMinutes(newStart) >= timeToMinutes(newEnd)) {
-      setFormError('Thời gian kết thúc cần muộn hơn thời gian bắt đầu.');
+      setFormError('onboarding.the.end.time.must.be.later.than.the.start.time');
       return;
     }
     setDraftValue({ availability: [...draft.availability, { dayOfWeek: newDay, startTime: newStart, endTime: newEnd }] });
   }
 
-  function validate(): string {
-    if (draft.languages.some((language) => language.roles.length === 0)) return 'Mỗi ngôn ngữ cần ít nhất một vai trò.';
+  function validate(): TranslationKey | '' {
+    if (draft.languages.some((language) => language.roles.length === 0)) return 'onboarding.each.language.needs.at.least.one.role';
     if (draft.languages.some((language) => (language.roles.includes('native')) !== (language.declaredProficiency === 'NATIVE'))) {
-      return 'Mức bản ngữ cần đi cùng vai trò bản ngữ.';
+      return 'onboarding.native.proficiency.must.have.the.native.role';
     }
-    if (draft.languages.filter((language) => language.isPrimaryLearningTarget).length > 1) return 'Chỉ chọn một mục tiêu học chính.';
+    if (draft.languages.filter((language) => language.isPrimaryLearningTarget).length > 1) return 'onboarding.choose.only.one.primary.learning.target';
     return '';
   }
 
@@ -582,24 +586,24 @@ function PassportEditor({
     <section ref={editorSectionRef} className={styles.editorFrame} aria-labelledby='passport-editor-title'>
       <div className={styles.editorIdentityContext}>
         <Avatar name={profile.user.displayName} size='sm' />
-        <span>Hồ sơ đang chỉnh sửa: <strong>{profile.user.displayName}</strong></span>
+        <span>{t('onboarding.profile.being.edited')} <strong>{profile.user.displayName}</strong></span>
       </div>
-      <p className={styles.editModeNotice} role='status'>Bạn đang chỉnh sửa hồ sơ</p>
+      <p className={styles.editModeNotice} role='status'>{t('onboarding.you.are.editing.your.profile')}</p>
       <div className={styles.editorHeader}>
         <div>
-          <p className={styles.eyebrow}>Chỉnh sửa</p>
-          <h2 ref={editorHeadingRef} id='passport-editor-title' tabIndex={-1}>Cập nhật những điều thuộc về hành trình ngôn ngữ</h2>
+          <p className={styles.eyebrow}>{t('onboarding.edit')}</p>
+          <h2 ref={editorHeadingRef} id='passport-editor-title' tabIndex={-1}>{t('onboarding.update.your.language.journey')}</h2>
         </div>
-        <Button variant='quiet' onClick={onCancel}>Đóng</Button>
+        <Button variant='quiet' onClick={onCancel}>{t('onboarding.close')}</Button>
       </div>
       <form className={styles.editorForm} onSubmit={handleSubmit} noValidate>
         <fieldset className={styles.editorFieldset}>
-          <legend>Ngôn ngữ và quyền riêng tư</legend>
-          <p className={styles.fieldHint}>Chọn vai trò, mức tự đánh giá và việc ngôn ngữ này có xuất hiện trên hồ sơ công khai hay không.</p>
+          <legend>{t('onboarding.languages.and.privacy')}</legend>
+          <p className={styles.fieldHint}>{t('onboarding.choose.roles.self.assessed.proficiency.and.whether.this.language.appears.on.your.public.profile')}</p>
           <div className={styles.editorLanguageList}>
             {draft.languages.map((language, index) => {
               const catalogItem = catalogByCode.get(language.languageCode);
-              const label = languageLabel(catalogItem, language.languageCode);
+              const label = languageLabel(catalogItem, language.languageCode, locale);
               return (
                 <article className={styles.editorLanguage} key={language.languageCode}>
                   <div className={styles.editorLanguageHeading}>
@@ -607,11 +611,11 @@ function PassportEditor({
                       <h3>{label}</h3>
                       <p>{secondaryLanguageLabel(catalogItem, language.languageCode)}</p>
                     </div>
-                    <button className={styles.removeButton} type='button' onClick={() => setDraftValue({ languages: draft.languages.filter((_, itemIndex) => itemIndex !== index) })} aria-label={'Xóa ' + label}>
+                    <button className={styles.removeButton} type='button' onClick={() => setDraftValue({ languages: draft.languages.filter((_, itemIndex) => itemIndex !== index) })} aria-label={t('onboarding.remove') + label}>
                       <Icon name='x' size={18} />
                     </button>
                   </div>
-                  <div className={styles.roleChoices} role='group' aria-label={'Vai trò của ' + label}>
+                  <div className={styles.roleChoices} role='group' aria-label={t('onboarding.roles.for') + label}>
                     {(['native', 'known', 'learning'] as LanguageRole[]).map((role) => (
                       <label className={styles.checkboxLabel} key={role}>
                         <input type='checkbox' checked={language.roles.includes(role)} onChange={() => toggleRole(index, role)} />
@@ -621,8 +625,7 @@ function PassportEditor({
                   </div>
                   <div className={styles.editorControls}>
                     <label className={styles.fieldLabel}>
-                      Mức tự đánh giá
-                      <select value={language.declaredProficiency} onChange={(event) => {
+                       {t('onboarding.self.assessed.proficiency')} <select value={language.declaredProficiency} onChange={(event) => {
                         const value = event.target.value;
                         if (isDeclaredProficiency(value)) updateLanguage(index, { declaredProficiency: value });
                       }}>
@@ -630,18 +633,16 @@ function PassportEditor({
                       </select>
                     </label>
                     <label className={styles.fieldLabel}>
-                      Hiển thị trên hồ sơ
-                      <select value={language.visibility ?? 'PUBLIC'} onChange={(event) => updateLanguage(index, { visibility: event.target.value as 'PUBLIC' | 'PRIVATE' })}>
-                        <option value='PUBLIC'>Công khai</option>
-                        <option value='PRIVATE'>Riêng tư</option>
+                       {t('onboarding.profile.visibility')} <select value={language.visibility ?? 'PUBLIC'} onChange={(event) => updateLanguage(index, { visibility: event.target.value as 'PUBLIC' | 'PRIVATE' })}>
+                        <option value='PUBLIC'>{t('onboarding.public')}</option>
+                        <option value='PRIVATE'>{t('onboarding.private')}</option>
                       </select>
                     </label>
                   </div>
                   {language.roles.includes('learning') ? (
                     <label className={styles.checkboxLabel}>
                       <input type='checkbox' checked={Boolean(language.isPrimaryLearningTarget)} onChange={(event) => setPrimary(index, event.target.checked)} />
-                      Đây là mục tiêu học chính
-                    </label>
+                       {t('onboarding.this.is.my.primary.learning.target')} </label>
                   ) : null}
                 </article>
               );
@@ -649,31 +650,30 @@ function PassportEditor({
           </div>
           {availableLanguages.length > 0 ? (
             <label className={styles.fieldLabel}>
-              Thêm một ngôn ngữ
-              <select value='' onChange={(event) => addLanguage(event.target.value)}>
-                <option value=''>Chọn từ danh sách</option>
-                {availableLanguages.map((language) => <option key={language.code} value={language.code}>{language.nativeName} · {language.englishName}</option>)}
+               {t('onboarding.add.a.language')} <select value='' onChange={(event) => addLanguage(event.target.value)}>
+                <option value=''>{t('onboarding.choose.from.the.list')}</option>
+                {availableLanguages.map((language) => <option key={language.code} value={language.code}>{languageDisplayName(language, locale)} · {language.nativeName}</option>)}
               </select>
             </label>
           ) : null}
         </fieldset>
 
         <fieldset className={styles.editorFieldset}>
-          <legend>Mục tiêu và kỹ năng</legend>
+          <legend>{t('onboarding.goals.and.skills')}</legend>
           <div className={styles.editorChoiceGrid}>
             <div>
-              <h3>Mục tiêu học</h3>
+              <h3>{t('onboarding.learning.goals.section')}</h3>
               <div className={styles.choiceList}>
                 {goalValues.map((goal) => (
                   <label className={styles.checkboxLabel} key={goal}>
                     <input type='checkbox' checked={draft.goals.includes(goal)} onChange={() => setDraftValue({ goals: draft.goals.includes(goal) ? draft.goals.filter((item) => item !== goal) : [...draft.goals, goal] })} />
-                    {goalLabel(goal)}
+                    {goalLabel(goal, locale)}
                   </label>
                 ))}
               </div>
             </div>
             <div>
-              <h3>Kỹ năng ưu tiên</h3>
+              <h3>{t('onboarding.priority.skills')}</h3>
               <div className={styles.choiceList}>
                 {SKILL_OPTIONS.map((skill) => (
                   <label className={styles.checkboxLabel} key={skill.value}>
@@ -687,51 +687,49 @@ function PassportEditor({
         </fieldset>
 
         <fieldset className={styles.editorFieldset}>
-          <legend>Sở thích và nhịp học</legend>
+          <legend>{t('onboarding.interests.and.learning.schedule')}</legend>
           <label className={styles.fieldLabel}>
-            Sở thích
-            <div className={styles.inlineField}>
-              <input value={interestValue} onChange={(event) => setInterestValue(event.target.value)} onKeyDown={handleInterestKeyDown} placeholder='Ví dụ: âm nhạc' />
-              <Button variant='quiet' size='sm' type='button' onClick={addInterest}>Thêm</Button>
+             {t('onboarding.interests')} <div className={styles.inlineField}>
+              <input value={interestValue} onChange={(event) => setInterestValue(event.target.value)} onKeyDown={handleInterestKeyDown} placeholder={t('onboarding.for.example.music')} />
+              <Button variant='quiet' size='sm' type='button' onClick={addInterest}>{t('onboarding.add')}</Button>
             </div>
           </label>
           {draft.interests.length > 0 ? <div className={styles.editorChips}>{draft.interests.map((interest) => <Chip key={interest} onRemove={() => setDraftValue({ interests: draft.interests.filter((item) => item !== interest) })}>{interest}</Chip>)}</div> : null}
           <div className={styles.editorControls}>
             <label className={styles.fieldLabel}>
-              Múi giờ
-              <select value={draft.timezone ?? ''} onChange={(event) => setDraftValue({ timezone: event.target.value || null })}>
-                <option value=''>Chưa chọn</option>
+               {t('onboarding.timezone')} <select value={draft.timezone ?? ''} onChange={(event) => setDraftValue({ timezone: event.target.value || null })}>
+                <option value=''>{t('onboarding.not.selected')}</option>
                 {draft.timezone && !TIMEZONES.some((timezone) => timezone.value === draft.timezone) ? <option value={draft.timezone}>{draft.timezone}</option> : null}
                 {TIMEZONES.map((timezone) => <option key={timezone.value} value={timezone.value}>{timezone.label}</option>)}
               </select>
             </label>
           </div>
           <div className={styles.availabilityEditor}>
-            <h3>Khung giờ có thể kết nối</h3>
+            <h3>{t('onboarding.available.times.to.connect')}</h3>
             {draft.availability.length > 0 ? (
               <ul className={styles.availabilityEditList}>
                 {draft.availability.map((window, index) => (
                   <li key={window.dayOfWeek + '-' + index}>
-                    <span>{formatAvailabilityWindow(window)}</span>
-                    <button className={styles.removeButton} type='button' onClick={() => setDraftValue({ availability: draft.availability.filter((_, itemIndex) => itemIndex !== index) })} aria-label={'Xóa khung giờ ' + (index + 1)}><Icon name='x' size={16} /></button>
+                    <span>{formatAvailabilityWindow(window, locale)}</span>
+                    <button className={styles.removeButton} type='button' onClick={() => setDraftValue({ availability: draft.availability.filter((_, itemIndex) => itemIndex !== index) })} aria-label={t('onboarding.remove.time.window') + (index + 1)}><Icon name='x' size={16} /></button>
                   </li>
                 ))}
               </ul>
-            ) : <p className={styles.mutedText}>Chưa thêm khung giờ.</p>}
+            ) : <p className={styles.mutedText}>{t('onboarding.no.availability.added.yet')}</p>}
             <div className={styles.availabilityAddRow}>
-              <label className={styles.fieldLabel}>Ngày<select value={newDay} onChange={(event) => setNewDay(Number(event.target.value))}>{Object.entries(DAY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-              <label className={styles.fieldLabel}>Bắt đầu<input type='time' value={newStart} onChange={(event) => setNewStart(event.target.value)} /></label>
-              <label className={styles.fieldLabel}>Kết thúc<input type='text' inputMode='numeric' pattern='^([01][0-9]|2[0-3]):[0-5][0-9]|24:00$' value={newEnd} onChange={(event) => setNewEnd(event.target.value)} /></label>
-              <Button variant='quiet' size='sm' type='button' onClick={addAvailability}>Thêm giờ</Button>
+              <label className={styles.fieldLabel}>{t('onboarding.day')}<select value={newDay} onChange={(event) => setNewDay(Number(event.target.value))}>{Object.entries(DAY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+              <label className={styles.fieldLabel}>{t('onboarding.start')}<input type='time' value={newStart} onChange={(event) => setNewStart(event.target.value)} /></label>
+              <label className={styles.fieldLabel}>{t('onboarding.end')}<input type='text' inputMode='numeric' pattern='^([01][0-9]|2[0-3]):[0-5][0-9]|24:00$' value={newEnd} onChange={(event) => setNewEnd(event.target.value)} /></label>
+              <Button variant='quiet' size='sm' type='button' onClick={addAvailability}>{t('onboarding.add.time')}</Button>
             </div>
           </div>
         </fieldset>
 
-        {formError ? <p className={styles.formError} role='alert'>{formError}</p> : null}
+        {formError ? <p className={styles.formError} role='alert'>{t(formError)}</p> : null}
         {saveError ? <p className={styles.formError} role='alert'>{saveError}</p> : null}
         <div className={styles.editorActions}>
-          <Button variant='quiet' type='button' onClick={onCancel}>Hủy</Button>
-          <Button variant='primary' type='submit' loading={saving}>Lưu thay đổi</Button>
+          <Button variant='quiet' type='button' onClick={onCancel}>{t('onboarding.cancel')}</Button>
+          <Button variant='primary' type='submit' loading={saving}>{t('onboarding.save.changes')}</Button>
         </div>
       </form>
     </section>
@@ -739,6 +737,7 @@ function PassportEditor({
 }
 
 function PassportLoading({ label }: { label: string }) {
+  const { t, locale } = useUiLocale();
   return (
     <PassportStateFrame>
       <div className={styles.loadingState} aria-busy='true' aria-label={label}>
@@ -749,7 +748,8 @@ function PassportLoading({ label }: { label: string }) {
 }
 
 function PassportStateFrame({ children }: { children: ReactNode }) {
-  return <section className={styles.stateFrame} aria-labelledby='passport-state-title'><h1 className={styles.screenReaderOnly} id='passport-state-title'>Hộ chiếu ngôn ngữ</h1>{children}</section>;
+  const { t, locale } = useUiLocale();
+  return <section className={styles.stateFrame} aria-labelledby='passport-state-title'><h1 className={styles.screenReaderOnly} id='passport-state-title'>{t('onboarding.language.passport')}</h1>{children}</section>;
 }
 
 function timeToMinutes(value: string): number {

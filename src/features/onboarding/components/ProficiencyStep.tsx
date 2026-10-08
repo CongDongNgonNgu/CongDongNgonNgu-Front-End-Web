@@ -1,3 +1,5 @@
+import { languageDisplayName } from '../../ui-locale/language-display';
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import type { MutableRefObject } from 'react';
 import { Icon } from '../../../components/ui/Icon/Icon';
 import { PROFICIENCY_VALUES, type DeclaredProficiency, type LanguageCatalogItem, type OnboardingDraft } from '../onboarding.types';
@@ -11,15 +13,16 @@ interface ProficiencyStepProps {
 }
 
 export function ProficiencyStep({ draft, catalog, levelRefs, onSetLevel }: ProficiencyStepProps) {
+  const { t, locale } = useUiLocale();
   const codes = unique([...draft.knownCodes, ...draft.learningCodes])
     .filter((code) => !draft.nativeCodes.includes(code));
 
   return (
     <section className={styles.levelSection} aria-labelledby='level-section-title'>
       <div className={styles.sectionIntro}>
-        <p className={styles.sectionEyebrow}>MỘT ƯỚC LƯỢNG NHANH</p>
-        <h2 id='level-section-title'>Bạn đang ở đâu với từng ngôn ngữ?</h2>
-        <p>Chọn mức gần nhất với cảm nhận hiện tại của bạn. Không có câu trả lời đúng hay sai.</p>
+        <p className={styles.sectionEyebrow}>{t('onboarding.a.quick.estimate')}</p>
+        <h2 id='level-section-title'>{t('onboarding.where.are.you.with.each.language')}</h2>
+        <p>{t('onboarding.choose.the.level.closest.to.how.you.feel.today.there.is.no.right.or.wrong.answer')}</p>
       </div>
       {codes.length > 0 ? (
         <div className={styles.levelList}>
@@ -31,13 +34,13 @@ export function ProficiencyStep({ draft, catalog, levelRefs, onSetLevel }: Profi
                 key={code}
                 ref={(element) => { levelRefs.current[code] = element; }}
                 role='radiogroup'
-                aria-label={`${language.nativeName} · ${language.englishName}`}
+                aria-label={`${languageDisplayName(language, locale)} · ${language.nativeName}`}
                 tabIndex={-1}
               >
                 <div className={styles.levelLanguage}>
-                  <strong>{language.nativeName}</strong>
-                  <span>{language.englishName}</span>
-                  <small>{draft.learningCodes.includes(code) ? 'Đang học' : 'Đã biết'}</small>
+                  <strong>{languageDisplayName(language, locale)}</strong>
+                  <span>{language.nativeName}</span>
+                  <small>{draft.learningCodes.includes(code) ? t('onboarding.learning') : t('onboarding.known')}</small>
                 </div>
                 <div className={styles.levelOptions}>
                   {PROFICIENCY_VALUES.filter((level) => level !== 'NATIVE').map((level) => (
@@ -59,8 +62,7 @@ export function ProficiencyStep({ draft, catalog, levelRefs, onSetLevel }: Profi
         </div>
       ) : (
         <p className={styles.nativeLevelNote}>
-          <Icon name='check-circle' size={20} /> Ngôn ngữ bạn chọn đã là bản ngữ, nên không cần khai báo thêm trình độ.
-        </p>
+          <Icon name='check-circle' size={20} />  {t('onboarding.your.selected.languages.are.native.languages.so.no.additional.proficiency.is.needed')} </p>
       )}
     </section>
   );

@@ -1,3 +1,6 @@
+import { viExchange, enExchange } from './catalogs/exchange';
+import { viOnboarding, enOnboarding } from './catalogs/onboarding';
+import { viAuth, enAuth } from './catalogs/auth';
 import { viStudyGroups, enStudyGroups } from './catalogs/study-groups';
 import { enCommon, viCommon } from './catalogs/common';
 import { enShell, viShell } from './catalogs/shell';
@@ -11,8 +14,8 @@ export const FALLBACK_UI_LOCALE: UiLocale = 'vi';
 export const UI_LOCALE_STORAGE_KEY = 'congdongngonngu.ui-locale.v1';
 export const localeMetadata = { vi: { name: 'Tiếng Việt', intl: 'vi-VN', direction: 'ltr' }, en: { name: 'English', intl: 'en-US', direction: 'ltr' } } as const;
 export const catalogs = {
-  vi: { ...viCommon, ...viShell, ...viLibrary, ...viErrors, ...viStudyGroups },
-  en: { ...enCommon, ...enShell, ...enLibrary, ...enErrors, ...enStudyGroups },
+  vi: { ...viCommon, ...viShell, ...viLibrary, ...viErrors, ...viStudyGroups, ...viAuth, ...viOnboarding, ...viExchange },
+  en: { ...enCommon, ...enShell, ...enLibrary, ...enErrors, ...enStudyGroups, ...enAuth, ...enOnboarding, ...enExchange },
 };
 export type TranslationKey = keyof typeof catalogs.vi;
 export type TranslationParams = Readonly<Record<string, string | number>>;

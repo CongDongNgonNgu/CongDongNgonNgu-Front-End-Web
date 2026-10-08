@@ -1,8 +1,10 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../../ui-locale/ui-locale';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { TextInput } from '../../../components/ui/FormControls/TextInput';
-import { authErrorMessage } from '../auth-errors';
+import { authErrorKey } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { useAuth } from '../AuthProvider';
 import { RecoveryStatusRail } from '../RecoveryStatusRail';
@@ -11,10 +13,11 @@ import feedbackStyles from '../AuthFeedback.module.css';
 import flowStyles from '../AuthFlow.module.css';
 
 export function ForgotPasswordPage() {
+  const { t } = useUiLocale();
   const { api } = useAuth();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<TranslationKey | ''>('');
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -22,7 +25,7 @@ export function ForgotPasswordPage() {
     event.preventDefault();
     setError('');
     if (!email.includes('@') || !email.includes('.')) {
-      setError('Vui lòng nhập email hợp lệ.');
+      setError("auth.please.enter.a.valid.email.address");
       formRef.current?.querySelector<HTMLInputElement>('input[type=email]')?.focus();
       return;
     }
@@ -31,7 +34,7 @@ export function ForgotPasswordPage() {
       await api.forgotPassword(email.trim().toLowerCase());
       setSent(true);
     } catch (reason) {
-      setError(authErrorMessage(reason));
+      setError(authErrorKey(reason));
     } finally {
       setLoading(false);
     }
@@ -39,52 +42,52 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthBody
-      eyebrow='Bảo mật tài khoản'
-      title='Khôi phục mật khẩu'
-      description='Nhập địa chỉ email liên kết với tài khoản của bạn để nhận liên kết khôi phục.'
-      editorialEyebrow='Bảo mật tài khoản'
-      editorialTitle='Bảo vệ tài khoản và hành trình học tập của bạn'
-      editorialDescription='Hệ thống khôi phục tài khoản được thiết kế theo chuẩn bảo mật đa tầng, bảo vệ hồ sơ học tập và dữ liệu trao đổi ngôn ngữ của bạn một cách tuyệt đối.'
+      eyebrow={t("auth.account.security")}
+      title={t("auth.password.recovery")}
+      description={t("auth.enter.the.email.address.linked.to.your")}
+      editorialEyebrow={t("auth.account.security")}
+      editorialTitle={t("auth.protect.your.account.and.learning.journey")}
+      editorialDescription={t("auth.account.recovery.uses.multiple.layers.of.security")}
       editorialItems={[
-        { icon: 'lock', title: 'Bảo mật không tiết lộ danh tính', description: 'Chúng tôi luôn giữ email và thông tin học tập của bạn riêng tư.' },
-        { icon: 'check-circle', title: 'Liên kết giới hạn thời gian', description: 'Liên kết khôi phục chỉ có hiệu lực trong thời gian ngắn và chỉ dùng một lần.' },
-        { icon: 'circle-help', title: 'Hỗ trợ thân thiện', description: 'Nếu không nhận được thư, hãy kiểm tra hộp thư rác hoặc liên hệ đội ngũ cộng đồng.' },
+        { icon: 'lock', title: t("auth.recovery.without.disclosing.identity"), description: t("auth.we.keep.your.email.and.learning.information") },
+        { icon: 'check-circle', title: t("auth.timelimited.links"), description: t("auth.recovery.links.expire.shortly.and.can.only") },
+        { icon: 'circle-help', title: t("auth.friendly.support"), description: t("auth.if.you.do.not.receive.the.email") },
       ]}
-      editorialPrompt={<p>Nhớ mật khẩu? <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập →</Link></p>}
+      editorialPrompt={<p>{t("auth.remember.your.password")} <Link className={formStyles.textLink} to='/login'>{t("auth.back.to.sign.in")}</Link></p>}
       recoveryRail={<RecoveryStatusRail activeStep={sent ? 2 : 1} />}
-      mobileReassuranceTitle='Bảo vệ quyền riêng tư'
-      mobileReassuranceText='CongDongNgonNgu.vn không bao giờ yêu cầu bạn cung cấp mật khẩu qua điện thoại, tin nhắn SMS hoặc biểu mẫu ngoài hệ thống.'
+      mobileReassuranceTitle={t("auth.protect.your.privacy")}
+      mobileReassuranceText={t("auth.congdongngonnguvn.never.asks.for.your.password.by")}
     >
       <div className={flowStyles.authState}>
         {sent ? (
           <>
             <span className={flowStyles.flowIcon} aria-hidden='true'>✓</span>
-            <h3 className={flowStyles.flowStateTitle}>Kiểm tra hòm thư của bạn</h3>
-            <p className={feedbackStyles.statusMessage} role='status'>Nếu địa chỉ email tồn tại trên hệ thống, một liên kết khôi phục an toàn đã được gửi đến hộp thư của bạn.</p>
+            <h3 className={flowStyles.flowStateTitle}>{t("auth.check.your.inbox")}</h3>
+            <p className={feedbackStyles.statusMessage} role='status'>{t("auth.if.this.email.address.exists.in.the")}</p>
             <div className={flowStyles.flowNotice}>
-              <strong>Chưa thấy email?</strong>
-              <span>Vui lòng kiểm tra thư mục Spam/Quảng cáo hoặc hòm thư lọc tự động trước khi gửi lại.</span>
+              <strong>{t("auth.no.email.yet")}</strong>
+              <span>{t("auth.please.check.spam.promotions.and.automated.filters")}</span>
             </div>
-            <Button type='button' variant='quiet' fullWidth disabled>Gửi lại liên kết ngay</Button>
-            <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập</Link>
+            <Button type='button' variant='quiet' fullWidth disabled>{t("auth.resend.link.now")}</Button>
+            <Link className={formStyles.textLink} to='/login'>{t("auth.back.to.sign.in.n2")}</Link>
           </>
         ) : (
           <form ref={formRef} className={formStyles.authForm} onSubmit={submit} noValidate aria-describedby={error ? 'forgot-error' : undefined}>
-            {error ? <p className={feedbackStyles.errorMessage} id='forgot-error' role='alert'>{error}</p> : null}
+            {error ? <p className={feedbackStyles.errorMessage} id='forgot-error' role='alert'>{t(error)}</p> : null}
             <TextInput
-              label='Địa chỉ email liên kết'
+              label={t("auth.linked.email.address")}
               type='email'
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete='email'
               inputMode='email'
-              placeholder='nguoidung@vidu.vn'
-              hint='Chúng tôi sẽ gửi một liên kết bảo mật có thời hạn 30 phút đến hòm thư này.'
+              placeholder={t('auth.email.placeholder')}
+              hint={t("auth.we.will.send.a.secure.link.valid")}
               required
             />
             <div className={formStyles.formActions}>
-              <Button type='submit' variant='secondary' fullWidth loading={loading}>Gửi liên kết khôi phục →</Button>
-              <Link className={formStyles.textLink} to='/login'>Tôi nhớ mật khẩu rồi</Link>
+              <Button type='submit' variant='secondary' fullWidth loading={loading}>{t("auth.send.recovery.link")}</Button>
+              <Link className={formStyles.textLink} to='/login'>{t("auth.i.remember.my.password")}</Link>
             </div>
           </form>
         )}

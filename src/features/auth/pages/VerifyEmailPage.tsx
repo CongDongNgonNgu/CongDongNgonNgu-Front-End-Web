@@ -1,8 +1,10 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../../ui-locale/ui-locale';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { TextInput } from '../../../components/ui/FormControls/TextInput';
-import { authErrorMessage } from '../auth-errors';
+import { authErrorKey } from '../auth-errors';
 import { AuthBody } from '../AuthBody';
 import { useAuth } from '../AuthProvider';
 import formStyles from '../AuthForm.module.css';
@@ -16,12 +18,13 @@ function maskEmail(value: string): string {
 }
 
 export function VerifyEmailPage() {
+  const { t } = useUiLocale();
   const { api } = useAuth();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [state, setState] = useState<'checking' | 'verified' | 'invalid' | 'idle'>(token ? 'checking' : 'idle');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState<TranslationKey | ''>('');
   const [loading, setLoading] = useState(false);
   const attemptedToken = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -32,11 +35,11 @@ export function VerifyEmailPage() {
     void api.verifyEmail(token)
       .then(() => {
         setState('verified');
-        setMessage('Email đã được xác minh. Bạn có thể đăng nhập ngay bây giờ.');
+        setMessage("auth.your.email.has.been.verified.you.can");
       })
       .catch((reason) => {
         setState('invalid');
-        setMessage(authErrorMessage(reason));
+        setMessage(authErrorKey(reason));
       });
   }, [api, token]);
 
@@ -44,16 +47,16 @@ export function VerifyEmailPage() {
     event.preventDefault();
     setMessage('');
     if (!email.includes('@') || !email.includes('.')) {
-      setMessage('Vui lòng nhập email hợp lệ.');
+      setMessage("auth.please.enter.a.valid.email.address");
       formRef.current?.querySelector<HTMLInputElement>('input[type=email]')?.focus();
       return;
     }
     setLoading(true);
     try {
       await api.resendVerification(email.trim().toLowerCase());
-      setMessage('Nếu tài khoản phù hợp, email xác minh mới sẽ được gửi tới bạn.');
+      setMessage("auth.if.the.account.is.eligible.a.new");
     } catch (reason) {
-      setMessage(authErrorMessage(reason));
+      setMessage(authErrorKey(reason));
     } finally {
       setLoading(false);
     }
@@ -61,49 +64,49 @@ export function VerifyEmailPage() {
 
   return (
     <AuthBody
-      eyebrow='Email verification flow'
-      title={state === 'verified' ? 'Email đã được xác minh' : 'Xác thực địa chỉ email để tiếp tục'}
-      description='Một liên kết xác nhận bảo mật đã được gửi tới hòm thư của bạn. Vui lòng kiểm tra hộp thư đến và thư mục Spam nếu cần để kích hoạt toàn bộ tính năng trao đổi ngôn ngữ.'
-      editorialEyebrow='Bảo vệ tài khoản'
-      editorialTitle='Tin cậy bắt đầu từ điều rõ ràng'
-      editorialDescription='Xác minh email giúp bảo vệ tài khoản và mở khóa những cuộc gặp gỡ đầu tiên trong cộng đồng.'
+      eyebrow={t("auth.email.verification")}
+      title={state === 'verified' ? t("auth.email.verified") : t("auth.verify.your.email.address.to.continue")}
+      description={t("auth.a.secure.confirmation.link.has.been.sent")}
+      editorialEyebrow={t("auth.protect.your.account")}
+      editorialTitle={t("auth.trust.begins.with.clarity")}
+      editorialDescription={t("auth.email.verification.protects.your.account.and.opens")}
       editorialItems={[
-        { icon: 'lock', title: 'Liên kết chỉ dùng một lần', description: 'Liên kết xác minh có thời hạn để bảo vệ dữ liệu trao đổi của bạn.' },
-        { icon: 'check-circle', title: 'Minh bạch và an toàn', description: 'Email hiển thị trong giao diện luôn được che chắn khi cần thiết.' },
-        { icon: 'circle-help', title: 'Luôn có hỗ trợ', description: 'Bạn có thể gửi lại email hoặc quay lại đăng nhập bất cứ lúc nào.' },
+        { icon: 'lock', title: t("auth.singleuse.verification.link"), description: t("auth.verification.links.expire.to.protect.your.exchange") },
+        { icon: 'check-circle', title: t("auth.transparent.and.safe"), description: t("auth.email.addresses.are.masked.in.the.interface") },
+        { icon: 'circle-help', title: t("auth.support.is.always.available"), description: t("auth.you.can.resend.the.email.or.return") },
       ]}
-      editorialPrompt={<p>Đã xác minh? <Link className={formStyles.textLink} to='/login'>Đi tới đăng nhập →</Link></p>}
-      mobileReassuranceTitle='Bảo vệ quyền riêng tư'
-      mobileReassuranceText='Liên kết xác thực chỉ có hiệu lực trong 24 giờ và chỉ được sử dụng một lần.'
+      editorialPrompt={<p>{t("auth.already.verified")} <Link className={formStyles.textLink} to='/login'>{t("auth.go.to.sign.in")}</Link></p>}
+      mobileReassuranceTitle={t("auth.protect.your.privacy")}
+      mobileReassuranceText={t("auth.the.verification.link.is.valid.for.n24")}
     >
       <div className={flowStyles.authState}>
-        {state === 'checking' ? <p className={feedbackStyles.statusMessage} role='status'>Đang kiểm tra liên kết xác minh…</p> : null}
+        {state === 'checking' ? <p className={feedbackStyles.statusMessage} role='status'>{t("auth.checking.verification.link")}</p> : null}
         {state !== 'checking' && state !== 'verified' && email ? (
           <div className={flowStyles.maskedEmail}>
-            <span>Địa chỉ nhận liên kết</span>
+            <span>{t("auth.link.recipient.address")}</span>
             <strong>{maskEmail(email)}</strong>
           </div>
         ) : null}
         {message && state !== 'checking' ? (
-          <p className={state === 'verified' ? feedbackStyles.statusMessage : feedbackStyles.errorMessage} role={state === 'verified' ? 'status' : 'alert'}>{message}</p>
+          <p className={state === 'verified' ? feedbackStyles.statusMessage : feedbackStyles.errorMessage} role={state === 'verified' ? 'status' : 'alert'}>{t(message)}</p>
         ) : null}
         {state === 'verified' ? (
-          <Link className={formStyles.textLink} to='/login'>Đi tới đăng nhập</Link>
+          <Link className={formStyles.textLink} to='/login'>{t("auth.go.to.sign.in.n2")}</Link>
         ) : (
           <form ref={formRef} className={formStyles.authForm} onSubmit={resend} noValidate>
             <TextInput
-              label='Địa chỉ email nhận liên kết'
+              label={t("auth.email.address.for.the.link")}
               type='email'
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete='email'
               inputMode='email'
-              placeholder='nguoidung@vidu.vn'
-              hint='Liên kết xác minh có hiệu lực trong 24 giờ và chỉ dùng một lần.'
+              placeholder={t('auth.email.placeholder')}
+              hint={t("auth.verification.links.are.valid.for.n24.hours")}
               required
             />
-            <Button type='submit' variant='secondary' fullWidth loading={loading}>Gửi lại email xác minh →</Button>
-            <Link className={formStyles.textLink} to='/login'>Quay lại đăng nhập</Link>
+            <Button type='submit' variant='secondary' fullWidth loading={loading}>{t("auth.resend.verification.email")}</Button>
+            <Link className={formStyles.textLink} to='/login'>{t("auth.back.to.sign.in.n2")}</Link>
           </form>
         )}
       </div>

@@ -9,7 +9,7 @@ describe('static locale catalogs', () => {
     expect(SUPPORTED_UI_LOCALES).toEqual(['vi', 'en']);
     expect(Object.keys(catalogs.en).sort()).toEqual(Object.keys(catalogs.vi).sort());
     for (const [key, text] of Object.entries(catalogs.vi)) {
-      expect(key).toMatch(/^(common|shell|navigation|library|errors|groups)(\.[a-zA-Z][a-zA-Z0-9-]*)+$/);
+      expect(key).toMatch(/^(common|shell|navigation|library|errors|groups|auth|onboarding|profile|exchange)(\.[a-zA-Z][a-zA-Z0-9-]*)+$/);
       expect(text.trim()).not.toBe('');
       const english = catalogs.en[key as keyof typeof catalogs.en];
       expect(english.trim(), key).not.toBe('');
@@ -18,7 +18,7 @@ describe('static locale catalogs', () => {
   });
   it('detects duplicate keys before object literals can overwrite them', () => {
     const localeKeys: Record<string, string[]> = { vi: [], en: [] };
-    for (const domain of ['common', 'shell', 'library', 'errors']) {
+    for (const domain of ['common', 'shell', 'library', 'errors', 'study-groups', 'auth', 'onboarding', 'exchange']) {
       const source = ts.createSourceFile(domain, readFileSync(`src/features/ui-locale/catalogs/${domain}.ts`, 'utf8'), ts.ScriptTarget.Latest, true);
       const visit = (node: ts.Node) => {
         if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /^(vi|en)/.test(node.name.text)) {

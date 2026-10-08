@@ -1,3 +1,4 @@
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { FieldShell } from '../../components/ui/FormControls/FieldShell';
 import formStyles from '../../components/ui/FormControls/FormControls.module.css';
@@ -10,6 +11,7 @@ interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
 }
 
 export function PasswordField({ label, hint, error, id: providedId, ...props }: PasswordFieldProps) {
+  const { t } = useUiLocale();
   const generatedId = useId();
   const id = providedId ?? generatedId;
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
@@ -31,7 +33,7 @@ export function PasswordField({ label, hint, error, id: providedId, ...props }: 
           onClick={() => setVisible((current) => !current)}
           aria-pressed={visible}
         >
-          {visible ? 'Ẩn' : 'Hiện'}
+          {visible ? t("auth.hide") : t("auth.show")}
         </button>
       </div>
     </FieldShell>
