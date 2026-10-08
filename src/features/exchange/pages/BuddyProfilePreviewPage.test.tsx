@@ -202,6 +202,8 @@ describe('BuddyProfilePreviewPageView', () => {
 
     await user.click(screen.getByRole('button', { name: 'Gửi báo cáo' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Hãy chọn một lý do');
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('combobox')).toHaveAccessibleDescription('Hãy chọn một lý do để tiếp tục.');
     await user.selectOptions(screen.getByRole('combobox'), 'SAFETY_CONCERN');
     await user.type(screen.getByRole('textbox'), 'Cần xem xét riêng tư.');
     await user.click(screen.getByRole('button', { name: 'Gửi báo cáo' }));
@@ -304,4 +306,17 @@ it('uses persisted English for empty detail summaries and native/assessed profic
   expect(screen.getAllByText('Not shared yet')).toHaveLength(2);
   expect(data.languages[0].declaredProficiency).toBe('NATIVE');
   expect(data.languages[0].assessedProficiency).toBe('C2');
+});
+
+it('restores keyboard focus to the persistent safety trigger and localizes dialog close control', async () => {
+  localStorage.setItem('congdongngonngu.ui-locale.v1', 'en');
+  const user = userEvent.setup(); const api = makeApi();
+  render(<UiLocaleProvider><MemoryRouter><BuddyProfilePreviewPageView api={api} authenticated userId='target-1' /></MemoryRouter></UiLocaleProvider>);
+  await screen.findByRole('heading', { name: 'Kenji S.' });
+  const safety = screen.getByRole('button', { name: 'Safety' });
+  await user.click(safety);
+  await user.click(screen.getByRole('menuitem', { name: 'Report profile' }));
+  expect(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' })).toBeVisible();
+  await user.keyboard('{Escape}');
+  expect(safety).toHaveFocus();
 });

@@ -10,6 +10,7 @@ type PickerMode = 'spoken' | 'learning';
 
 interface LanguageSelectionStepProps {
   mode: PickerMode;
+  errorId?: string;
   draft: OnboardingDraft;
   catalog: LanguageCatalogItem[];
   searchId: string;
@@ -29,6 +30,7 @@ interface LanguageSelectionStepProps {
 
 export function LanguageSelectionStep({
   mode,
+  errorId,
   draft,
   catalog,
   searchId,
@@ -63,6 +65,8 @@ export function LanguageSelectionStep({
             aria-expanded={searchOpen}
             aria-controls={searchOpen ? listId : undefined}
             aria-autocomplete='list'
+            aria-invalid={errorId ? true : undefined}
+            aria-describedby={errorId}
             autoComplete='off'
             value={searchValue}
             placeholder={t('onboarding.enter.a.language.name.for.example.vietnamese.english')}

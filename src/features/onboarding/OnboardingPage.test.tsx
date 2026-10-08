@@ -131,8 +131,12 @@ describe('OnboardingPage', () => {
     await ui.click(screen.getByRole('button', { name: /Tiếp tục/i }));
     expect(screen.getByRole('alert')).toHaveTextContent(/chọn ít nhất một ngôn ngữ bạn nói/i);
     expect(screen.getByRole('combobox', { name: 'Tìm và thêm ngôn ngữ' })).toHaveFocus();
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-describedby', screen.getByRole('alert').id);
 
     await ui.click(getLanguageChoice('Tiếng Việt', /Ngôn ngữ bản ngữ/));
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-invalid');
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-describedby');
     await ui.click(screen.getByRole('button', { name: /Tiếp tục/i }));
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Bạn muốn học ngôn ngữ nào?' })).toBeVisible());
     await ui.click(screen.getByRole('button', { name: /Quay lại/i }));
@@ -269,5 +273,7 @@ it('updates visible validation across locale switch and hides raw load errors', 
  await waitForReady(); await ui.click(screen.getByRole('button',{name:/Tiếp tục/}));
  await ui.click(screen.getByRole('button',{name:'Switch locale'}));
  expect(screen.getByRole('alert')).toHaveTextContent('Please choose at least one language you speak.');
+ expect(screen.getByRole('combobox')).toHaveAttribute('aria-invalid', 'true');
+ expect(screen.getByRole('combobox')).toHaveAttribute('aria-describedby', screen.getByRole('alert').id);
  expect(api.updateProfile).not.toHaveBeenCalled();
 });

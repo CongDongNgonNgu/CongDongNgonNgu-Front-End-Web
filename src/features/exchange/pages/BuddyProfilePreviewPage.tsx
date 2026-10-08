@@ -2,7 +2,7 @@ import { proficiencyLabel } from '../../passport/passport.utils';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { languageDisplayName } from '../../ui-locale/language-display';
 import type { TranslationKey } from '../../ui-locale/ui-locale';
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { ErrorState, Skeleton } from '../../../components/ui/Feedback';
@@ -62,6 +62,7 @@ export function BuddyProfilePreviewPageView({
   const [activeAction, setActiveAction] = useState<RelationshipAction | null>(null);
   const [actionError, setActionError] = useState<TranslationKey | ''>('');
   const [actionMessage, setActionMessage] = useState<TranslationKey | ''>('');
+  const safetyReturnFocusRef = useRef<HTMLElement | null>(null);
   const [safetyMenuOpen, setSafetyMenuOpen] = useState(false);
   const [safetyDialog, setSafetyDialog] = useState<SafetyDialog>(null);
   const [activeSafetyAction, setActiveSafetyAction] = useState<'block' | 'unblock' | null>(null);
@@ -103,6 +104,7 @@ export function BuddyProfilePreviewPageView({
   }, [api, authenticated, retryKey, userId]);
 
   const openSafetyDialog = useCallback((dialog: Exclude<SafetyDialog, null>) => {
+    if (dialog === 'unblock' && document.activeElement instanceof HTMLElement) safetyReturnFocusRef.current = document.activeElement;
     setSafetyMenuOpen(false);
     setSafetyError('');
     setSafetyDialog(dialog);
@@ -168,6 +170,7 @@ export function BuddyProfilePreviewPageView({
           isUnblocking={activeSafetyAction === 'unblock'}
         />
         <SafetyConfirmDialog
+          returnFocusRef={safetyReturnFocusRef}
           open={safetyDialog === 'unblock'}
           title={t('exchange.unblockTitle')}
           description={t('exchange.unblockDescription')}
@@ -216,7 +219,10 @@ export function BuddyProfilePreviewPageView({
           </div>
           <div className={styles.heroActions}>
             <Badge tone={relationshipTone(profile.relationship.state)}>{t(relationshipStateKeys[profile.relationship.state])}</Badge>
-            <SafetyMenu open={safetyMenuOpen} onToggle={() => setSafetyMenuOpen((open) => !open)} onAction={openSafetyDialog} />
+            <SafetyMenu open={safetyMenuOpen} onToggle={() => {
+              if (!safetyMenuOpen && document.activeElement instanceof HTMLElement) safetyReturnFocusRef.current = document.activeElement;
+              setSafetyMenuOpen((open) => !open);
+            }} onAction={openSafetyDialog} />
           </div>
         </section>
 
@@ -290,6 +296,7 @@ export function BuddyProfilePreviewPageView({
         {safetyMessage ? <p className={styles.safetyMessage} role='status'>{t(safetyMessage)}</p> : null}
       </div>
       <SafetyConfirmDialog
+          returnFocusRef={safetyReturnFocusRef}
         open={safetyDialog === 'block'}
         title={t('exchange.blockTitle')}
         description={t('exchange.blockDescription')}
@@ -300,6 +307,7 @@ export function BuddyProfilePreviewPageView({
         onConfirm={() => handleSafetyAction('block')}
       />
       <ExchangeReportDialog
+        returnFocusRef={safetyReturnFocusRef}
         open={safetyDialog === 'report'}
         api={api}
         targetUserId={userId}
@@ -421,6 +429,7 @@ function BlockedPreviewState({
 }
 
 function SafetyConfirmDialog({
+  returnFocusRef,
   open,
   title,
   description,
@@ -430,6 +439,7 @@ function SafetyConfirmDialog({
   onClose,
   onConfirm,
 }: {
+  returnFocusRef: RefObject<HTMLElement | null>;
   open: boolean;
   title: string;
   description: string;
@@ -441,7 +451,7 @@ function SafetyConfirmDialog({
 }) {
   const { t } = useUiLocale();
   return (
-    <Dialog open={open} title={title} description={description} onClose={active ? () => undefined : onClose}>
+    <Dialog returnFocusRef={returnFocusRef} closeLabel={t('common.close')} open={open} title={title} description={description} onClose={active ? () => undefined : onClose}>
       <div className={styles.safetyDialogBody}>
         <p className={styles.safetyDialogNote}>{t('exchange.safetyChoiceNote')}</p>
         {error ? <p className={styles.errorMessage} role='alert'>{error}</p> : null}
@@ -455,12 +465,14 @@ function SafetyConfirmDialog({
 }
 
 function ExchangeReportDialog({
+  returnFocusRef,
   open,
   api,
   targetUserId,
   onClose,
   onSubmitted,
 }: {
+  returnFocusRef: RefObject<HTMLElement | null>;
   open: boolean;
   api: BuddyProfilePreviewApi;
   targetUserId: string;
@@ -513,7 +525,7 @@ function ExchangeReportDialog({
   };
 
   return (
-    <Dialog open={open} title={t('exchange.report')} onClose={submitting ? () => undefined : onClose}>
+    <Dialog returnFocusRef={returnFocusRef} closeLabel={t('common.close')} open={open} title={t('exchange.report')} onClose={submitting ? () => undefined : onClose}>
       {submitted ? (
         <div className={styles.reportSubmitted} role='status'>
           <span className={styles.blockedIcon} aria-hidden='true'><Icon name='check' size={24} /></span>
@@ -526,6 +538,7 @@ function ExchangeReportDialog({
           <p className={styles.safetyDialogNote}>{t('exchange.reportNote')}</p>
           <SelectControl
             label={t('exchange.reportReason')}
+            error={validationError === 'exchange.reportReasonRequired' ? t(validationError) : undefined}
             value={category}
             onChange={(event) => {
               setCategory(event.target.value);
@@ -540,6 +553,7 @@ function ExchangeReportDialog({
           </SelectControl>
           <Textarea
             label={t('exchange.reportContext')}
+            error={validationError === 'exchange.reportContextLimit' ? t(validationError) : undefined}
             value={context}
             onChange={(event) => {
               setContext(event.target.value);
@@ -549,7 +563,6 @@ function ExchangeReportDialog({
             rows={5}
           />
           <p className={styles.charCount} aria-live='polite'>{t('exchange.characters', { count: formatNumber(Array.from(context).length), limit: formatNumber(1000) })}</p>
-          {validationError ? <p className={styles.errorMessage} role='alert'>{t(validationError)}</p> : null}
           {submitError ? <p className={styles.errorMessage} role='alert'>{t(submitError)}</p> : null}
           <div className={styles.dialogActions}>
             <Button variant='quiet' type='button' onClick={onClose} disabled={submitting}>{t('exchange.cancel')}</Button>

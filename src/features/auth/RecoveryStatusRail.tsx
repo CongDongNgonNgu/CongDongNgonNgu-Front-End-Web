@@ -21,7 +21,7 @@ export function RecoveryStatusRail({ activeStep }: RecoveryStatusRailProps) {
         <span>{t("auth.preview.status")}</span>
         <span>{t('auth.recovery.step', { step: activeStep })}</span>
       </div>
-      <ol className={styles.recoveryTabs}>
+      <ol className={styles.recoveryTabs} tabIndex={0} aria-label={t("auth.password.recovery.status")}>
         {steps.map((step, index) => (
           <li className={index + 1 === activeStep ? styles.recoveryTabActive : styles.recoveryTab} key={step}>
             {t(step)}

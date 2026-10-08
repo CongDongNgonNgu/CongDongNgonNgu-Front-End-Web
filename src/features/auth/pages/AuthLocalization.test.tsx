@@ -96,6 +96,7 @@ describe('auth locale switching without restarting the journey', () => {
     expect(screen.getByRole('heading', { name: 'Check your inbox' })).toBeVisible();
     expect(screen.getByText('Step 2/5')).toBeVisible();
     expect(screen.getByText('2. Sent')).toBeVisible();
+    expect(screen.getByRole('list', { name: 'Password recovery status' })).toHaveAttribute('tabindex', '0');
     expect(screen.getByRole('button', { name: 'Resend link now' })).toBeDisabled();
     expect(forgot).toHaveBeenCalledOnce();
   });

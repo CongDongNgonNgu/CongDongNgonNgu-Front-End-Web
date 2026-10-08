@@ -229,6 +229,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
             {draft.step <= 1 ? (
               <LanguageSelectionStep
                 mode={languageStepMode}
+                errorId={stepError ? 'onboarding-step-error' : undefined}
                 draft={draft}
                 catalog={catalog}
                 searchId={languagePicker.searchId}
@@ -280,7 +281,7 @@ export function OnboardingPage({ api: providedApi, userId: providedUserId }: Onb
               />
             ) : null}
 
-            {stepError ? <p className={styles.formError} role='alert'>{t(stepError)}</p> : null}
+            {stepError ? <p className={styles.formError} id='onboarding-step-error' role='alert'>{t(stepError)}</p> : null}
             {saveError ? <p className={styles.formError} role='alert'>{t(saveError)}</p> : null}
 
             <OnboardingActions
