@@ -138,11 +138,11 @@ try {
     record(locale + '-auth-reload-preference-' + width);
 
     fixture.settings.authenticated = true;
-    fixture.settings.delay = 250;
-    await page.goto(targetOrigin + '/onboarding');
+    fixture.settings.holdLoading = true;
+    await page.goto(targetOrigin + '/onboarding',{waitUntil:'domcontentloaded'});
     await page.locator('main [aria-busy=true]').first().waitFor();
     record(locale+'-onboarding-loading-'+width);
-    fixture.settings.delay = 0;
+    fixture.releaseLoading();
     await page.getByRole('heading', { name: text(locale,'Which languages do you speak?','Bạn nói ngôn ngữ nào?') }).waitFor();
     await page.getByRole('button', { name: text(locale,/Continue/,/Tiếp tục/) }).click();
     await page.getByRole('alert').waitFor();
@@ -207,10 +207,10 @@ try {
     await page.getByRole('button', { name: text(locale,'Cancel','Hủy'), exact: true }).click();
 
     fixture.settings.mode = 'normal';
-    fixture.settings.delay=250;
-    await page.goto(targetOrigin + '/exchange');
+    fixture.settings.holdLoading=true;
+    await page.goto(targetOrigin + '/exchange',{waitUntil:'domcontentloaded'});
     await page.getByRole('status',{name:text(locale,'Loading learning partner suggestions','Đang tải gợi ý học cùng')}).waitFor();
-    fixture.settings.delay=0; record(locale+'-exchange-loading-'+width);
+    fixture.releaseLoading(); record(locale+'-exchange-loading-'+width);
     await page.getByRole('article').first().waitFor();
     await layout(page, locale + '-exchange-browse-' + width);
     const reasonText=await page.locator('main').innerText();
@@ -384,5 +384,5 @@ try {
   report.finishedAt = new Date().toISOString();
   await writeFile(resolve(outputDir, 'runtime-report.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify({ status: report.status, checks: report.checks.length, screenshots: report.screenshots.length, externalRequests: report.externalRequests.length, pageErrors: report.pageErrors.length, failure: report.failure, report: resolve(outputDir,'runtime-report.json') }, null, 2));
-  await fixture.close(); await browser.close();
+  fixture.releaseLoading(); await fixture.close(); await browser.close();
 }

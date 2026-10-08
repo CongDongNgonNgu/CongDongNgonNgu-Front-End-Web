@@ -11,3 +11,5 @@ Provide optional installed tooling via MEMBER_LOCALE_PLAYWRIGHT_MODULE and MEMBE
 MEMBER_LOCALE_TARGET_ORIGIN runs against deployed frontend static assets with a strictly bounded synthetic API adapter. The report explicitly distinguishes this from live Backend/auth acceptance; all API mutations stay in the loopback fixture. Unexpected external requests abort and fail. Public live GET observations are recorded separately in Workspace. No real private session/data is required.
 
 Detailed source/copy/error/privacy, initial failures, remediations and final accepted revision evidence belong in the authoritative Workspace Phase24 dossier.
+
+verify-member-locale-public-test.mjs separately observes actual deployed public auth screens/API and payment capability, without API adapters, account submissions or private-session access. Run only against the approved TEST origin after exact revision verification.
