@@ -1,3 +1,6 @@
+import { languageDisplayName } from '../../ui-locale/language-display';
+import { translate, type UiLocale, type TranslationKey } from '../../ui-locale/ui-locale';
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import type { KeyboardEvent, RefObject } from 'react';
 import { Icon } from '../../../components/ui/Icon/Icon';
 import type { LanguageCatalogItem, LanguageRole, OnboardingDraft } from '../onboarding.types';
@@ -7,6 +10,7 @@ type PickerMode = 'spoken' | 'learning';
 
 interface LanguageSelectionStepProps {
   mode: PickerMode;
+  errorId?: string;
   draft: OnboardingDraft;
   catalog: LanguageCatalogItem[];
   searchId: string;
@@ -26,6 +30,7 @@ interface LanguageSelectionStepProps {
 
 export function LanguageSelectionStep({
   mode,
+  errorId,
   draft,
   catalog,
   searchId,
@@ -42,13 +47,14 @@ export function LanguageSelectionStep({
   onRemoveRole,
   onToggleRole,
 }: LanguageSelectionStepProps) {
+  const { t, locale } = useUiLocale();
   const learningMode = mode === 'learning';
   const chipCodes = learningMode ? draft.learningCodes : unique([...draft.nativeCodes, ...draft.knownCodes]);
 
   return (
     <div className={styles.stepContent}>
       <div className={styles.pickerSection}>
-        <label className={styles.fieldLabel} htmlFor={searchId}>Tìm và thêm ngôn ngữ</label>
+        <label className={styles.fieldLabel} htmlFor={searchId}>{t('onboarding.find.and.add.languages')}</label>
         <div className={styles.comboboxShell}>
           <Icon name='search' size={20} />
           <input
@@ -59,16 +65,18 @@ export function LanguageSelectionStep({
             aria-expanded={searchOpen}
             aria-controls={searchOpen ? listId : undefined}
             aria-autocomplete='list'
+            aria-invalid={errorId ? true : undefined}
+            aria-describedby={errorId}
             autoComplete='off'
             value={searchValue}
-            placeholder='Nhập tên ngôn ngữ (ví dụ: Tiếng Việt, English, 日本語...)'
+            placeholder={t('onboarding.enter.a.language.name.for.example.vietnamese.english')}
             onFocus={onSearchFocus}
             onChange={(event) => onSearchChange(event.target.value)}
             onKeyDown={onSearchKeyDown}
           />
         </div>
         {searchOpen && searchValue.trim() ? (
-          <ul className={styles.searchResults} id={listId} role='listbox' aria-label='Kết quả ngôn ngữ'>
+          <ul className={styles.searchResults} id={listId} role='listbox' aria-label={t('onboarding.language.results')}>
             {filteredSearchResults.length > 0 ? filteredSearchResults.map((language, index) => {
               const selected = learningMode
                 ? draft.learningCodes.includes(language.code)
@@ -84,18 +92,18 @@ export function LanguageSelectionStep({
                     onClick={() => onChooseLanguage(language.code)}
                   >
                     <span>
-                      <strong>{language.nativeName}</strong>
-                      <small>{language.vietnameseName} · {language.englishName}</small>
+                      <strong>{languageDisplayName(language, locale)}</strong>
+                      <small>{language.nativeName}</small>
                     </span>
-                    <span className={styles.searchResultAction}>{selected ? 'Đã chọn' : 'Thêm'}</span>
+                    <span className={styles.searchResultAction}>{selected ? t('onboarding.selected') : t('onboarding.add')}</span>
                   </button>
                 </li>
               );
-            }) : <li className={styles.noResults}>Không tìm thấy ngôn ngữ phù hợp.</li>}
+            }) : <li className={styles.noResults}>{t('onboarding.no.matching.languages.found')}</li>}
           </ul>
         ) : null}
         <div className={styles.selectedLanguages} aria-live='polite'>
-          <span className={styles.selectedLabel}>{learningMode ? 'Đã chọn để học:' : 'Đã chọn cho hồ sơ của bạn:'}</span>
+          <span className={styles.selectedLabel}>{learningMode ? t('onboarding.selected.for.learning') : t('onboarding.selected.for.your.profile')}</span>
           {chipCodes.length > 0 ? chipCodes.flatMap((code) => {
             const language = findLanguage(catalog, code);
             const roles = learningMode ? ['learning' as const] : [
@@ -105,13 +113,13 @@ export function LanguageSelectionStep({
             return roles.map((role) => (
               <span className={`${styles.languageChip} ${role === 'native' ? styles.languageChipNative : role === 'learning' ? styles.languageChipLearning : styles.languageChipKnown}`} key={`${code}-${role}`}>
                 <span className={styles.chipDot} aria-hidden='true' />
-                <span>{language.nativeName} ({roleLabel(role)})</span>
-                <button type='button' aria-label={`Xóa ${language.nativeName} (${roleLabel(role)})`} onClick={() => onRemoveRole(code, role)}>
+                <span>{languageDisplayName(language, locale)} ({roleLabel(role, locale)})</span>
+                <button type='button' aria-label={t('onboarding.remove.language', { name: languageDisplayName(language, locale), role: roleLabel(role, locale) })} onClick={() => onRemoveRole(code, role)}>
                   <Icon name='x' size={16} />
                 </button>
               </span>
             ));
-          }) : <span className={styles.emptySelection}>Chưa có lựa chọn nào</span>}
+          }) : <span className={styles.emptySelection}>{t('onboarding.no.languages.selected')}</span>}
         </div>
       </div>
 
@@ -136,18 +144,19 @@ interface LanguageGroupProps {
 }
 
 function LanguageGroup({ role, draft, catalog, searchId, onToggleRole }: LanguageGroupProps) {
+  const { t, locale } = useUiLocale();
   const selectedCodes = role === 'native' ? draft.nativeCodes : role === 'known' ? draft.knownCodes : draft.learningCodes;
   const title = role === 'native'
-    ? 'Ngôn ngữ bản ngữ (Tiếng mẹ đẻ)'
+    ? t('onboarding.native.languages.mother.tongue')
     : role === 'known'
-      ? 'Ngôn ngữ bạn đã biết hoặc có thể giao tiếp cơ bản'
-      : 'Ngôn ngữ bạn muốn học';
+      ? t('onboarding.languages.you.know.or.can.use.for.basic.conversations')
+      : t('onboarding.learning.languages');
   const helper = role === 'native'
-    ? 'Ngôn ngữ bạn dùng tự nhiên nhất từ nhỏ. Bạn có thể chọn nhiều hơn một.'
+    ? t('onboarding.languages.you.have.used.naturally.since.childhood.you.can.choose.more.than.one')
     : role === 'known'
-      ? 'Chọn các ngôn ngữ bạn có thể đọc hiểu hoặc trò chuyện hàng ngày.'
-      : 'Chọn những ngôn ngữ bạn muốn khám phá cùng cộng đồng.';
-  const actionLabel = role === 'native' ? 'ngôn ngữ bản ngữ' : role === 'known' ? 'ngôn ngữ đã biết' : 'ngôn ngữ muốn học';
+      ? t('onboarding.choose.languages.you.can.read.or.use.in.everyday.conversations')
+      : t('onboarding.choose.languages.you.want.to.explore.with.the.community');
+  const actionLabel = role === 'native' ? t('onboarding.native.language') : role === 'known' ? t('onboarding.known.language') : t('onboarding.learning.language');
 
   return (
     <fieldset className={styles.languageGroup}>
@@ -169,10 +178,10 @@ function LanguageGroup({ role, draft, catalog, searchId, onToggleRole }: Languag
               onClick={() => onToggleRole(language.code, role)}
             >
               <span id={languageLabelId}>
-                <strong>{language.nativeName}</strong>
-                <small>{language.englishName}</small>
+                <strong>{languageDisplayName(language, locale)}</strong>
+                <small>{language.nativeName}</small>
               </span>
-              <span id={languageActionId} className={styles.srOnly}>{selected ? 'Đã chọn' : 'Chọn'} làm {actionLabel}</span>
+              <span id={languageActionId} className={styles.srOnly}>{selected ? t('onboarding.selected') : t('onboarding.choose')}  {t('onboarding.as')} {actionLabel}</span>
               <span className={styles.checkIndicator} aria-hidden='true'>{selected ? <Icon name='check-circle' size={18} /> : null}</span>
             </button>
           );
@@ -196,10 +205,11 @@ function findLanguage(catalog: LanguageCatalogItem[], code: string): LanguageCat
   };
 }
 
-function roleLabel(role: LanguageRole): string {
-  if (role === 'native') return 'Bản ngữ';
-  if (role === 'known') return 'Đã biết';
-  return 'Đang học';
+function roleLabel(role: LanguageRole, locale: UiLocale): string {
+  const t = (key: TranslationKey) => translate(locale, key);
+  if (role === 'native') return t('onboarding.native');
+  if (role === 'known') return t('onboarding.known');
+  return t('onboarding.learning');
 }
 
 function unique<T>(values: readonly T[]): T[] {

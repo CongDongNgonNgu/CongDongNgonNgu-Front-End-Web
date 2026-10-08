@@ -1,25 +1,29 @@
 import { ApiClientError } from '../../services/api-client';
+import { translate, type TranslationKey, type UiLocale } from '../ui-locale/ui-locale';
 
-const messages: Record<string, string> = {
-  AUTH_INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng.',
-  AUTH_EMAIL_VERIFICATION_REQUIRED: 'Hãy xác minh email trước khi đăng nhập.',
-  AUTH_ACCOUNT_DISABLED: 'Tài khoản đang bị tạm khóa. Vui lòng liên hệ hỗ trợ.',
-  AUTH_RATE_LIMITED: 'Bạn thử lại sau ít phút.',
-  AUTH_CSRF_INVALID: 'Phiên biểu mẫu đã hết hạn. Hãy tải lại trang và thử lại.',
-  AUTH_SESSION_EXPIRED: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.',
-  AUTH_PROVIDER_DISABLED: 'Phương thức này hiện chưa khả dụng.',
-  AUTH_PROVIDER_UNAVAILABLE: 'Phương thức này tạm thời chưa khả dụng.',
-  AUTH_OAUTH_FAILED: 'Không thể hoàn tất đăng nhập với nhà cung cấp.',
-  AUTH_ACCOUNT_COLLISION: 'Email này đã có tài khoản. Hãy đăng nhập rồi liên kết phương thức mới.',
-  AUTH_VERIFICATION_INVALID: 'Liên kết xác minh không hợp lệ hoặc đã hết hạn.',
-  AUTH_RESET_INVALID: 'Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.',
+const messages: Readonly<Record<string, TranslationKey>> = {
+  "AUTH_INVALID_CREDENTIALS": "auth.incorrect.email.or.password",
+  "AUTH_EMAIL_VERIFICATION_REQUIRED": "auth.verify.your.email.before.signing.in",
+  "AUTH_ACCOUNT_DISABLED": "auth.your.account.is.temporarily.disabled.please.contact",
+  "AUTH_RATE_LIMITED": "auth.please.try.again.in.a.few.minutes",
+  "AUTH_CSRF_INVALID": "auth.this.form.session.has.expired.reload.the",
+  "AUTH_SESSION_EXPIRED": "auth.your.signin.session.has.expired.please.sign",
+  "AUTH_PROVIDER_DISABLED": "auth.this.method.is.currently.unavailable",
+  "AUTH_PROVIDER_UNAVAILABLE": "auth.this.method.is.temporarily.unavailable",
+  "AUTH_OAUTH_FAILED": "auth.could.not.complete.signin.with.this.provider",
+  "AUTH_ACCOUNT_COLLISION": "auth.this.email.already.has.an.account.sign",
+  "AUTH_VERIFICATION_INVALID": "auth.the.verification.link.is.invalid.or.expired",
+  "AUTH_RESET_INVALID": "auth.the.password.reset.link.is.invalid.or"
 };
 
-export function authErrorMessage(error: unknown): string {
+export function authErrorKey(error: unknown): TranslationKey {
   if (error instanceof ApiClientError) {
-    return messages[error.code] ?? (error.status >= 500
-      ? 'Hệ thống đang bận. Bạn thử lại sau nhé.'
-      : error.message);
+    return Object.prototype.hasOwnProperty.call(messages, error.code)
+      ? messages[error.code]
+      : error.status >= 500 ? 'auth.the.system.is.busy.please.try.again' : 'auth.something.went.wrong.please.try.again.later';
   }
-  return 'Có lỗi xảy ra. Bạn thử lại sau nhé.';
+  return 'auth.something.went.wrong.please.try.again.later';
+}
+export function authErrorMessage(error: unknown, locale: UiLocale = 'vi'): string {
+  return translate(locale, authErrorKey(error));
 }

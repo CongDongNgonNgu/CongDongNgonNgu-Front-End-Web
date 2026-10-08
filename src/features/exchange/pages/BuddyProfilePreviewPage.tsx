@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { proficiencyLabel } from '../../passport/passport.utils';
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
+import { languageDisplayName } from '../../ui-locale/language-display';
+import type { TranslationKey } from '../../ui-locale/ui-locale';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { ErrorState, Skeleton } from '../../../components/ui/Feedback';
@@ -17,7 +21,7 @@ import type {
   RelationshipState,
 } from '../exchange.types';
 import { EXCHANGE_REPORT_CATEGORIES } from '../exchange.types';
-import { goalLabel, humanize, proficiencyLabel } from '../../passport/passport.utils';
+import { goalDisplay, relationshipStateKeys, relationshipDescriptionKeys, reportCategoryKeys } from '../exchange-copy';
 import styles from './BuddyProfilePreviewPage.module.css';
 
 type RelationshipAction = 'request' | 'accept' | 'decline' | 'cancel' | 'disconnect';
@@ -48,21 +52,22 @@ export function BuddyProfilePreviewPageView({
   authLoading = false,
   userId: providedUserId,
 }: BuddyProfilePreviewPageViewProps) {
+  const { t, locale } = useUiLocale();
   const params = useParams<{ userId?: string }>();
   const location = useLocation();
   const userId = providedUserId ?? params.userId ?? '';
   const [profile, setProfile] = useState<BuddyProfilePreview | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error' | 'blocked'>('loading');
-  const [loadError, setLoadError] = useState<unknown>(null);
   const [blockStatus, setBlockStatus] = useState<ExchangeBlockStatus | null>(null);
   const [activeAction, setActiveAction] = useState<RelationshipAction | null>(null);
-  const [actionError, setActionError] = useState('');
-  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState<TranslationKey | ''>('');
+  const [actionMessage, setActionMessage] = useState<TranslationKey | ''>('');
+  const safetyReturnFocusRef = useRef<HTMLElement | null>(null);
   const [safetyMenuOpen, setSafetyMenuOpen] = useState(false);
   const [safetyDialog, setSafetyDialog] = useState<SafetyDialog>(null);
   const [activeSafetyAction, setActiveSafetyAction] = useState<'block' | 'unblock' | null>(null);
-  const [safetyError, setSafetyError] = useState('');
-  const [safetyMessage, setSafetyMessage] = useState('');
+  const [safetyError, setSafetyError] = useState<TranslationKey | ''>('');
+  const [safetyMessage, setSafetyMessage] = useState<TranslationKey | ''>('');
   const [retryKey, setRetryKey] = useState(0);
 
   const retryLoad = useCallback(() => setRetryKey((value) => value + 1), []);
@@ -71,7 +76,6 @@ export function BuddyProfilePreviewPageView({
     if (!userId || !authenticated) return;
     let active = true;
     setLoadState('loading');
-    setLoadError(null);
     setProfile(null);
     setSafetyError('');
     api.getBlockStatus(userId)
@@ -89,10 +93,9 @@ export function BuddyProfilePreviewPageView({
         setProfile(nextProfile);
         setLoadState('ready');
       })
-      .catch((cause: unknown) => {
+      .catch(() => {
         if (!active) return;
         setProfile(null);
-        setLoadError(cause);
         setLoadState('error');
       });
     return () => {
@@ -101,6 +104,7 @@ export function BuddyProfilePreviewPageView({
   }, [api, authenticated, retryKey, userId]);
 
   const openSafetyDialog = useCallback((dialog: Exclude<SafetyDialog, null>) => {
+    if (dialog === 'unblock' && document.activeElement instanceof HTMLElement) safetyReturnFocusRef.current = document.activeElement;
     setSafetyMenuOpen(false);
     setSafetyError('');
     setSafetyDialog(dialog);
@@ -116,16 +120,16 @@ export function BuddyProfilePreviewPageView({
         setBlockStatus({ scope: 'exchange-block-status', targetUserId: userId, blockedByMe: true });
         setProfile(null);
         setLoadState('blocked');
-        setSafetyMessage('Đã chặn thành viên này. Yêu cầu hoặc kết nối hiện có đã được gỡ.');
+        setSafetyMessage('exchange.blockedMessage');
       } else {
         await api.unblockUser(userId);
         setBlockStatus({ scope: 'exchange-block-status', targetUserId: userId, blockedByMe: false });
-        setSafetyMessage('Đã bỏ chặn. Yêu cầu hoặc kết nối trước đó không được khôi phục.');
+        setSafetyMessage('exchange.unblockedMessage');
         setRetryKey((value) => value + 1);
       }
       setSafetyDialog(null);
-    } catch (cause: unknown) {
-      setSafetyError(readableError(cause));
+    } catch {
+      setSafetyError('exchange.actionError');
     } finally {
       setActiveSafetyAction(null);
     }
@@ -139,9 +143,9 @@ export function BuddyProfilePreviewPageView({
     try {
       const relationship = await runRelationshipAction(api, action, userId);
       setProfile((current) => current ? { ...current, relationship } : current);
-      setActionMessage(successMessage(action));
-    } catch (cause: unknown) {
-      setActionError(readableError(cause));
+      setActionMessage(`exchange.success.${action}`);
+    } catch {
+      setActionError('exchange.actionError');
     } finally {
       setActiveAction(null);
     }
@@ -161,17 +165,18 @@ export function BuddyProfilePreviewPageView({
       <>
         <BlockedPreviewState
           blockedByMe={Boolean(blockStatus?.blockedByMe)}
-          message={safetyMessage}
+          message={safetyMessage ? t(safetyMessage) : ''}
           onUnblock={() => openSafetyDialog('unblock')}
           isUnblocking={activeSafetyAction === 'unblock'}
         />
         <SafetyConfirmDialog
+          returnFocusRef={safetyReturnFocusRef}
           open={safetyDialog === 'unblock'}
-          title='Bỏ chặn thành viên?'
-          description='Bạn có thể xem lại hồ sơ nếu người này vẫn đủ điều kiện. Việc bỏ chặn không khôi phục yêu cầu hoặc kết nối trước đó.'
-          confirmLabel='Bỏ chặn thành viên'
+          title={t('exchange.unblockTitle')}
+          description={t('exchange.unblockDescription')}
+          confirmLabel={t('exchange.unblock')}
           active={activeSafetyAction === 'unblock'}
-          error={safetyError}
+          error={safetyError ? t(safetyError) : ''}
           onClose={() => setSafetyDialog(null)}
           onConfirm={() => handleSafetyAction('unblock')}
         />
@@ -182,10 +187,10 @@ export function BuddyProfilePreviewPageView({
     return (
       <div className={styles.page}>
         <ErrorState
-          title='Chưa tải được hồ sơ bạn cùng học'
-          description='Hồ sơ này chưa sẵn sàng hoặc không còn khả dụng. Hãy thử tải lại để tiếp tục.'
+          title={t('exchange.profileErrorTitle')}
+          description={t('exchange.profileErrorDescription')}
           onRetry={retryLoad}
-          retryLabel='Tải lại hồ sơ'
+          retryLabel={t('exchange.profileRetry')}
         />
       </div>
     );
@@ -197,69 +202,72 @@ export function BuddyProfilePreviewPageView({
   return (
     <>
       <div className={styles.page}>
-        <nav className={styles.breadcrumbs} aria-label='Breadcrumb'>
-          <Link to='/exchange'>Tìm bạn học</Link>
+        <nav className={styles.breadcrumbs} aria-label={t('exchange.breadcrumb')}>
+          <Link to='/exchange'>{t('exchange.browse')}</Link>
           <span aria-hidden='true'>/</span>
-          <span aria-current='page'>Hồ sơ bạn cùng học</span>
+          <span aria-current='page'>{t('exchange.profileBreadcrumb')}</span>
         </nav>
 
         <section className={styles.hero} aria-labelledby='buddy-preview-heading'>
           <div className={styles.identityBlock}>
             <Avatar name={profile.user.displayName} size='lg' />
             <div>
-              <p className={styles.eyebrow}>BUDDY PROFILE PREVIEW</p>
+              <p className={styles.eyebrow}>{t('exchange.profileEyebrow')}</p>
               <h1 id='buddy-preview-heading'>{profile.user.displayName}</h1>
-              <p className={styles.heroDescription}>Một phần chiếu công khai của hồ sơ trao đổi ngôn ngữ.</p>
+              <p className={styles.heroDescription}>{t('exchange.profileIntro')}</p>
             </div>
           </div>
           <div className={styles.heroActions}>
-            <Badge tone={relationshipTone(profile.relationship.state)}>{relationshipLabel(profile.relationship.state)}</Badge>
-            <SafetyMenu open={safetyMenuOpen} onToggle={() => setSafetyMenuOpen((open) => !open)} onAction={openSafetyDialog} />
+            <Badge tone={relationshipTone(profile.relationship.state)}>{t(relationshipStateKeys[profile.relationship.state])}</Badge>
+            <SafetyMenu open={safetyMenuOpen} onToggle={() => {
+              if (!safetyMenuOpen && document.activeElement instanceof HTMLElement) safetyReturnFocusRef.current = document.activeElement;
+              setSafetyMenuOpen((open) => !open);
+            }} onAction={openSafetyDialog} />
           </div>
         </section>
 
-      <aside className={styles.privacyNote} aria-label='Phạm vi hiển thị'>
-        <strong>Chỉ hiển thị thông tin an toàn.</strong>
-        <span>Email, số điện thoại, OAuth, phiên đăng nhập, vị trí, múi giờ chính xác và lịch cụ thể không xuất hiện ở đây.</span>
+      <aside className={styles.privacyNote} aria-label={t('exchange.visibilityLabel')}>
+        <strong>{t('exchange.safeInfoTitle')}</strong>
+        <span>{t('exchange.safeInfoDescription')}</span>
       </aside>
 
         <div className={styles.contentGrid}>
           <div className={styles.profileColumn}>
           <section className={styles.panel} aria-labelledby='languages-heading'>
             <div className={styles.sectionHeading}>
-              <p className={styles.eyebrow}>LANGUAGE PASSPORT</p>
-              <h2 id='languages-heading'>Ngôn ngữ trao đổi</h2>
+              <p className={styles.eyebrow}>{t('exchange.passportEyebrow')}</p>
+              <h2 id='languages-heading'>{t('exchange.languagesTitle')}</h2>
             </div>
             <div className={styles.languageGrid}>
-              <LanguageGroup title='Có thể hỗ trợ' languages={profile.languages.filter((language) => language.offered)} />
-              <LanguageGroup title='Muốn luyện' languages={profile.languages.filter((language) => language.wanted)} />
+              <LanguageGroup title={t('exchange.offered')} languages={profile.languages.filter((language) => language.offered)} />
+              <LanguageGroup title={t('exchange.wanted')} languages={profile.languages.filter((language) => language.wanted)} />
             </div>
           </section>
 
           <section className={styles.panel} aria-labelledby='topics-heading'>
             <div className={styles.sectionHeading}>
-              <p className={styles.eyebrow}>SHARED CONTEXT</p>
-              <h2 id='topics-heading'>Mục tiêu và sở thích công khai</h2>
+              <p className={styles.eyebrow}>{t('exchange.contextEyebrow')}</p>
+              <h2 id='topics-heading'>{t('exchange.topicsTitle')}</h2>
             </div>
             <div className={styles.topicColumns}>
-              <TopicGroup title='Mục tiêu' values={profile.goals.map(goalLabel)} empty='Chưa chia sẻ mục tiêu' />
-              <TopicGroup title='Sở thích' values={profile.interests.map(humanize)} empty='Chưa chia sẻ sở thích' />
+              <TopicGroup title={t('exchange.goals')} values={profile.goals.map((value) => goalDisplay(value, locale))} empty={t('exchange.noGoals')} />
+              <TopicGroup title={t('exchange.interests')} values={profile.interests} empty={t('exchange.noInterests')} />
             </div>
           </section>
 
           <section className={styles.panel} aria-labelledby='availability-heading'>
             <div className={styles.sectionHeading}>
-              <p className={styles.eyebrow}>MATCHING SIGNALS</p>
-              <h2 id='availability-heading'>Thông tin khái quát</h2>
+              <p className={styles.eyebrow}>{t('exchange.signalsEyebrow')}</p>
+              <h2 id='availability-heading'>{t('exchange.summaryTitle')}</h2>
             </div>
             <dl className={styles.summaryList}>
               <div>
-                <dt>Múi giờ</dt>
-                <dd>{profile.timezoneSummary?.hasTimezone ? 'Đã chia sẻ ở mức khái quát' : 'Chưa chia sẻ'}</dd>
+                <dt>{t('exchange.timezone')}</dt>
+                <dd>{profile.timezoneSummary?.hasTimezone ? t('exchange.timezoneShared') : t('exchange.notShared')}</dd>
               </div>
               <div>
-                <dt>Khả năng sắp xếp</dt>
-                <dd>{profile.availabilitySummary?.hasAvailability ? 'Có thông tin khái quát' : 'Chưa chia sẻ'}</dd>
+                <dt>{t('exchange.availability')}</dt>
+                <dd>{profile.availabilitySummary?.hasAvailability ? t('exchange.availabilityShared') : t('exchange.notShared')}</dd>
               </div>
             </dl>
           </section>
@@ -267,44 +275,46 @@ export function BuddyProfilePreviewPageView({
 
           <aside className={`${styles.panel} ${styles.relationshipPanel}`} aria-labelledby='relationship-heading'>
           <div className={styles.sectionHeading}>
-            <p className={styles.eyebrow}>RELATIONSHIP</p>
-            <h2 id='relationship-heading'>Trạng thái kết nối</h2>
+            <p className={styles.eyebrow}>{t('exchange.relationshipEyebrow')}</p>
+            <h2 id='relationship-heading'>{t('exchange.relationshipTitle')}</h2>
           </div>
           <div className={styles.statusBlock} role='status' aria-live='polite'>
-            <Badge tone={relationshipTone(profile.relationship.state)}>{relationshipLabel(profile.relationship.state)}</Badge>
-            <p>{relationshipDescription(profile.relationship.state)}</p>
+            <Badge tone={relationshipTone(profile.relationship.state)}>{t(relationshipStateKeys[profile.relationship.state])}</Badge>
+            <p>{t(relationshipDescriptionKeys[profile.relationship.state])}</p>
           </div>
-          {activeAction ? <p className={styles.liveMessage} role='status' aria-live='polite'>Đang cập nhật trạng thái kết nối…</p> : null}
-          {actionMessage ? <p className={styles.successMessage} role='status' aria-live='polite'>{actionMessage}</p> : null}
-          {actionError ? <p className={styles.errorMessage} role='alert'>{actionError}</p> : null}
+          {activeAction ? <p className={styles.liveMessage} role='status' aria-live='polite'>{t('exchange.relationshipLoading')}</p> : null}
+          {actionMessage ? <p className={styles.successMessage} role='status' aria-live='polite'>{t(actionMessage)}</p> : null}
+          {actionError ? <p className={styles.errorMessage} role='alert'>{t(actionError)}</p> : null}
           <RelationshipActions
             relationship={profile.relationship}
             activeAction={activeAction}
             onAction={handleAction}
           />
-          <p className={styles.relationshipNote}>Kết nối giúp hai bên tiếp tục trao đổi. Đây không phải là đánh giá, chứng thực hay quyền truy cập vào liên hệ cá nhân.</p>
+          <p className={styles.relationshipNote}>{t('exchange.relationshipNote')}</p>
           </aside>
         </div>
-        {safetyMessage ? <p className={styles.safetyMessage} role='status'>{safetyMessage}</p> : null}
+        {safetyMessage ? <p className={styles.safetyMessage} role='status'>{t(safetyMessage)}</p> : null}
       </div>
       <SafetyConfirmDialog
+          returnFocusRef={safetyReturnFocusRef}
         open={safetyDialog === 'block'}
-        title='Chặn thành viên này?'
-        description='Hồ sơ sẽ không còn xuất hiện trong khám phá. Các yêu cầu hoặc kết nối hiện có sẽ được gỡ và hai bên không thể bắt đầu liên hệ mới.'
-        confirmLabel='Chặn thành viên'
+        title={t('exchange.blockTitle')}
+        description={t('exchange.blockDescription')}
+        confirmLabel={t('exchange.block')}
         active={activeSafetyAction === 'block'}
-        error={safetyError}
+        error={safetyError ? t(safetyError) : ''}
         onClose={() => setSafetyDialog(null)}
         onConfirm={() => handleSafetyAction('block')}
       />
       <ExchangeReportDialog
+        returnFocusRef={safetyReturnFocusRef}
         open={safetyDialog === 'report'}
         api={api}
         targetUserId={userId}
         onClose={() => setSafetyDialog(null)}
         onSubmitted={() => {
           setSafetyDialog(null);
-          setSafetyMessage('Báo cáo đã được tiếp nhận riêng tư để xem xét.');
+          setSafetyMessage('exchange.reportMessage');
         }}
       />
     </>
@@ -312,6 +322,7 @@ export function BuddyProfilePreviewPageView({
 }
 
 function LanguageGroup({ title, languages }: { title: string; languages: BuddyProfilePreview['languages'] }) {
+  const { t, locale } = useUiLocale();
   return (
     <div className={styles.languageGroup}>
       <h3>{title}</h3>
@@ -321,16 +332,16 @@ function LanguageGroup({ title, languages }: { title: string; languages: BuddyPr
             <li key={`${title}-${language.code}`} className={styles.languageItem}>
               <div>
                 <strong>{language.nativeName}</strong>
-                <span>{language.englishName}</span>
+                {languageDisplayName(language, locale) !== language.nativeName ? <span>{languageDisplayName(language, locale)}</span> : null}
               </div>
               <small>
-                {proficiencyLabel(language.declaredProficiency)}
-                {language.assessedProficiency ? ` · Đánh giá ${language.assessedProficiency}` : ''}
+                {proficiencyLabel(language.declaredProficiency, locale)}
+                {language.assessedProficiency ? ` · ${t('exchange.assessed', { level: language.assessedProficiency })}` : ''}
               </small>
             </li>
           ))}
         </ul>
-      ) : <p className={styles.mutedValue}>Chưa chia sẻ</p>}
+      ) : <p className={styles.mutedValue}>{t('exchange.notShared')}</p>}
     </div>
   );
 }
@@ -353,14 +364,15 @@ function RelationshipActions({
   activeAction: RelationshipAction | null;
   onAction: (action: RelationshipAction) => void;
 }) {
+  const { t } = useUiLocale();
   const disabled = activeAction !== null;
   return (
-    <div className={styles.actionGroup} aria-label='Hành động kết nối'>
-      {relationship.canRequest ? <Button fullWidth onClick={() => onAction('request')} loading={activeAction === 'request'} disabled={disabled}>Kết nối</Button> : null}
-      {relationship.canAccept ? <Button fullWidth onClick={() => onAction('accept')} loading={activeAction === 'accept'} disabled={disabled}>Chấp nhận kết nối</Button> : null}
-      {relationship.canDecline ? <Button fullWidth variant='quiet' onClick={() => onAction('decline')} loading={activeAction === 'decline'} disabled={disabled}>Từ chối</Button> : null}
-      {relationship.canCancel ? <Button fullWidth variant='quiet' onClick={() => onAction('cancel')} loading={activeAction === 'cancel'} disabled={disabled}>Hủy yêu cầu</Button> : null}
-      {relationship.canDisconnect ? <Button fullWidth variant='danger' onClick={() => onAction('disconnect')} loading={activeAction === 'disconnect'} disabled={disabled}>Ngắt kết nối</Button> : null}
+    <div className={styles.actionGroup} role="group" aria-label={t('exchange.actionsLabel')}>
+      {relationship.canRequest ? <Button fullWidth onClick={() => onAction('request')} loading={activeAction === 'request'} disabled={disabled}>{t('exchange.connect')}</Button> : null}
+      {relationship.canAccept ? <Button fullWidth onClick={() => onAction('accept')} loading={activeAction === 'accept'} disabled={disabled}>{t('exchange.accept')}</Button> : null}
+      {relationship.canDecline ? <Button fullWidth variant='quiet' onClick={() => onAction('decline')} loading={activeAction === 'decline'} disabled={disabled}>{t('exchange.decline')}</Button> : null}
+      {relationship.canCancel ? <Button fullWidth variant='quiet' onClick={() => onAction('cancel')} loading={activeAction === 'cancel'} disabled={disabled}>{t('exchange.cancelRequest')}</Button> : null}
+      {relationship.canDisconnect ? <Button fullWidth variant='danger' onClick={() => onAction('disconnect')} loading={activeAction === 'disconnect'} disabled={disabled}>{t('exchange.disconnect')}</Button> : null}
     </div>
   );
 }
@@ -374,15 +386,16 @@ function SafetyMenu({
   onToggle: () => void;
   onAction: (dialog: Exclude<SafetyDialog, null>) => void;
 }) {
+  const { t } = useUiLocale();
   return (
-    <DropdownMenu open={open} label='An toàn' onToggle={onToggle}>
+    <DropdownMenu open={open} label={t('exchange.safety')} onToggle={onToggle}>
       <button className={styles.safetyMenuItem} type='button' role='menuitem' onClick={() => onAction('report')}>
         <Icon name='flag' size={18} />
-        <span>Báo cáo hồ sơ</span>
+        <span>{t('exchange.report')}</span>
       </button>
       <button className={`${styles.safetyMenuItem} ${styles.safetyMenuItemDanger}`} type='button' role='menuitem' onClick={() => onAction('block')}>
         <Icon name='lock' size={18} />
-        <span>Chặn thành viên</span>
+        <span>{t('exchange.block')}</span>
       </button>
     </DropdownMenu>
   );
@@ -399,24 +412,24 @@ function BlockedPreviewState({
   onUnblock: () => void;
   isUnblocking: boolean;
 }) {
+  const { t } = useUiLocale();
   return (
     <div className={styles.page}>
       <div className={styles.blockedPanel} role='status'>
         <span className={styles.blockedIcon} aria-hidden='true'><Icon name='lock' size={24} /></span>
-        <p className={styles.eyebrow}>SAFETY STATE</p>
-        <h1>Hồ sơ không khả dụng</h1>
+        <p className={styles.eyebrow}>{t('exchange.safetyEyebrow')}</p>
+        <h1>{t('exchange.unavailableTitle')}</h1>
         <p>
-          Hồ sơ và các thao tác trao đổi hiện không khả dụng trong trạng thái an toàn này.
-          Không có yêu cầu hoặc kết nối trước đó được tự động khôi phục.
-        </p>
+          {t('exchange.unavailableDescription')}</p>
         {message ? <p className={styles.safetyMessage}>{message}</p> : null}
-        {blockedByMe ? <Button variant='secondary' onClick={onUnblock} loading={isUnblocking}>Bỏ chặn thành viên</Button> : null}
+        {blockedByMe ? <Button variant='secondary' onClick={onUnblock} loading={isUnblocking}>{t('exchange.unblock')}</Button> : null}
       </div>
     </div>
   );
 }
 
 function SafetyConfirmDialog({
+  returnFocusRef,
   open,
   title,
   description,
@@ -426,6 +439,7 @@ function SafetyConfirmDialog({
   onClose,
   onConfirm,
 }: {
+  returnFocusRef: RefObject<HTMLElement | null>;
   open: boolean;
   title: string;
   description: string;
@@ -435,13 +449,14 @@ function SafetyConfirmDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useUiLocale();
   return (
-    <Dialog open={open} title={title} description={description} onClose={active ? () => undefined : onClose}>
+    <Dialog returnFocusRef={returnFocusRef} closeLabel={t('common.close')} open={open} title={title} description={description} onClose={active ? () => undefined : onClose}>
       <div className={styles.safetyDialogBody}>
-        <p className={styles.safetyDialogNote}>Bạn có thể thay đổi lựa chọn này sau trong giới hạn quyền của tài khoản.</p>
+        <p className={styles.safetyDialogNote}>{t('exchange.safetyChoiceNote')}</p>
         {error ? <p className={styles.errorMessage} role='alert'>{error}</p> : null}
         <div className={styles.dialogActions}>
-          <Button variant='quiet' onClick={onClose} disabled={active}>Hủy</Button>
+          <Button variant='quiet' onClick={onClose} disabled={active}>{t('exchange.cancel')}</Button>
           <Button variant='danger' onClick={onConfirm} loading={active}>{confirmLabel}</Button>
         </div>
       </div>
@@ -450,22 +465,25 @@ function SafetyConfirmDialog({
 }
 
 function ExchangeReportDialog({
+  returnFocusRef,
   open,
   api,
   targetUserId,
   onClose,
   onSubmitted,
 }: {
+  returnFocusRef: RefObject<HTMLElement | null>;
   open: boolean;
   api: BuddyProfilePreviewApi;
   targetUserId: string;
   onClose: () => void;
   onSubmitted: () => void;
 }) {
+  const { t, formatNumber } = useUiLocale();
   const [category, setCategory] = useState('');
   const [context, setContext] = useState('');
-  const [validationError, setValidationError] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [validationError, setValidationError] = useState<TranslationKey | ''>('');
+  const [submitError, setSubmitError] = useState<TranslationKey | ''>('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -483,11 +501,11 @@ function ExchangeReportDialog({
     event.preventDefault();
     const normalizedContext = context.normalize('NFKC').trim();
     if (!category) {
-      setValidationError('Hãy chọn một lý do để tiếp tục.');
+      setValidationError('exchange.reportReasonRequired');
       return;
     }
     if (Array.from(normalizedContext).length > 1000) {
-      setValidationError('Nội dung bổ sung không được vượt quá 1.000 ký tự.');
+      setValidationError('exchange.reportContextLimit');
       return;
     }
     setValidationError('');
@@ -499,27 +517,28 @@ function ExchangeReportDialog({
         ...(normalizedContext ? { context: normalizedContext } : {}),
       });
       setSubmitted(true);
-    } catch (cause: unknown) {
-      setSubmitError(readableError(cause));
+    } catch {
+      setSubmitError('exchange.actionError');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={open} title='Báo cáo hồ sơ' onClose={submitting ? () => undefined : onClose}>
+    <Dialog returnFocusRef={returnFocusRef} closeLabel={t('common.close')} open={open} title={t('exchange.report')} onClose={submitting ? () => undefined : onClose}>
       {submitted ? (
         <div className={styles.reportSubmitted} role='status'>
           <span className={styles.blockedIcon} aria-hidden='true'><Icon name='check' size={24} /></span>
-          <h3>Đã tiếp nhận báo cáo</h3>
-          <p>Báo cáo được lưu riêng tư để xem xét. Báo cáo không công khai danh tính của bạn và không hứa hẹn xử lý tức thời.</p>
-          <Button onClick={onSubmitted}>Đóng</Button>
+          <h3>{t('exchange.reportReceived')}</h3>
+          <p>{t('exchange.reportReceivedDescription')}</p>
+          <Button onClick={onSubmitted}>{t('exchange.close')}</Button>
         </div>
       ) : (
         <form className={styles.reportForm} onSubmit={handleSubmit} noValidate>
-          <p className={styles.safetyDialogNote}>Chọn lý do phù hợp. Thông tin này chỉ dành cho quy trình xem xét nội bộ.</p>
+          <p className={styles.safetyDialogNote}>{t('exchange.reportNote')}</p>
           <SelectControl
-            label='Lý do báo cáo'
+            label={t('exchange.reportReason')}
+            error={validationError === 'exchange.reportReasonRequired' ? t(validationError) : undefined}
             value={category}
             onChange={(event) => {
               setCategory(event.target.value);
@@ -527,27 +546,27 @@ function ExchangeReportDialog({
             }}
             required
           >
-            <option value=''>Chọn lý do</option>
+            <option value=''>{t('exchange.chooseReason')}</option>
             {EXCHANGE_REPORT_CATEGORIES.map((value) => (
-              <option key={value} value={value}>{reportCategoryLabel(value)}</option>
+              <option key={value} value={value}>{t(reportCategoryKeys[value])}</option>
             ))}
           </SelectControl>
           <Textarea
-            label='Ngữ cảnh bổ sung'
+            label={t('exchange.reportContext')}
+            error={validationError === 'exchange.reportContextLimit' ? t(validationError) : undefined}
             value={context}
             onChange={(event) => {
               setContext(event.target.value);
               setValidationError('');
             }}
-            hint='Không bắt buộc'
+            hint={t('exchange.optional')}
             rows={5}
           />
-          <p className={styles.charCount} aria-live='polite'>{Array.from(context).length.toLocaleString('vi-VN')} / 1.000 ký tự</p>
-          {validationError ? <p className={styles.errorMessage} role='alert'>{validationError}</p> : null}
-          {submitError ? <p className={styles.errorMessage} role='alert'>{submitError}</p> : null}
+          <p className={styles.charCount} aria-live='polite'>{t('exchange.characters', { count: formatNumber(Array.from(context).length), limit: formatNumber(1000) })}</p>
+          {submitError ? <p className={styles.errorMessage} role='alert'>{t(submitError)}</p> : null}
           <div className={styles.dialogActions}>
-            <Button variant='quiet' type='button' onClick={onClose} disabled={submitting}>Hủy</Button>
-            <Button type='submit' loading={submitting}>Gửi báo cáo</Button>
+            <Button variant='quiet' type='button' onClick={onClose} disabled={submitting}>{t('exchange.cancel')}</Button>
+            <Button type='submit' loading={submitting}>{t('exchange.submitReport')}</Button>
           </div>
         </form>
       )}
@@ -555,19 +574,9 @@ function ExchangeReportDialog({
   );
 }
 
-function reportCategoryLabel(category: ExchangeReportCategory): string {
-  switch (category) {
-    case 'SPAM': return 'Spam hoặc quảng cáo không mong muốn';
-    case 'HARASSMENT': return 'Quấy rối hoặc thiếu tôn trọng';
-    case 'INAPPROPRIATE_CONTENT': return 'Nội dung không phù hợp';
-    case 'IMPERSONATION': return 'Mạo danh hoặc thông tin gây hiểu nhầm';
-    case 'SAFETY_CONCERN': return 'Lo ngại về an toàn';
-    case 'OTHER': return 'Lý do khác';
-  }
-}
-
 function PreviewLoading() {
-  return <div className={styles.page}><div className={styles.loadingPanel}><Skeleton lines={7} label='Đang tải hồ sơ bạn cùng học' /></div></div>;
+  const { t } = useUiLocale();
+  return <div className={styles.page}><div className={styles.loadingPanel}><Skeleton lines={7} label={t('exchange.profileLoading')} /></div></div>;
 }
 
 async function runRelationshipAction(api: BuddyProfilePreviewApi, action: RelationshipAction, userId: string) {
@@ -580,24 +589,6 @@ async function runRelationshipAction(api: BuddyProfilePreviewApi, action: Relati
   }
 }
 
-function relationshipLabel(state: RelationshipState): string {
-  switch (state) {
-    case 'OUTGOING_PENDING': return 'Đã gửi yêu cầu';
-    case 'INCOMING_PENDING': return 'Có yêu cầu đang chờ';
-    case 'CONNECTED': return 'Đã kết nối';
-    default: return 'Chưa kết nối';
-  }
-}
-
-function relationshipDescription(state: RelationshipState): string {
-  switch (state) {
-    case 'OUTGOING_PENDING': return 'Yêu cầu của bạn đang chờ người này phản hồi.';
-    case 'INCOMING_PENDING': return 'Người này đã gửi yêu cầu kết nối với bạn.';
-    case 'CONNECTED': return 'Hai bạn đã đồng ý kết nối trong không gian trao đổi.';
-    default: return 'Gửi một yêu cầu khi bạn muốn tiếp tục kết nối.';
-  }
-}
-
 function relationshipTone(state: RelationshipState): 'neutral' | 'info' | 'success' | 'warning' {
   switch (state) {
     case 'CONNECTED': return 'success';
@@ -605,19 +596,4 @@ function relationshipTone(state: RelationshipState): 'neutral' | 'info' | 'succe
     case 'OUTGOING_PENDING': return 'info';
     default: return 'neutral';
   }
-}
-
-function successMessage(action: RelationshipAction): string {
-  switch (action) {
-    case 'request': return 'Đã gửi yêu cầu kết nối.';
-    case 'accept': return 'Đã chấp nhận yêu cầu kết nối.';
-    case 'decline': return 'Đã từ chối yêu cầu kết nối.';
-    case 'cancel': return 'Đã hủy yêu cầu kết nối.';
-    case 'disconnect': return 'Đã ngắt kết nối.';
-  }
-}
-
-function readableError(cause: unknown): string {
-  if (cause instanceof Error && cause.message) return cause.message;
-  return 'Không thể cập nhật kết nối lúc này. Vui lòng thử lại.';
 }

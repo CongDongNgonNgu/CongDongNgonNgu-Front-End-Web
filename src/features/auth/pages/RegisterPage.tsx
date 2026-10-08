@@ -1,9 +1,11 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../../ui-locale/ui-locale';
 import { useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
 import { Icon } from "../../../components/ui/Icon/Icon";
 import { TextInput } from "../../../components/ui/FormControls/TextInput";
-import { authErrorMessage } from "../auth-errors";
+import { authErrorKey } from "../auth-errors";
 import { AuthBody } from "../AuthBody";
 import { PasswordField } from "../PasswordField";
 import { ProviderButtons } from "../ProviderButtons";
@@ -12,6 +14,7 @@ import formStyles from "../AuthForm.module.css";
 import feedbackStyles from "../AuthFeedback.module.css";
 
 export function RegisterPage() {
+  const { t } = useUiLocale();
   const navigate = useNavigate();
   const { api } = useAuth();
   const [displayName, setDisplayName] = useState("");
@@ -19,7 +22,7 @@ export function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [consent, setConsent] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<TranslationKey | ''>("");
   const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -31,27 +34,27 @@ export function RegisterPage() {
     event.preventDefault();
     setError("");
     if (displayName.trim().length < 2) {
-      setError("Tên hiển thị cần có ít nhất 2 ký tự.");
+      setError("auth.your.display.name.must.contain.at.least");
       focusInput(0);
       return;
     }
     if (!email.includes("@") || !email.includes(".")) {
-      setError("Vui lòng nhập email hợp lệ.");
+      setError("auth.please.enter.a.valid.email.address");
       focusInput(1);
       return;
     }
     if (password.length < 8) {
-      setError("Mật khẩu cần có ít nhất 8 ký tự.");
+      setError("auth.your.password.must.contain.at.least.n8");
       focusInput(2);
       return;
     }
     if (password !== confirmation) {
-      setError("Hai mật khẩu chưa khớp.");
+      setError("auth.the.passwords.do.not.match");
       focusInput(3);
       return;
     }
     if (!consent) {
-      setError("Vui lòng đọc và đồng ý với Quy tắc cộng đồng và Chính sách bảo mật trước khi tiếp tục.");
+      setError("auth.please.read.and.agree.to.the.community");
       formRef.current?.querySelector<HTMLInputElement>("input[type=checkbox]")?.focus();
       return;
     }
@@ -60,7 +63,7 @@ export function RegisterPage() {
       await api.register({ displayName: displayName.trim(), email: email.trim().toLowerCase(), password });
       navigate("/verify-email?email=" + encodeURIComponent(email.trim().toLowerCase()), { replace: true });
     } catch (reason) {
-      setError(authErrorMessage(reason));
+      setError(authErrorKey(reason));
     } finally {
       setLoading(false);
     }
@@ -69,53 +72,53 @@ export function RegisterPage() {
   return (
     <AuthBody
       variant="register"
-      eyebrow="Tham gia cùng chúng tôi"
-      title="Đăng ký tài khoản"
-      description="Gia nhập cộng đồng người học và chia sẻ ngôn ngữ mở hoàn toàn miễn phí."
-      editorialEyebrow="Tham gia cùng chúng tôi"
-      editorialTitle="Cùng nhau học hỏi, lưu giữ và lan tỏa ngôn ngữ"
-      editorialDescription="Tạo tài khoản miễn phí để tham gia trao đổi kiến thức, luyện tập giao tiếp thực tế và chung tay xây dựng thư viện ngôn ngữ mở cùng cộng đồng người học khắp thế giới."
+      eyebrow={t("auth.join.us")}
+      title={t("auth.create.an.account")}
+      description={t("auth.join.our.open.community.of.language.learners")}
+      editorialEyebrow={t("auth.join.us")}
+      editorialTitle={t("auth.learn.preserve.and.share.languages.together")}
+      editorialDescription={t("auth.create.a.free.account.to.exchange.knowledge")}
       editorialItems={[
-        { icon: "users", title: "Học tập nhân văn & thực chất", description: "Không gian cởi mở kết nối người học và người chia sẻ kinh nghiệm ngôn ngữ từ nhiều nền văn hóa." },
-        { icon: "book-open", title: "Đóng góp tri thức chung", description: "Mọi từ vựng, ngữ cảnh ví dụ và ghi chú sửa lỗi đều được xây dựng minh bạch vì lợi ích cộng đồng." },
-        { icon: "check-circle", title: "Tôn trọng & bình đẳng", description: "Cam kết bảo vệ một môi trường giao tiếp an toàn, thấu hiểu và tôn trọng sự đa dạng ngôn ngữ." },
+        { icon: "users", title: t("auth.meaningful.learning.with.people"), description: t("auth.an.open.space.connecting.learners.and.experienced") },
+        { icon: "book-open", title: t("auth.contribute.shared.knowledge"), description: t("auth.vocabulary.examples.and.correction.notes.are.developed") },
+        { icon: "check-circle", title: t("auth.respect.and.equality"), description: t("auth.we.are.committed.to.a.safe.understanding") },
       ]}
-      editorialPrompt={<p>Đã có tài khoản?{" "}<Link className={formStyles.textLink} to="/login">Đăng nhập ngay →</Link></p>}
-      mobileReassuranceTitle="Tôn trọng & bảo mật quyền riêng tư"
-      mobileReassuranceText="Chúng tôi không bao giờ bán dữ liệu hay gửi thư rác. Mọi đóng góp tri thức ngôn ngữ của bạn đều vì mục đích chung của cộng đồng."
+      editorialPrompt={<p>{t("auth.already.have.an.account")}{" "}<Link className={formStyles.textLink} to="/login">{t("auth.sign.in.now")}</Link></p>}
+      mobileReassuranceTitle={t("auth.respect.and.privacy")}
+      mobileReassuranceText={t("auth.we.never.sell.your.data.or.send")}
     >
       <form ref={formRef} className={formStyles.authForm} onSubmit={submit} noValidate aria-describedby={error ? "register-error" : undefined}>
-        {error ? <p className={feedbackStyles.errorMessage} id="register-error" role="alert">{error}</p> : null}
+        {error ? <p className={feedbackStyles.errorMessage} id="register-error" role="alert">{t(error)}</p> : null}
         <div className={feedbackStyles.authInfo} role="status" aria-live="polite">
           <Icon name="info" size={20} aria-hidden="true" />
           <span className={feedbackStyles.authInfoCopy}>
-            <strong>Lưu ý xác thực hòm thư</strong>
-            <span>Sau khi hoàn tất, hệ thống sẽ gửi liên kết xác nhận kích hoạt tài khoản về hộp thư của bạn.</span>
+            <strong>{t("auth.email.verification.notice")}</strong>
+            <span>{t("auth.after.you.register.we.will.send.an")}</span>
           </span>
         </div>
-        <TextInput label="Tên hiển thị công khai" value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" placeholder="Ví dụ: Minh Tuấn hoặc Lan Anh" hint="Tên này sẽ xuất hiện khi bạn thảo luận, đặt câu hỏi và đóng góp vào thư viện." required />
-        <TextInput label="Địa chỉ email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" inputMode="email" placeholder="nguoidung@vidu.vn" hint="Dùng để đăng nhập, bảo mật tài khoản và nhận xác nhận kích hoạt." required />
+        <TextInput label={t("auth.public.display.name")} value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" placeholder={t("auth.for.example.minh.tuan.or.lan.anh")} hint={t("auth.this.name.appears.when.you.discuss.ask")} required />
+        <TextInput label={t("auth.email.address")} type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" inputMode="email" placeholder={t('auth.email.placeholder')} hint={t("auth.used.to.sign.in.protect.your.account")} required />
         <PasswordField
-          label="Mật khẩu"
+          label={t("auth.password")}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           autoComplete="new-password"
-          placeholder="Tối thiểu 8 ký tự an toàn"
-          hint={<span className={formStyles.passwordHintCard}><strong>Quy chuẩn mật khẩu dễ nhớ &amp; an toàn:</strong><span>Tối thiểu 8 ký tự bất kỳ.</span><span>Nên kết hợp chữ cái và số để bảo vệ quyền riêng tư tốt hơn.</span></span>}
+          placeholder={t("auth.at.least.n8.characters")}
+          hint={<span className={formStyles.passwordHintCard}><strong>{t("auth.memorable.and.secure.password.guidelines")}</strong><span>{t("auth.at.least.n8.characters.n2")}</span><span>{t("auth.consider.combining.letters.and.numbers.to.better")}</span></span>}
           required
         />
-        <PasswordField label="Xác nhận mật khẩu" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" placeholder="Nhập lại chính xác mật khẩu trên" required />
+        <PasswordField label={t("auth.confirm.password")} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" placeholder={t("auth.reenter.the.password.above")} required />
         <label className={formStyles.authConsent}>
           <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} required />
-          <span>Tôi đã đọc và đồng ý với <span className={formStyles.textLink} aria-disabled='true'>Quy tắc cộng đồng</span> và <span className={formStyles.textLink} aria-disabled='true'>Chính sách bảo mật</span> của CongDongNgonNgu.vn.</span>
+          <span>{t("auth.i.have.read.and.agree.to.the")} <span className={formStyles.textLink} aria-disabled='true'>{t("auth.community.guidelines")}</span> {" "}{t("auth.and")} <span className={formStyles.textLink} aria-disabled='true'>{t("auth.privacy.policy")}</span> {" "}{t("auth.of.congdongngonnguvn")}</span>
         </label>
         <div className={formStyles.formActions}>
-          <Button type="submit" variant="secondary" fullWidth loading={loading}>Tạo tài khoản thành viên →</Button>
+          <Button type="submit" variant="secondary" fullWidth loading={loading}>{t("auth.create.member.account")}</Button>
           <ProviderButtons />
         </div>
         <div className={formStyles.authLinks}>
-          <span>Đã là thành viên?</span>
-          <Link className={formStyles.textLink} to="/login">Đăng nhập ngay</Link>
+          <span>{t("auth.already.a.member")}</span>
+          <Link className={formStyles.textLink} to="/login">{t("auth.sign.in.now.n2")}</Link>
         </div>
       </form>
     </AuthBody>

@@ -48,7 +48,7 @@ export function DropdownMenu({ open, label, onToggle, onClose, children }: Dropd
 
   return (
     <div ref={dropdownRef} className={styles.dropdown}>
-      <button id={triggerId} ref={triggerRef} className={styles.navMenuTrigger} type="button" aria-haspopup="menu" aria-expanded={open} aria-controls={menuId} onClick={onToggle}>
+      <button id={triggerId} ref={triggerRef} className={styles.navMenuTrigger} type="button" aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined} onClick={onToggle}>
         <span>{label}</span><Icon name="chevron-down" size={16} />
       </button>
       {open ? <div id={menuId} className={styles.dropdownMenu} role="menu" aria-label={label} aria-labelledby={triggerId} onClick={(event) => {

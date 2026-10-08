@@ -1,3 +1,4 @@
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from '../../components/ui/Icon/Icon';
 import styles from './AuthBody.module.css';
@@ -38,11 +39,16 @@ export function AuthBody({
   editorialItems = [],
   editorialPrompt,
   recoveryRail,
-  mobileReassuranceTitle = 'Không gian học tập tôn trọng & an toàn',
-  mobileReassuranceText = 'Mọi đóng góp ngôn ngữ đều vì mục đích chung, bảo tồn sự đa dạng văn hóa và phát triển tri thức mở.',
-  asideTitle = 'Một tài khoản, nhiều cuộc gặp',
-  asideText = 'Giữ lịch sử học tập và những kết nối ngôn ngữ của bạn trong một không gian riêng tư.',
+  mobileReassuranceTitle,
+  mobileReassuranceText,
+  asideTitle,
+  asideText,
 }: AuthBodyProps) {
+  const { t } = useUiLocale();
+  mobileReassuranceTitle = mobileReassuranceTitle ?? t("auth.a.respectful.and.safe.learning.space");
+  mobileReassuranceText = mobileReassuranceText ?? t("auth.every.language.contribution.serves.our.shared.purpose");
+  asideTitle = asideTitle ?? t("auth.one.account.many.connections");
+  asideText = asideText ?? t("auth.keep.your.learning.history.and.language.connections");
   const resolvedEditorialTitle = editorialTitle ?? asideTitle ?? title;
   const resolvedEditorialDescription = editorialDescription ?? asideText ?? description;
   return (
@@ -78,7 +84,7 @@ export function AuthBody({
         </div>
       </div>
       {mobileReassuranceTitle ? (
-        <aside className={styles.mobileReassurance} aria-label='Cam kết cộng đồng'>
+        <aside className={styles.mobileReassurance} aria-label={t("auth.community.commitment")}>
           <div className={styles.reassuranceCard}>
             <Icon name='lock' size={18} aria-hidden='true' />
             <span>

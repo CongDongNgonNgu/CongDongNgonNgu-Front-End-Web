@@ -732,6 +732,21 @@
     grid-column: auto;
   }
 
+  .sectionHeader {
+    flex-wrap: wrap;
+  }
+
+  .sectionTools {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .sectionCount {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .sectionHeader h2,
   .editorHeader h2 {
     font-size: 1.5rem;

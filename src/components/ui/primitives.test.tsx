@@ -1,3 +1,6 @@
+import { MemoryRouter } from 'react-router-dom';
+import { Avatar } from './Surface';
+import { DropdownMenu } from './Overlays';
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -59,4 +62,14 @@ describe("UI primitives", () => {
     await user.keyboard("{Escape}");
     expect(onClose).toHaveBeenCalledOnce();
   });
+});
+it('gives named avatars image semantics', () => {
+ render(<Avatar name='TEST Learner' />);
+ expect(screen.getByRole('img', { name: 'TEST Learner' })).toBeVisible();
+});
+it('references dropdown content only while that menu exists', () => {
+ const { rerender } = render(<MemoryRouter><DropdownMenu open={false} label='Safety' onToggle={vi.fn()}><button role='menuitem'>Report</button></DropdownMenu></MemoryRouter>);
+ expect(screen.getByRole('button', { name: 'Safety' })).not.toHaveAttribute('aria-controls');
+ rerender(<MemoryRouter><DropdownMenu open label='Safety' onToggle={vi.fn()}><button role='menuitem'>Report</button></DropdownMenu></MemoryRouter>);
+ expect(screen.getByRole('button', { name: 'Safety' })).toHaveAttribute('aria-controls', screen.getByRole('menu').id);
 });

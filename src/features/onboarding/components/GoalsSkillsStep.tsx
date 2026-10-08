@@ -1,5 +1,6 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { Icon } from '../../../components/ui/Icon/Icon';
-import { GOAL_OPTIONS, SKILL_OPTIONS } from '../onboarding.constants';
+import { localizedOnboardingOptions } from '../onboarding.constants';
 import type { OnboardingDraft, ProfileSkill } from '../onboarding.types';
 import styles from './GoalsSkillsStep.module.css';
 
@@ -11,15 +12,17 @@ interface GoalsSkillsStepProps {
 }
 
 export function GoalsSkillsStep({ draft, searchId, onToggleGoal, onToggleSkill }: GoalsSkillsStepProps) {
+  const { t, locale } = useUiLocale();
+  const { GOAL_OPTIONS, SKILL_OPTIONS } = localizedOnboardingOptions(locale);
   return (
     <section className={styles.goalsSection} aria-labelledby='goals-section-title'>
       <div className={styles.sectionIntro}>
-        <p className={styles.sectionEyebrow}>CÁ NHÂN HÓA GỢI Ý</p>
-        <h2 id='goals-section-title'>Điều gì đưa bạn đến đây?</h2>
-        <p>Chọn ít nhất một mục tiêu và một kỹ năng. Bạn có thể thay đổi những lựa chọn này sau.</p>
+        <p className={styles.sectionEyebrow}>{t('onboarding.personalize.suggestions')}</p>
+        <h2 id='goals-section-title'>{t('onboarding.what.brings.you.here')}</h2>
+        <p>{t('onboarding.choose.at.least.one.goal.and.one.skill.you.can.change.these.choices.later')}</p>
       </div>
       <fieldset className={styles.optionFieldset}>
-        <legend>Mục tiêu của bạn</legend>
+        <legend>{t('onboarding.your.goals')}</legend>
         <div className={styles.goalGrid}>
           {GOAL_OPTIONS.map((goal) => {
             const selected = draft.goals.includes(goal.value);
@@ -40,7 +43,7 @@ export function GoalsSkillsStep({ draft, searchId, onToggleGoal, onToggleSkill }
                   <strong>{goal.label}</strong>
                   <small>{goal.description}</small>
                 </span>
-                <span id={goalActionId} className={styles.srOnly}>{selected ? 'Đã chọn' : 'Chọn'} mục tiêu</span>
+                <span id={goalActionId} className={styles.srOnly}>{selected ? t('onboarding.selected') : t('onboarding.choose')}  {t('onboarding.goal')}</span>
                 <span className={styles.checkIndicator} aria-hidden='true'>{selected ? <Icon name='check-circle' size={18} /> : null}</span>
               </button>
             );
@@ -48,7 +51,7 @@ export function GoalsSkillsStep({ draft, searchId, onToggleGoal, onToggleSkill }
         </div>
       </fieldset>
       <fieldset className={styles.optionFieldset}>
-        <legend>Kỹ năng bạn muốn luyện tập</legend>
+        <legend>{t('onboarding.skills.you.want.to.practice')}</legend>
         <div className={styles.skillGrid}>
           {SKILL_OPTIONS.map((skill) => {
             const selected = draft.skills.includes(skill.value);
@@ -66,7 +69,7 @@ export function GoalsSkillsStep({ draft, searchId, onToggleGoal, onToggleSkill }
                 onClick={() => onToggleSkill(skill.value)}
               >
                 <span id={skillLabelId}>{skill.label}</span>
-                <span id={skillActionId} className={styles.srOnly}>{selected ? 'Đã chọn' : 'Chọn'} kỹ năng</span>
+                <span id={skillActionId} className={styles.srOnly}>{selected ? t('onboarding.selected') : t('onboarding.choose')}  {t('onboarding.skill')}</span>
                 {selected ? <Icon name='check-circle' size={18} /> : null}
               </button>
             );

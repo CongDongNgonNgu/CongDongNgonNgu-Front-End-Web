@@ -1,28 +1,30 @@
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import styles from './RecoveryStatusRail.module.css';
 
 const steps = [
-  '1. Yêu cầu',
-  '2. Đã gửi',
-  '3. Đặt lại mật khẩu',
-  '4. Liên kết hết hạn',
-  '5. Hoàn tất',
-];
+  "auth.n1.request",
+  "auth.n2.sent",
+  "auth.n3.reset.password",
+  "auth.n4.expired.link",
+  "auth.n5.complete",
+] as const;
 
 interface RecoveryStatusRailProps {
   activeStep: number;
 }
 
 export function RecoveryStatusRail({ activeStep }: RecoveryStatusRailProps) {
+  const { t } = useUiLocale();
   return (
-    <div className={styles.recoveryRail} aria-label='Trạng thái khôi phục mật khẩu'>
+    <div className={styles.recoveryRail} role="group" aria-label={t("auth.password.recovery.status")}>
       <div className={styles.recoveryRailHeader}>
-        <span>Trạng thái mô phỏng</span>
-        <span>Bước {activeStep}/5</span>
+        <span>{t("auth.preview.status")}</span>
+        <span>{t('auth.recovery.step', { step: activeStep })}</span>
       </div>
-      <ol className={styles.recoveryTabs}>
+      <ol className={styles.recoveryTabs} tabIndex={0} aria-label={t("auth.password.recovery.status")}>
         {steps.map((step, index) => (
           <li className={index + 1 === activeStep ? styles.recoveryTabActive : styles.recoveryTab} key={step}>
-            {step}
+            {t(step)}
           </li>
         ))}
       </ol>

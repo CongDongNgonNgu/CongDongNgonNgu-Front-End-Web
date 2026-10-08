@@ -1,3 +1,4 @@
+import { UiLocaleProvider, useUiLocale } from '../ui-locale/UiLocaleProvider';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
@@ -12,6 +13,7 @@ import type { PassportApi, PublicProfile } from './passport.types';
 
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
   vi.restoreAllMocks();
 });
 
@@ -212,4 +214,34 @@ describe('Passport pages', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     expect(screen.queryByText('Riêng tư')).not.toBeInTheDocument();
   });
+});
+
+function SwitchLocale() { const { locale, setLocale } = useUiLocale(); return <button onClick={() => setLocale(locale === 'vi' ? 'en' : 'vi')}>Switch locale</button>; }
+it('keeps unsaved profile language and privacy values, user text and session stable across vi/en', async () => {
+ const ui = userEvent.setup(); const updateProfile = vi.fn().mockResolvedValue(ownProfile); const authApi = createAuthApi();
+ const api: PassportApi = {getLanguages: vi.fn().mockResolvedValue(catalog), getProfile: vi.fn().mockResolvedValue(ownProfile), updateProfile, getPublicProfile: vi.fn(), getLearningProgress: vi.fn().mockResolvedValue(learningProgress), getContributorProgress: vi.fn().mockResolvedValue(communityProgress)};
+ renderWithAuth(<UiLocaleProvider><MemoryRouter initialEntries={['/profile']}><SwitchLocale /><OwnPassportPage api={api} userId='user-1' /></MemoryRouter></UiLocaleProvider>,authApi);
+ await ui.click(await screen.findByRole('button',{name:'Chỉnh sửa hồ sơ'}));
+ await ui.selectOptions(screen.getAllByLabelText('Hiển thị trên hồ sơ')[0], 'PRIVATE');
+ await ui.click(screen.getByRole('button',{name:'Switch locale'}));
+ expect(screen.getByRole('heading',{name:'Update your language journey'})).toBeVisible();
+ expect(screen.getAllByLabelText('Profile visibility')[0]).toHaveValue('PRIVATE');
+ expect(screen.getByText('Tuesday · 19:00–20:00')).toBeVisible();
+ expect(screen.getByText('music')).toBeVisible();
+ await ui.selectOptions(screen.getAllByLabelText('Self-assessed proficiency')[1], 'B2');
+ expect(document.documentElement.lang).toBe('en');
+ await ui.click(screen.getByRole('button',{name:'Switch locale'}));
+ expect(screen.getAllByLabelText('Mức tự đánh giá')[1]).toHaveValue('B2');
+ await ui.click(screen.getByRole('button',{name:'Lưu thay đổi'}));
+ await waitFor(()=>expect(updateProfile).toHaveBeenCalledTimes(1));
+ expect(updateProfile.mock.calls[0][0].languages).toEqual(expect.arrayContaining([expect.objectContaining({languageCode:'vi',roles:['native'],visibility:'PRIVATE',declaredProficiency:'NATIVE'}),expect.objectContaining({languageCode:'en',roles:['learning'],declaredProficiency:'B2',isPrimaryLearningTarget:true})]));
+ expect(authApi.bootstrap).toHaveBeenCalledTimes(1); expect(api.getProfile).toHaveBeenCalledTimes(1);
+});
+it('maps unknown profile save errors to safe localized feedback', async () => {
+ window.localStorage.setItem('congdongngonngu.ui-locale.v1','en'); const ui=userEvent.setup();
+ const api: PassportApi = {getLanguages:vi.fn().mockResolvedValue(catalog),getProfile:vi.fn().mockResolvedValue(ownProfile),updateProfile:vi.fn().mockRejectedValue(new Error('SQL provider secret internal-id')),getPublicProfile:vi.fn(),getLearningProgress:vi.fn().mockResolvedValue(learningProgress),getContributorProgress:vi.fn().mockResolvedValue(communityProgress)};
+ renderWithAuth(<UiLocaleProvider><MemoryRouter><OwnPassportPage api={api} userId='user-1'/></MemoryRouter></UiLocaleProvider>);
+ await ui.click(await screen.findByRole('button',{name:'Edit profile'})); await ui.click(screen.getByRole('button',{name:'Save changes'}));
+ expect(await screen.findByRole('alert')).toHaveTextContent('Unable to save changes right now.');
+ expect(screen.queryByText(/SQL provider/)).not.toBeInTheDocument();
 });

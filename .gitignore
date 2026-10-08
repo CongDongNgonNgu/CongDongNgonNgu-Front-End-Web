@@ -10,3 +10,5 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 *.log
+artifacts/member-locale*/
+artifacts/phase24/

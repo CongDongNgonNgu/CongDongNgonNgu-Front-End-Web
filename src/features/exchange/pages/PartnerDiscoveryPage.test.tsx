@@ -1,3 +1,4 @@
+import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +14,7 @@ import type {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 const catalog: LanguageCatalogItem[] = [
@@ -55,7 +57,7 @@ function candidate(id = 'candidate-1', overrides: Partial<DiscoveryCandidate> = 
     normalizedScore: 0.86,
     reasons: [
       'Họ có thể hỗ trợ English; bạn đang muốn học English.',
-      'Bạn có thể hỗ trợ Tiếng Việt; họ đang muốn học Vietnamese.',
+      'Bạn có thể hỗ trợ Vietnamese; họ đang muốn học Vietnamese.',
       'Múi giờ tương thích.',
       'Có khoảng thời gian học phù hợp.',
     ],
@@ -221,3 +223,40 @@ function language(
     sortOrder,
   };
 }
+
+function LocaleSwitch() { const { setLocale } = useUiLocale(); return <button onClick={() => setLocale('en')}>Switch English</button>; }
+
+it('switches discovery copy without changing selected canonical filters, content or navigation', async () => {
+  localStorage.clear();
+  const user = userEvent.setup();
+  const data = response([candidate('opaque/user', { interests: ['my_music_文字'], goals: ['custom_goal'] })]);
+  const api = makeApi(data);
+  render(<UiLocaleProvider><MemoryRouter><LocaleSwitch /><PartnerDiscoveryPageView api={api} authenticated /></MemoryRouter></UiLocaleProvider>);
+  await screen.findByRole('heading', { name: 'Người học cùng' });
+  await user.selectOptions(screen.getByLabelText('Họ có thể hỗ trợ'), ['en']);
+  await user.type(screen.getByLabelText('Mục tiêu chung'), 'conversation');
+  await user.selectOptions(screen.getByLabelText('Múi giờ và thời gian'), 'SAME_TIMEZONE');
+  const calls = vi.mocked(api.discover).mock.calls.length;
+  await user.click(screen.getByRole('button', { name: 'Switch English' }));
+  expect(screen.getByRole('heading', { name: 'Find a learning partner' })).toBeVisible();
+  expect(screen.getByLabelText('They can support')).toHaveValue(['en']);
+  expect(screen.getByLabelText('Shared goals')).toHaveValue('conversation');
+  expect(screen.getByLabelText('Timezone and availability')).toHaveValue('SAME_TIMEZONE');
+  expect(api.discover).toHaveBeenCalledTimes(calls);
+  expect(screen.getByText('my_music_文字')).toBeVisible();
+  expect(screen.getByText('custom_goal')).toBeVisible();
+  expect(screen.getByText('Compatible timezones.')).toBeVisible();
+  expect(screen.getByRole('link', { name: /View learning partner profile/ })).toHaveAttribute('href', '/exchange/profile/opaque%2Fuser');
+  await user.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await waitFor(() => expect(api.discover).toHaveBeenLastCalledWith(expect.objectContaining({ offeredLanguageCodes: ['en'], matchingGoalCodes: ['conversation'], timezoneCompatibility: 'SAME_TIMEZONE' })));
+  localStorage.clear();
+});
+it.each(['empty', 'error'] as const)('renders English discovery %s state', async (state) => {
+  localStorage.setItem('congdongngonngu.ui-locale.v1', 'en');
+  const api = makeApi(response([]));
+  if (state === 'error') api.discover = vi.fn().mockRejectedValue(new Error('unsafe-private-detail'));
+  render(<UiLocaleProvider><MemoryRouter><PartnerDiscoveryPageView api={api} authenticated /></MemoryRouter></UiLocaleProvider>);
+  expect(await screen.findByRole('heading', { name: state === 'empty' ? 'No suitable partners yet' : 'Could not load learning partner suggestions' })).toBeVisible();
+  expect(screen.queryByText('unsafe-private-detail')).not.toBeInTheDocument();
+  localStorage.clear();
+});
