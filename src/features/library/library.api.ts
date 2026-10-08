@@ -1,6 +1,8 @@
 import { apiClient } from '../../services/api-client';
 import type {
   LibraryPublicResource,
+  LibraryRelatedPage,
+  LibraryRelatedQuery,
   LibrarySearchPage,
   LibrarySearchQuery,
 } from './library.types';
@@ -22,6 +24,17 @@ export class LibraryApi {
     if (query.cursor) params.set('cursor', query.cursor);
     if (query.limit !== undefined) params.set('limit', String(Math.min(Math.max(query.limit, 1), 50)));
     return this.client.get<LibrarySearchPage>(withQuery('/library/resources', params));
+  }
+
+  getRelatedResources(resourceId: string, query: LibraryRelatedQuery = {}): Promise<LibraryRelatedPage> {
+    const params = new URLSearchParams();
+    if (query.language) params.set('language', query.language);
+    if (query.type) params.set('type', query.type);
+    if (query.level) params.set('level', query.level);
+    if (query.relation) params.set('relation', query.relation);
+    if (query.cursor) params.set('cursor', query.cursor);
+    if (query.limit !== undefined) params.set('limit', String(Math.min(Math.max(Math.trunc(query.limit), 1), 12)));
+    return this.client.get<LibraryRelatedPage>(withQuery('/library/resources/' + encodeURIComponent(resourceId) + '/related', params));
   }
 
   getResource(resourceId: string): Promise<LibraryPublicResource> {

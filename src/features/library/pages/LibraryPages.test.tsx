@@ -1,10 +1,10 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LibraryExplorerPageView } from './LibraryExplorerPage';
 import { LibraryResourceDetailPage } from './LibraryResourceDetailPage';
-import type { LibraryPublicResource, LibraryPublicSearchItem } from '../library.types';
+import type { LibraryPublicResource, LibraryPublicSearchItem, LibraryRelatedPage } from '../library.types';
 import type { LibrarySearchApiPort } from '../hooks/useLibrarySearch';
 import type { LibraryResourceApiPort } from '../hooks/useLibraryResource';
 import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
@@ -289,4 +289,81 @@ it('retains different source and translated content languages under an English i
   expect(screen.getByText('Source')).toBeVisible();
   expect(screen.getAllByText('Translation')).toHaveLength(2);
   expect(api.getResource).toHaveBeenCalledTimes(1);
+});
+
+it('accepts uppercase UUID detail routes with canonical lowercase resources', async () => {
+  const id = 'abcdef12-abcd-4abc-8abc-abcdef123456';
+  const api = { getResource: vi.fn().mockResolvedValue({ ...detailResource, id }) };
+  render(<MemoryRouter initialEntries={['/library/' + id.toUpperCase()]}><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes></MemoryRouter>);
+  expect(await screen.findByRole('heading', { name: 'từ điển' })).toBeVisible();
+});
+
+it.each(['manual', 'focus', 'visibility'] as const)('clears invalidated anchor content and citations before %s refresh completes', async (trigger) => {
+  let reject!: (reason: Error) => void;
+  const pending = new Promise<LibraryPublicResource>((_, fail) => { reject = fail; });
+  const api = { getResource: vi.fn().mockResolvedValueOnce(detailResource).mockReturnValueOnce(pending), getRelatedResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/library/detail-1']}><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes></MemoryRouter>);
+  await screen.findByRole('heading', { name: 'từ điển' });
+  if (trigger === 'manual') await user.click(screen.getByRole('button', { name: 'Làm mới liên kết' }));
+  else if (trigger === 'focus') window.dispatchEvent(new Event('focus'));
+  else document.dispatchEvent(new Event('visibilitychange'));
+  await waitFor(() => expect(api.getResource).toHaveBeenCalledTimes(2));
+  expect(screen.queryByRole('heading', { name: 'từ điển' })).not.toBeInTheDocument();
+  expect(screen.queryByText('Original contributor')).not.toBeInTheDocument();
+  expect(screen.queryByText('CC BY 4.0')).not.toBeInTheDocument();
+  reject(new Error('unavailable private backend data'));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Tài nguyên không khả dụng');
+  expect(screen.queryByText('unavailable private backend data')).not.toBeInTheDocument();
+});
+
+it.each(['manual', 'focus', 'visibility'] as const)('preserves related filters through same-anchor %s revalidation while withholding stale projections', async (trigger) => {
+  let resolve!: (value: LibraryPublicResource) => void;
+  const pending = new Promise<LibraryPublicResource>(done => { resolve = done; });
+  const api = { getResource: vi.fn().mockResolvedValueOnce(detailResource).mockReturnValueOnce(pending), getRelatedResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/library/detail-1']}><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes></MemoryRouter>);
+  await screen.findByRole('heading', { name: 'từ điển' });
+  await user.selectOptions(screen.getByLabelText('Trình độ CEFR'), 'B1');
+  await waitFor(() => expect(api.getRelatedResources).toHaveBeenLastCalledWith('detail-1', { level: 'B1', limit: 3 }));
+  const before = api.getRelatedResources.mock.calls.length;
+  if (trigger === 'manual') await user.click(screen.getByRole('button', { name: 'Làm mới liên kết' }));
+  else await act(async () => { (trigger === 'focus' ? window : document).dispatchEvent(new Event(trigger === 'focus' ? 'focus' : 'visibilitychange')); });
+  expect(screen.queryByLabelText('Trình độ CEFR')).not.toBeInTheDocument();
+  expect(screen.queryByText('Original contributor')).not.toBeInTheDocument();
+  expect(api.getRelatedResources).toHaveBeenCalledTimes(before);
+  await act(async () => { resolve(detailResource); });
+  expect(await screen.findByLabelText('Trình độ CEFR')).toHaveValue('B1');
+  await waitFor(() => expect(api.getRelatedResources).toHaveBeenLastCalledWith('detail-1', { level: 'B1', limit: 3 }));
+});
+
+it('resets related filters when navigating to another anchor', async () => {
+  const api = { getResource: vi.fn().mockImplementation(async (id: string) => ({ ...detailResource, id })), getRelatedResources: vi.fn().mockResolvedValue({ items: [], nextCursor: null }) };
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/library/detail-1']}><Link to='/library/detail-2'>Other anchor</Link><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes></MemoryRouter>);
+  await screen.findByLabelText('Trình độ CEFR');
+  await user.selectOptions(screen.getByLabelText('Trình độ CEFR'), 'B1');
+  await user.click(screen.getByRole('link', { name: 'Other anchor' }));
+  expect(await screen.findByLabelText('Trình độ CEFR')).toHaveValue('');
+  await waitFor(() => expect(api.getRelatedResources).toHaveBeenLastCalledWith('detail-2', { limit: 3 }));
+});
+
+it('discards a late related response from before anchor revalidation', async () => {
+  let resolveDetail!: (value: LibraryPublicResource) => void;
+  let resolveOld!: (value: LibraryRelatedPage) => void;
+  const detailPending = new Promise<LibraryPublicResource>(done => { resolveDetail = done; });
+  const relatedPending = new Promise<LibraryRelatedPage>(done => { resolveOld = done; });
+  const api = {
+    getResource: vi.fn().mockResolvedValueOnce(detailResource).mockReturnValueOnce(detailPending),
+    getRelatedResources: vi.fn().mockReturnValueOnce(relatedPending).mockResolvedValue({ items: [], nextCursor: null }),
+  };
+  render(<MemoryRouter initialEntries={['/library/detail-1']}><Routes><Route path='/library/:resourceId' element={<LibraryResourceDetailPage api={api} />} /></Routes></MemoryRouter>);
+  await waitFor(() => expect(api.getRelatedResources).toHaveBeenCalledTimes(1));
+  await act(async () => { window.dispatchEvent(new Event('focus')); });
+  expect(screen.queryByText('Original contributor')).not.toBeInTheDocument();
+  await act(async () => { resolveDetail(detailResource); });
+  await waitFor(() => expect(api.getRelatedResources).toHaveBeenCalledTimes(2));
+  await act(async () => { resolveOld({ items: [{ resource: { ...detailResource, id: 'stale-target', details: { resourceType: 'VOCABULARY', term: 'Stale target', definition: 'Never display this stale content.', partOfSpeech: null, exampleSentence: null } }, relation: { type: 'SAME_CONCEPT' } }], nextCursor: 'old-cursor' }); });
+  expect(screen.queryByText('Stale target')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Xem trang liên quan tiếp theo' })).not.toBeInTheDocument();
 });

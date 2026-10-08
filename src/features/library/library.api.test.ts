@@ -29,3 +29,10 @@ describe('LibraryApi', () => {
     expect(get).toHaveBeenCalledWith('/library/resources/resource%2F1');
   });
 });
+
+it('serializes bounded anchor-related filters using the frozen relation query key', async () => {
+  const get = vi.fn().mockResolvedValue({ items: [], nextCursor: null });
+  const api = new LibraryApi({ get });
+  await api.getRelatedResources('resource/anchor', { language: 'vi', type: 'SENTENCE', level: 'A2', relation: 'FOLLOW_UP', cursor: 'opaque+/cursor', limit: 100 });
+  expect(get).toHaveBeenCalledWith('/library/resources/resource%2Fanchor/related?language=vi&type=SENTENCE&level=A2&relation=FOLLOW_UP&cursor=opaque%2B%2Fcursor&limit=12');
+});

@@ -30,3 +30,8 @@
   .entry { flex-direction: column; }
   .licenseMeta { justify-content: start; text-align: left; }
 }
+.compact { padding-top: var(--space-4); }
+.compact .heading h4 { font-size: var(--font-size-sm); }
+.compact .entry { padding: 0; border: 0; border-radius: 0; background: transparent; }
+.compact .licenseName, .compact .licenseMeta { font-size: var(--font-size-sm); }
+.compact .licenseMeta a { display: inline-flex; align-items: center; min-height: 2.75rem; }

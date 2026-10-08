@@ -5,6 +5,7 @@ import type { LibraryPublicResource } from '../library.types';
 interface UseLibraryResourceOptions {
   api?: LibraryResourceApiPort;
   resourceId: string | undefined;
+  revalidateOnReturn?: boolean;
 }
 
 export interface LibraryResourceApiPort {
@@ -18,7 +19,7 @@ export interface LibraryResourceState {
   refresh: () => Promise<void>;
 }
 
-export function useLibraryResource({ api = libraryApi, resourceId }: UseLibraryResourceOptions): LibraryResourceState {
+export function useLibraryResource({ api = libraryApi, resourceId, revalidateOnReturn = false }: UseLibraryResourceOptions): LibraryResourceState {
   const [resource, setResource] = useState<LibraryPublicResource | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -26,6 +27,7 @@ export function useLibraryResource({ api = libraryApi, resourceId }: UseLibraryR
 
   const refresh = useCallback(async () => {
     const currentRequest = ++requestId.current;
+    setResource(null);
     setIsLoading(true);
     setError(null);
     if (!resourceId) {
@@ -47,7 +49,14 @@ export function useLibraryResource({ api = libraryApi, resourceId }: UseLibraryR
     }
   }, [api, resourceId]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => { void refresh(); return () => { requestId.current++; }; }, [refresh]);
+  useEffect(() => {
+    if (!revalidateOnReturn) return;
+    const onReturn = () => { if (document.visibilityState === 'visible') void refresh(); };
+    window.addEventListener('focus', onReturn);
+    document.addEventListener('visibilitychange', onReturn);
+    return () => { window.removeEventListener('focus', onReturn); document.removeEventListener('visibilitychange', onReturn); };
+  }, [refresh, revalidateOnReturn]);
 
   return { resource, isLoading, error, refresh };
 }
