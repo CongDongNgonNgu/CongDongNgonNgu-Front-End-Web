@@ -14,5 +14,5 @@ export function Avatar({ name, size = "md", decorative = false }: AvatarProps) {
     .map((part) => part[0]?.toUpperCase())
     .join("");
 
-  return <span className={[styles.avatar, styles[`avatar--${size}`]].join(" ")} aria-label={name} data-initials={decorative ? initials : undefined}>{decorative ? null : initials}</span>;
+  return <span className={[styles.avatar, styles[`avatar--${size}`]].join(" ")} role="img" aria-label={name} data-initials={decorative ? initials : undefined}>{decorative ? null : initials}</span>;
 }

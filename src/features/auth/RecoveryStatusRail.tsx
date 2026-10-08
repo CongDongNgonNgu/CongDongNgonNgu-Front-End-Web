@@ -16,7 +16,7 @@ interface RecoveryStatusRailProps {
 export function RecoveryStatusRail({ activeStep }: RecoveryStatusRailProps) {
   const { t } = useUiLocale();
   return (
-    <div className={styles.recoveryRail} aria-label={t("auth.password.recovery.status")}>
+    <div className={styles.recoveryRail} role="group" aria-label={t("auth.password.recovery.status")}>
       <div className={styles.recoveryRailHeader}>
         <span>{t("auth.preview.status")}</span>
         <span>{t('auth.recovery.step', { step: activeStep })}</span>

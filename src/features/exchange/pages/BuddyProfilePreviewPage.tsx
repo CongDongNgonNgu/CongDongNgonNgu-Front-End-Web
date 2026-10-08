@@ -367,7 +367,7 @@ function RelationshipActions({
   const { t } = useUiLocale();
   const disabled = activeAction !== null;
   return (
-    <div className={styles.actionGroup} aria-label={t('exchange.actionsLabel')}>
+    <div className={styles.actionGroup} role="group" aria-label={t('exchange.actionsLabel')}>
       {relationship.canRequest ? <Button fullWidth onClick={() => onAction('request')} loading={activeAction === 'request'} disabled={disabled}>{t('exchange.connect')}</Button> : null}
       {relationship.canAccept ? <Button fullWidth onClick={() => onAction('accept')} loading={activeAction === 'accept'} disabled={disabled}>{t('exchange.accept')}</Button> : null}
       {relationship.canDecline ? <Button fullWidth variant='quiet' onClick={() => onAction('decline')} loading={activeAction === 'decline'} disabled={disabled}>{t('exchange.decline')}</Button> : null}
