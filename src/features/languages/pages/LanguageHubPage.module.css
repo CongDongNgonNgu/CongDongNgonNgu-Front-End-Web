@@ -131,3 +131,6 @@
   .bottomCallout { align-items: start; flex-direction: column; }
   .calloutLink { white-space: normal; }
 }
+
+.navItem:focus-visible, .navItemActive:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
+.overviewPanel h2[id] { scroll-margin-top: 7rem; }

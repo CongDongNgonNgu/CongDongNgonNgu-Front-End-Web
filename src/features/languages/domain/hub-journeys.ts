@@ -14,3 +14,12 @@ export function buildHubJourneys(language: { code: string }, filters: LanguageHu
     return { key, href: '/library?' + query.toString() };
   });
 }
+
+export const HUB_DEFERRED_KEYS = ['grammar', 'pronunciation', 'practice'] as const;
+export function buildHubSocialJourneys(language: { code: string }) {
+  return [
+    { key: 'community', href: '/community?' + new URLSearchParams({ languageCode: language.code }) },
+    { key: 'questions', href: '/community/ask/question' },
+    { key: 'exchange', href: '/exchange' },
+  ] as const;
+}

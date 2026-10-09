@@ -1,5 +1,5 @@
 ﻿import { describe, expect, it } from 'vitest';
-import { buildHubJourneys } from './hub-journeys';
+import { buildHubJourneys, buildHubSocialJourneys } from './hub-journeys';
 
 const language = { code: 'vi', slug: 'vietnamese' };
 describe('Phase25 canonical Hub journeys', () => {
@@ -13,4 +13,8 @@ describe('Phase25 canonical Hub journeys', () => {
     const journeys = buildHubJourneys(language, { levels: ['A1', 'B2'], topic: null });
     expect(journeys.find((item) => item.key === 'vocabulary')?.href).toBe('/library?language=vi&type=VOCABULARY');
   });
+});
+
+it('binds only supported existing social routes without unsupported prefilters', () => {
+ expect(buildHubSocialJourneys(language)).toEqual([{key:'community',href:'/community?languageCode=vi'},{key:'questions',href:'/community/ask/question'},{key:'exchange',href:'/exchange'}]);
 });
