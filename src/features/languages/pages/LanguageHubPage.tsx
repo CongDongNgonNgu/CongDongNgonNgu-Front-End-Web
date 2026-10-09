@@ -182,7 +182,7 @@ function SectionNavigation({ language, filters, hash }: { language: LanguageCata
   // All routes are audited product contracts; scaffolding metadata is not an authorization decision.
   return <nav className={styles.sectionNav} aria-label={t('hub.navigation')}>{links.map(({ key, href }) => {
     const active = href.endsWith(hash || '#overview-heading') && href.startsWith(base + '#');
-    return <Link className={active ? styles.navItemActive : styles.navItem} key={key} to={href} aria-current={active ? 'location' : undefined}>{t(`hub.${key}`)}</Link>;
+    return <Link className={active ? styles.navItemActive : styles.navItem} key={key} to={href} onFocus={(event) => event.currentTarget.scrollIntoView?.({ block: 'nearest', inline: 'nearest', behavior: 'instant' })} aria-current={active ? 'location' : undefined}>{t(`hub.${key}`)}</Link>;
   })}</nav>;
 }
 

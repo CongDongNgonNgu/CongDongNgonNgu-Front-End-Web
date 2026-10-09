@@ -40,6 +40,15 @@ try {
       const geometry = await page.evaluate(() => ({ viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }));
       assert.equal(geometry.viewport, width);
       assert.ok(geometry.document <= width + 1 && geometry.body <= width + 1, JSON.stringify(geometry));
+      const categoryNav = page.getByRole('navigation', { name: locale === 'en' ? 'Language hub sections' : 'Các phần của không gian ngôn ngữ' });
+      await categoryNav.getByRole('link').first().focus();
+      for (let step = 0; step < 10; step++) {
+        if (step > 0) await page.keyboard.press('Tab');
+        const navFocus = await page.evaluate(() => { const el = document.activeElement, rect = el.getBoundingClientRect(), css = getComputedStyle(el); return { href: el.getAttribute('href'), left: rect.left, right: rect.right, viewport: innerWidth, visible: el.matches(':focus-visible'), outline: parseFloat(css.outlineWidth) }; });
+        assert.ok(navFocus.href && navFocus.left >= -1 && navFocus.right <= navFocus.viewport + 1 && navFocus.visible && navFocus.outline > 0, JSON.stringify(navFocus));
+        if (step === 9) assert.ok(navFocus.href.endsWith('#hub-practice'));
+        record(locale + '-category-keyboard-' + width + '-' + step, navFocus);
+      }
       const link = core.getByRole('link', { name: locale === 'en' ? 'Open Vocabulary in Library' : 'Mở Từ vựng trong Thư viện' });
       assert.equal(await link.getAttribute('href'), '/library?language=vi&type=VOCABULARY&level=B2&topic=travel');
       await link.focus();
