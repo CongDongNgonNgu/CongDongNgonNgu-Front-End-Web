@@ -1,8 +1,9 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ApiClientError } from '../../../services/api-client';
+import { UiLocaleProvider } from '../../ui-locale/UiLocaleProvider';
 import { LanguageHubPage } from './LanguageHubPage';
 import type { LanguageCatalogItem, LanguageHubOverview } from '../languages.types';
 import type { LanguageHubApi } from './LanguageHubPage';
@@ -10,6 +11,7 @@ import type { LanguageHubApi } from './LanguageHubPage';
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 const english: LanguageCatalogItem = {
@@ -178,14 +180,25 @@ describe('LanguageHubPage', () => {
     expect(api.getLanguage).toHaveBeenCalledWith('english');
     expect(api.getOverview).toHaveBeenCalledWith('english', { levels: ['B2'], topic: 'travel' });
     expect(screen.getAllByText('Chưa khả dụng')).toHaveLength(3);
-    expect(screen.getByRole('button', { name: /Từ vựng/ })).toBeDisabled();
+    expect(screen.getByRole('link', { name: 'Từ vựng' })).toHaveAttribute('href', '/library?language=en&type=VOCABULARY&level=B2&topic=travel');
     expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', '/languages/english');
     expect(screen.getByRole('heading', { name: 'Tài nguyên học tập cho English' })).toBeVisible();
-    expect(screen.getByText('Chưa có tài nguyên học tập')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mở Mẫu câu trong Thư viện' })).toHaveAttribute('href', '/library?language=en&type=SENTENCE&level=B2&topic=travel');
+    expect(screen.getByRole('link', { name: 'Đóng góp nội dung của bạn' })).toHaveAttribute('href', '/library/contribute');
+    expect(screen.getByText(/Kết quả phù hợp có thể trống/)).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Không gian tương lai cho English' })).toBeVisible();
     expect(screen.getAllByText('Cộng đồng').some((node) => node.closest('[aria-disabled=true]'))).toBe(true);
     expect(screen.queryByRole('link', { name: /Cộng đồng/ })).not.toBeInTheDocument();
     expect(screen.queryByText('0')).not.toBeInTheDocument();
+  });
+
+  it('localizes core category chrome and explains legacy multi-level filter limits', async () => {
+    localStorage.setItem('congdongngonngu.ui-locale.v1', 'en');
+    const api = { getLanguage: vi.fn().mockResolvedValue(english), getOverview: vi.fn().mockResolvedValue(overview) };
+    render(<UiLocaleProvider><MemoryRouter initialEntries={['/languages/english?level=A1,B2']}><Routes><Route path='/languages/:slug' element={<LanguageHubPage api={api} />} /></Routes></MemoryRouter></UiLocaleProvider>);
+    expect(await screen.findByRole('link', { name: 'Open Vocabulary in Library' })).toHaveAttribute('href', '/library?language=en&type=VOCABULARY');
+    expect(screen.getByText(/Select one CEFR level/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Contribute your own content' })).toHaveAttribute('href', '/library/contribute');
   });
 
   it('writes level and topic choices to the URL so back/forward can restore them', async () => {
@@ -198,15 +211,33 @@ describe('LanguageHubPage', () => {
     await screen.findByRole('heading', { name: 'English' });
 
     await user.click(screen.getByRole('button', { name: 'A1' }));
-    expect(screen.getByRole('status', { name: 'URL bộ lọc' })).toHaveTextContent('?level=A1%2CB2&topic=travel');
+    expect(screen.getByRole('status', { name: 'URL bộ lọc' })).toHaveTextContent('?level=A1&topic=travel');
 
     const topic = screen.getByRole('textbox', { name: 'Chủ đề' });
     await user.clear(topic);
     await user.type(topic, 'Space Opera');
     await user.click(screen.getByRole('button', { name: 'Áp dụng' }));
 
-    await waitFor(() => expect(screen.getByRole('status', { name: 'URL bộ lọc' })).toHaveTextContent('?level=A1%2CB2&topic=space-opera'));
-    expect(api.getOverview).toHaveBeenLastCalledWith('english', { levels: ['A1', 'B2'], topic: 'space-opera' });
+    await waitFor(() => expect(screen.getByRole('status', { name: 'URL bộ lọc' })).toHaveTextContent('?level=A1&topic=space-opera'));
+    expect(api.getOverview).toHaveBeenLastCalledWith('english', { levels: ['A1'], topic: 'space-opera' });
+  });
+
+
+  it('ignores an old language response after direct route navigation', async () => {
+    let finishOld!: (value: LanguageCatalogItem) => void;
+    const french = launchLanguages.find((item) => item.code === 'fr')!;
+    const api = {
+      getLanguage: (slug: string) => slug === 'english' ? new Promise<LanguageCatalogItem>((resolve) => { finishOld = resolve; }) : Promise.resolve(french),
+      getOverview: (slug: string) => Promise.resolve(overviewFor(slug === 'english' ? english : french)),
+    };
+    function NavigateLanguage() { const navigate = useNavigate(); return <button onClick={() => navigate('/languages/french')}>Switch language route</button>; }
+    render(<MemoryRouter initialEntries={['/languages/english']}><NavigateLanguage /><Routes><Route path='/languages/:slug' element={<LanguageHubPage api={api} />} /></Routes></MemoryRouter>);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Switch language route' }));
+    expect(await screen.findByRole('heading', { name: 'Français' })).toBeVisible();
+    await act(async () => finishOld(english));
+    expect(screen.getByRole('heading', { name: 'Français' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Từ vựng' })).toHaveAttribute('href', '/library?language=fr&type=VOCABULARY');
+    expect(screen.queryByRole('heading', { name: 'English' })).not.toBeInTheDocument();
   });
 
   it('maps a missing language contract error to a navigable not-found state', async () => {
@@ -231,7 +262,7 @@ describe('LanguageHubPage', () => {
     expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', `/languages/${language.slug}`);
     expect(screen.getByRole('heading', { name: `Tài nguyên học tập cho ${language.nativeName}` })).toBeVisible();
     expect(screen.getByRole('heading', { name: `Không gian tương lai cho ${language.nativeName}` })).toBeVisible();
-    expect(screen.getByRole('button', { name: /Từ vựng/ })).toBeDisabled();
+    expect(screen.getByRole('link', { name: 'Từ vựng' })).toHaveAttribute('href', `/library?language=${language.code}&type=VOCABULARY`);
     expect(screen.queryByRole('link', { name: /Cộng đồng/ })).not.toBeInTheDocument();
     expect(screen.queryByText('0')).not.toBeInTheDocument();
   });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
@@ -7,7 +7,9 @@ import { Icon } from '../../../components/ui/Icon/Icon';
 import { ApiClientError } from '../../../services/api-client';
 import { languageApi } from '../api/language-api';
 import { LanguageFutureEntrypoints } from '../components/LanguageFutureEntrypoints';
-import { LanguageResourcePreview } from '../components/LanguageResourcePreview';
+import { LanguageHubCoreJourneys } from '../components/LanguageHubCoreJourneys';
+import { buildHubJourneys } from '../domain/hub-journeys';
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { buildLanguageHubSearch, normalizeLanguageHubTopic, parseLanguageHubSearch } from '../domain/language-filters';
 import { CEFR_LEVELS, type CefrLevel, type HubSectionAvailability, type LanguageCatalogItem, type LanguageHubFilters, type LanguageHubOverview } from '../languages.types';
 import styles from './LanguageHubPage.module.css';
@@ -35,9 +37,11 @@ const sectionLabels: Record<HubSectionAvailability['key'], string> = {
 };
 
 export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
+  const { t } = useUiLocale();
   const { slug } = useParams<{ slug: string }>();
   const routeSlug = typeof slug === 'string' ? slug : '';
   const [searchParams, setSearchParams] = useSearchParams();
+  const requestId = useRef(0);
   const [retryKey, setRetryKey] = useState(0);
   const [state, setState] = useState<HubLoadState>({ status: 'loading' });
   const search = searchParams.toString();
@@ -45,20 +49,22 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
   const filters = useMemo<LanguageHubFilters>(() => parsed.issue ? { levels: [], topic: null } : { levels: parsed.levels, topic: parsed.topic }, [parsed.issue, parsed.levels, parsed.topic]);
 
   const load = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setState({ status: 'loading' });
     try {
       const [language, overview] = await Promise.all([
         api.getLanguage(routeSlug),
         api.getOverview(routeSlug, filters),
       ]);
-      setState({ status: 'ready', language, overview });
+      if (currentRequest === requestId.current) setState({ status: 'ready', language, overview });
     } catch (cause) {
-      setState({ status: 'error', cause });
+      if (currentRequest === requestId.current) setState({ status: 'error', cause });
     }
   }, [api, filters, routeSlug]);
 
   useEffect(() => {
     void load();
+    return () => { requestId.current += 1; };
   }, [load, retryKey]);
 
   useEffect(() => {
@@ -88,7 +94,7 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
   };
 
   if (state.status === 'loading') {
-    return <div className={styles.page}><Skeleton lines={7} label='Đang tải không gian ngôn ngữ' /></div>;
+    return <div className={styles.page}><Skeleton lines={7} label={t('hub.loading')} /></div>;
   }
 
   if (state.status === 'error') {
@@ -116,7 +122,7 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
         <p className={styles.identityMeta}>Mã {state.language.code.toUpperCase()} · {state.language.direction === 'rtl' ? 'viết từ phải sang trái' : 'viết từ trái sang phải'}</p>
       </header>
 
-      <SectionNavigation slug={state.language.slug} sections={state.overview.sections} />
+      <SectionNavigation slug={state.language.slug} sections={state.overview.sections} coreJourneys={buildHubJourneys(state.language, filters)} />
 
       <LanguageFilters
         filters={filters}
@@ -125,7 +131,7 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
         onChange={updateFilters}
       />
 
-      <div className={styles.filterUrl} role='status' aria-label='URL bộ lọc'>{buildLanguageHubSearch(filters) || '?'} </div>
+      <div className={styles.filterUrl} role='status' aria-label={t('hub.filterUrl')}>{buildLanguageHubSearch(filters) || '?'} </div>
 
       <section className={styles.hubLayout} aria-live='polite'>
         <section className={styles.overviewPanel} aria-labelledby='overview-heading'>
@@ -160,10 +166,7 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
         </aside>
       </section>
 
-      <LanguageResourcePreview
-        languageName={state.language.nativeName}
-        sections={state.overview.sections}
-      />
+      <LanguageHubCoreJourneys language={state.language} filters={filters} />
 
       <LanguageFutureEntrypoints
         languageName={state.language.nativeName}
@@ -178,19 +181,24 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
   );
 }
 
-function SectionNavigation({ slug, sections }: { slug: string; sections: HubSectionAvailability[] }) {
+function SectionNavigation({ slug, sections, coreJourneys }: { slug: string; sections: HubSectionAvailability[]; coreJourneys: ReturnType<typeof buildHubJourneys> }) {
+  const { t } = useUiLocale();
   return (
     <nav className={styles.sectionNav} aria-label='Các phần của language hub'>
-      {sections.map((section) => section.isNavigable && section.href ? (
+      {sections.map((section) => {
+        const core = coreJourneys.find((item) => item.key === section.key);
+        if (core) return <Link className={styles.navItem} key={core.key} to={core.href}>{t(`hub.${core.key}`)}</Link>;
+        return section.isNavigable && section.href ? (
         <Link className={section.key === 'overview' ? styles.navItemActive : styles.navItem} key={section.key} to={section.href.replace(':slug', slug)}>{sectionLabels[section.key]}</Link>
       ) : (
         <button className={styles.navItem} key={section.key} type='button' disabled>{sectionLabels[section.key]}<span className={styles.notReady}>Sắp có</span></button>
-      ))}
+      ); })}
     </nav>
   );
 }
 
 function LanguageFilters({ filters, levelOptions, queryIssue, onChange }: { filters: LanguageHubFilters; levelOptions: CefrLevel[]; queryIssue: 'invalid' | null; onChange: (filters: LanguageHubFilters) => void }) {
+  const { t } = useUiLocale();
   const [topicDraft, setTopicDraft] = useState(filters.topic ?? '');
   const [topicIssue, setTopicIssue] = useState(false);
 
@@ -199,7 +207,7 @@ function LanguageFilters({ filters, levelOptions, queryIssue, onChange }: { filt
   }, [filters.topic]);
 
   const toggleLevel = (level: CefrLevel) => {
-    const levels = filters.levels.includes(level) ? filters.levels.filter((item) => item !== level) : [...filters.levels, level];
+    const levels = filters.levels.length === 1 && filters.levels[0] === level ? [] : [level];
     onChange({ levels, topic: filters.topic });
   };
 
@@ -217,23 +225,25 @@ function LanguageFilters({ filters, levelOptions, queryIssue, onChange }: { filt
   return (
     <section className={styles.filterBand} aria-labelledby='filter-heading'>
       <div className={styles.filterHeader}>
-        <div><p className={styles.eyebrow}>BỘ LỌC</p><h2 id='filter-heading'>Điều chỉnh không gian học</h2></div>
-        <span>Tùy chọn, không bắt buộc</span>
+        <div><p className={styles.eyebrow}>{t('hub.filters')}</p><h2 id='filter-heading'>{t('hub.filterTitle')}</h2></div>
+        <span>{t('hub.optional')}</span>
       </div>
+      <p className={styles.filterHint}>{t('hub.filtersScope')}</p>
+      {filters.levels.length > 1 ? <p className={styles.filterError} role='status'>{t('hub.legacyLevels')}</p> : null}
       <div className={styles.filterControls}>
-        <div className={styles.levelControl} role='group' aria-label='Chọn trình độ'>
-          <span className={styles.controlLabel}>Trình độ</span>
+        <div className={styles.levelControl} role='group' aria-label={t('hub.levelGroup')}>
+          <span className={styles.controlLabel}>{t('hub.levelLabel')}</span>
           <div className={styles.levelButtons}>
             {levelOptions.map((level) => <button className={filters.levels.includes(level) ? styles.levelButtonActive : styles.levelButton} key={level} type='button' aria-pressed={filters.levels.includes(level)} onClick={() => toggleLevel(level)}>{level}</button>)}
           </div>
         </div>
         <form className={styles.topicControl} onSubmit={applyTopic}>
-          <label className={styles.controlLabel} htmlFor='hub-topic'>Chủ đề</label>
+          <label className={styles.controlLabel} htmlFor='hub-topic'>{t('hub.topicLabel')}</label>
           <div className={styles.topicInputRow}>
-            <input id='hub-topic' aria-invalid={topicIssue || queryIssue === 'invalid'} value={topicDraft} onChange={(event) => { setTopicDraft(event.target.value); setTopicIssue(false); }} placeholder='Ví dụ: travel' />
-            <Button type='submit' variant='secondary' size='sm'>Áp dụng</Button>
+            <input id='hub-topic' aria-invalid={topicIssue || queryIssue === 'invalid'} value={topicDraft} onChange={(event) => { setTopicDraft(event.target.value); setTopicIssue(false); }} placeholder={t('hub.topicPlaceholder')} />
+            <Button type='submit' variant='secondary' size='sm'>{t('hub.apply')}</Button>
           </div>
-          {topicIssue || queryIssue === 'invalid' ? <p className={styles.filterError} role='alert'>Bộ lọc chưa hợp lệ. Hãy dùng mức A1 đến C2 và chủ đề dạng chữ hoặc số.</p> : <p className={styles.filterHint}>Chủ đề sẽ được chuẩn hóa theo hợp đồng dữ liệu.</p>}
+          {topicIssue || queryIssue === 'invalid' ? <p className={styles.filterError} role='alert'>{t('hub.filterError')}</p> : <p className={styles.filterHint}>{t('hub.filterHint')}</p>}
         </form>
       </div>
     </section>
@@ -250,11 +260,12 @@ function HubMetrics({ overview }: { overview: LanguageHubOverview }) {
 }
 
 function HubErrorState({ cause, onRetry }: { cause: unknown; onRetry: () => void }) {
+  const { t } = useUiLocale();
   const code = getErrorCode(cause);
   if (code === 'LANGUAGE_NOT_FOUND' || code === 'LANGUAGE_INACTIVE' || code === 'LANGUAGE_INVALID_SLUG') {
-    return <div className={styles.page}><section className={styles.notFound} role='alert'><span className={styles.notFoundIcon} aria-hidden='true'><Icon name='languages' size={24} /></span><h1>Không tìm thấy ngôn ngữ</h1><p>Ngôn ngữ này không tồn tại, chưa được mở hoặc đường dẫn chưa đúng.</p><Link className={styles.primaryLink} to='/languages'>Quay lại khám phá</Link></section></div>;
+    return <div className={styles.page}><section className={styles.notFound} role='alert'><span className={styles.notFoundIcon} aria-hidden='true'><Icon name='languages' size={24} /></span><h1>{t('hub.notFoundTitle')}</h1><p>{t('hub.notFoundDescription')}</p><Link className={styles.primaryLink} to='/languages'>{t('hub.back')}</Link></section></div>;
   }
-  return <div className={styles.page}><ErrorState title='Không thể tải language hub' description='Dữ liệu ngôn ngữ chưa sẵn sàng. Bạn có thể thử lại sau ít phút.' onRetry={onRetry} /></div>;
+  return <div className={styles.page}><ErrorState title={t('hub.errorTitle')} description={t('hub.errorDescription')} onRetry={onRetry} /></div>;
 }
 
 function getErrorCode(error: unknown): string | null {
