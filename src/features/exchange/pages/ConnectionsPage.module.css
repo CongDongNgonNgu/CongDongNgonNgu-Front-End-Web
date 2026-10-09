@@ -1,0 +1,31 @@
+.page { width: min(60rem, calc(100% - 2rem)); margin: var(--space-8) auto var(--space-16); color: var(--color-text-primary); }
+.header { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+.header h1 { margin: 0; font-size: 2rem; line-height: 1.25; }
+.header p { color: var(--color-text-secondary); margin: var(--space-2) 0 0; }
+.link { display: inline-flex; min-height: 2.75rem; align-items: center; color: var(--color-brand-navy); font-weight: 600; text-underline-offset: .2em; }
+.tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-4); }
+.tabs button { font: inherit; font-weight: 600; cursor: pointer; color: var(--color-text-secondary); background: transparent; border: 0; border-bottom: 3px solid transparent; padding: var(--space-3); min-height: 2.75rem; }
+.tabs button[aria-pressed='true'] { border-bottom-color: var(--color-brand-orange); color: var(--color-text-primary); }
+.tabs button:hover { background: var(--color-surface-muted); }
+.tabs button:disabled { opacity: .6; cursor: wait; }
+.tabs button:focus-visible, .link:focus-visible { outline: 2px solid var(--color-brand-orange); outline-offset: 3px; }
+.list { list-style: none; padding: 0; margin: 0; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); padding: var(--space-5) 0; border-bottom: 1px solid var(--color-border); }
+.identity { display: flex; align-items: start; gap: var(--space-3); min-width: 0; }
+.details { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); }
+.details strong { overflow-wrap: anywhere; }
+.details .link { flex-basis: 100%; font-size: .875rem; }
+.state { color: var(--color-text-secondary); font-size: .875rem; }
+.actions { display: flex; flex-wrap: wrap; justify-content: end; gap: var(--space-2); flex-shrink: 0; }
+.actions button { min-height: 2.75rem; }
+.more { display: flex; justify-content: center; margin-top: var(--space-6); }
+.error { color: var(--color-danger); }
+@media (max-width: 47.99rem) {
+  .header { flex-direction: column; }
+  .header h1 { font-size: 1.75rem; }
+  .row { align-items: stretch; flex-direction: column; }
+  .actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .actions button:only-child { grid-column: 1 / -1; }
+  .tabs { gap: 0; }
+  .tabs button { flex: 1; padding: var(--space-3) var(--space-2); }
+}

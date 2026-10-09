@@ -205,6 +205,8 @@ export function BuddyProfilePreviewPageView({
         <nav className={styles.breadcrumbs} aria-label={t('exchange.breadcrumb')}>
           <Link to='/exchange'>{t('exchange.browse')}</Link>
           <span aria-hidden='true'>/</span>
+          <Link to='/exchange/connections'>{t('exchange.connections.title')}</Link>
+          <span aria-hidden='true'>/</span>
           <span aria-current='page'>{t('exchange.profileBreadcrumb')}</span>
         </nav>
 

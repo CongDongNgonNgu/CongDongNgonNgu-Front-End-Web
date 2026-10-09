@@ -65,6 +65,23 @@ export const RELATIONSHIP_STATES = [
 ] as const;
 export type RelationshipState = typeof RELATIONSHIP_STATES[number];
 
+export type ConnectionListKind = 'CONNECTED' | 'INCOMING' | 'OUTGOING';
+export interface ConnectionListItem {
+  connectionId: string;
+  targetUserId: string;
+  displayName: string;
+  state: Exclude<RelationshipState, 'NONE'>;
+  updatedAt: string;
+}
+export interface ConnectionListPage { items: ConnectionListItem[]; nextCursor: string | null }
+export interface ConnectionListApi {
+  listConnections: (input: { kind: ConnectionListKind; limit?: number; cursor?: string }) => Promise<ConnectionListPage>;
+  acceptConnection: BuddyProfilePreviewApi['acceptConnection'];
+  declineConnection: BuddyProfilePreviewApi['declineConnection'];
+  cancelConnection: BuddyProfilePreviewApi['cancelConnection'];
+  disconnect: BuddyProfilePreviewApi['disconnect'];
+}
+
 export interface ExchangeRelationshipResponse {
   scope: 'exchange-relationship';
   targetUserId: string;

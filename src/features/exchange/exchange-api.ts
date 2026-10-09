@@ -3,6 +3,9 @@ import type { LanguageCatalogItem } from '../languages/languages.types';
 import type {
   BuddyProfilePreview,
   BuddyProfilePreviewApi,
+  ConnectionListApi,
+  ConnectionListKind,
+  ConnectionListPage,
   DiscoveryRequest,
   DiscoveryResponse,
   ExchangeBlockResponse,
@@ -14,7 +17,7 @@ import type {
   PartnerDiscoveryApi,
 } from './exchange.types';
 
-export class ExchangeApi implements PartnerDiscoveryApi, BuddyProfilePreviewApi {
+export class ExchangeApi implements PartnerDiscoveryApi, BuddyProfilePreviewApi, ConnectionListApi {
   constructor(private readonly auth: Pick<AuthApi, 'requestProtected' | 'getLanguages'>) {}
 
   discover(request: DiscoveryRequest): Promise<DiscoveryResponse> {
@@ -32,6 +35,12 @@ export class ExchangeApi implements PartnerDiscoveryApi, BuddyProfilePreviewApi 
 
   listLanguages(): Promise<LanguageCatalogItem[]> {
     return this.auth.getLanguages();
+  }
+
+  listConnections(input: { kind: ConnectionListKind; limit?: number; cursor?: string }): Promise<ConnectionListPage> {
+    const params = new URLSearchParams({ kind: input.kind, limit: String(input.limit ?? 20) });
+    if (input.cursor !== undefined) params.set('cursor', input.cursor);
+    return this.auth.requestProtected<ConnectionListPage>('/exchange/connections?' + params.toString());
   }
 
   getBuddyProfile(userId: string): Promise<BuddyProfilePreview> {
