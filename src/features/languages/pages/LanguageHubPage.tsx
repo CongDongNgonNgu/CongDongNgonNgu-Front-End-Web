@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
-import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedback';
+import { ErrorState, Skeleton } from '../../../components/ui/Feedback';
 import { Icon } from '../../../components/ui/Icon/Icon';
 import { ApiClientError } from '../../../services/api-client';
 import { languageApi } from '../api/language-api';
-import { LanguageFutureEntrypoints } from '../components/LanguageFutureEntrypoints';
+import { LanguageHubRemainingJourneys } from '../components/LanguageHubRemainingJourneys';
 import { LanguageHubCoreJourneys } from '../components/LanguageHubCoreJourneys';
-import { buildHubJourneys } from '../domain/hub-journeys';
+import { buildHubJourneys, buildHubSocialJourneys } from '../domain/hub-journeys';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { buildLanguageHubSearch, normalizeLanguageHubTopic, parseLanguageHubSearch } from '../domain/language-filters';
-import { CEFR_LEVELS, type CefrLevel, type HubSectionAvailability, type LanguageCatalogItem, type LanguageHubFilters, type LanguageHubOverview } from '../languages.types';
+import { CEFR_LEVELS, type CefrLevel, type LanguageCatalogItem, type LanguageHubFilters, type LanguageHubOverview } from '../languages.types';
 import styles from './LanguageHubPage.module.css';
 
 export interface LanguageHubApi {
@@ -23,21 +23,10 @@ interface LanguageHubPageProps {
   api?: LanguageHubApi;
 }
 
-const sectionLabels: Record<HubSectionAvailability['key'], string> = {
-  overview: 'Tổng quan',
-  vocabulary: 'Từ vựng',
-  grammar: 'Ngữ pháp',
-  sentences: 'Mẫu câu',
-  pronunciation: 'Phát âm',
-  resources: 'Tài nguyên',
-  community: 'Cộng đồng',
-  questions: 'Hỏi đáp',
-  practice: 'Luyện tập',
-  exchange: 'Trao đổi',
-};
 
 export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
   const { t } = useUiLocale();
+  const location = useLocation();
   const { slug } = useParams<{ slug: string }>();
   const routeSlug = typeof slug === 'string' ? slug : '';
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,15 +67,22 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
     if (createdCanonical) document.head.appendChild(canonical);
     canonical.setAttribute('rel', 'canonical');
     canonical.setAttribute('href', new URL(state.overview.seo.canonicalPath, window.location.origin).toString());
-    document.title = state.overview.seo.title;
-    meta?.setAttribute('content', state.overview.seo.description);
+    document.title = t('hub.seoTitle', { language: state.language.nativeName });
+    meta?.setAttribute('content', t('hub.seoDescription', { language: state.language.nativeName }));
     return () => {
       document.title = previousTitle;
       if (meta && typeof previousDescription === 'string') meta.setAttribute('content', previousDescription);
       if (createdCanonical) canonical.remove();
       else if (previousCanonical !== null) canonical.setAttribute('href', previousCanonical);
     };
-  }, [state]);
+  }, [state, t]);
+
+  useEffect(() => {
+    if (state.status !== 'ready' || !['#overview-heading', '#hub-grammar', '#hub-pronunciation', '#hub-practice'].includes(location.hash)) return;
+    const heading = document.getElementById(location.hash.slice(1));
+    heading?.focus();
+    heading?.scrollIntoView?.({ block: 'start' });
+  }, [location.hash, location.key, state]);
 
   const updateFilters = (next: LanguageHubFilters) => {
     const nextQuery = buildLanguageHubSearch(next);
@@ -103,14 +99,14 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
 
   return (
     <div className={styles.page}>
-      <nav className={styles.breadcrumbs} aria-label='Breadcrumb'>
-        <Link to='/languages'>Ngôn ngữ</Link>
+      <nav className={styles.breadcrumbs} aria-label={t('hub.breadcrumb')}>
+        <Link to='/languages'>{t('hub.languages')}</Link>
         <span aria-hidden='true'>/</span>
         <span aria-current='page'>{state.language.nativeName}</span>
       </nav>
 
       <header className={styles.hubHeader}>
-        <Link className={styles.backLink} to='/languages'><span aria-hidden='true'>←</span> Quay lại khám phá</Link>
+        <Link className={styles.backLink} to='/languages'><span aria-hidden='true'>←</span> {t('hub.back')}</Link>
         <div className={styles.identity}>
           <span className={styles.monogram} aria-hidden='true'>{state.language.code.slice(0, 2).toUpperCase()}</span>
           <div>
@@ -119,10 +115,10 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
             <p>{state.language.englishName} · {state.language.vietnameseName}</p>
           </div>
         </div>
-        <p className={styles.identityMeta}>Mã {state.language.code.toUpperCase()} · {state.language.direction === 'rtl' ? 'viết từ phải sang trái' : 'viết từ trái sang phải'}</p>
+        <p className={styles.identityMeta}>{t('hub.identity', { code: state.language.code.toUpperCase(), direction: t(state.language.direction === 'rtl' ? 'hub.rtl' : 'hub.ltr') })}</p>
       </header>
 
-      <SectionNavigation slug={state.language.slug} sections={state.overview.sections} coreJourneys={buildHubJourneys(state.language, filters)} />
+      <SectionNavigation language={state.language} filters={filters} hash={location.hash} />
 
       <LanguageFilters
         filters={filters}
@@ -137,30 +133,24 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
         <section className={styles.overviewPanel} aria-labelledby='overview-heading'>
           <div className={styles.panelHeading}>
             <div>
-              <p className={styles.eyebrow}>OVERVIEW</p>
-              <h2 id='overview-heading'>Tổng quan {state.language.nativeName}</h2>
+              <p className={styles.eyebrow}>{t('hub.overview')}</p>
+              <h2 id='overview-heading' tabIndex={-1}>{t('hub.overviewTitle', { language: state.language.nativeName })}</h2>
             </div>
-            <span className={styles.availableBadge}>Đang mở</span>
           </div>
-          <p className={styles.panelLead}>Không gian nền tảng cho nội dung học tập và đóng góp cộng đồng của {state.language.englishName}.</p>
-          <HubMetrics overview={state.overview} />
-          <EmptyState
-            title='Nội dung tổng quan đang được chuẩn bị'
-            description='Các tài nguyên học tập sẽ được mở dần theo dữ liệu và đóng góp thực tế của cộng đồng.'
-            icon='book-open'
-          />
+          <p className={styles.panelLead}>{t('hub.overviewLead')}</p>
+          <p className={styles.panelLead}>{t('hub.availabilityDescription')}</p>
         </section>
 
-        <aside className={styles.sideRail} aria-label='Thông tin hub'>
+        <aside className={styles.sideRail} aria-label={t('hub.infoLabel')}>
           <section className={styles.infoPanel}>
             <div className={styles.infoIcon} aria-hidden='true'><Icon name='info' size={20} /></div>
-            <h2>Đây là không gian mở</h2>
-            <p>Chỉ những phần đã có dữ liệu mới được bật. Các mục còn lại sẽ xuất hiện khi sẵn sàng.</p>
+            <h2>{t('hub.availabilityTitle')}</h2>
+            <p>{t('hub.availabilityDescription')}</p>
           </section>
           <section className={styles.levelPanel}>
-            <p className={styles.eyebrow}>KHUNG THAM CHIẾU</p>
-            <h2>Trình độ CEFR</h2>
-            <p>A1 đến C2 là các mức có thể dùng để lọc nội dung khi dữ liệu được mở.</p>
+            <p className={styles.eyebrow}>{t('hub.reference')}</p>
+            <h2>{t('hub.cefrTitle')}</h2>
+            <p>{t('hub.cefrDescription')}</p>
             <div className={styles.levelList}>{CEFR_LEVELS.map((level) => <span key={level}>{level}</span>)}</div>
           </section>
         </aside>
@@ -168,33 +158,32 @@ export function LanguageHubPage({ api = languageApi }: LanguageHubPageProps) {
 
       <LanguageHubCoreJourneys language={state.language} filters={filters} />
 
-      <LanguageFutureEntrypoints
-        languageName={state.language.nativeName}
-        sections={state.overview.sections}
-      />
+      <LanguageHubRemainingJourneys language={state.language} />
 
-      <aside className={styles.bottomCallout} aria-label='Đóng góp cho ngôn ngữ'>
-        <div><p className={styles.eyebrow}>CÙNG XÂY DỰNG</p><h2>Bạn muốn đóng góp cho {state.language.nativeName}?</h2></div>
-        <Link className={styles.calloutLink} to='/register'>Tham gia cộng đồng <span aria-hidden='true'>→</span></Link>
+      <aside className={styles.bottomCallout} aria-label={t('hub.contributionLabel')}>
+        <div><p className={styles.eyebrow}>{t('hub.together')}</p><h2>{t('hub.contributionTitle', { language: state.language.nativeName })}</h2></div>
+        <Link className={styles.calloutLink} to='/library/contribute'>{t('hub.contributionLabel')} <span aria-hidden='true'>→</span></Link>
       </aside>
     </div>
   );
 }
 
-function SectionNavigation({ slug, sections, coreJourneys }: { slug: string; sections: HubSectionAvailability[]; coreJourneys: ReturnType<typeof buildHubJourneys> }) {
+function SectionNavigation({ language, filters, hash }: { language: LanguageCatalogItem; filters: LanguageHubFilters; hash: string }) {
   const { t } = useUiLocale();
-  return (
-    <nav className={styles.sectionNav} aria-label='Các phần của language hub'>
-      {sections.map((section) => {
-        const core = coreJourneys.find((item) => item.key === section.key);
-        if (core) return <Link className={styles.navItem} key={core.key} to={core.href}>{t(`hub.${core.key}`)}</Link>;
-        return section.isNavigable && section.href ? (
-        <Link className={section.key === 'overview' ? styles.navItemActive : styles.navItem} key={section.key} to={section.href.replace(':slug', slug)}>{sectionLabels[section.key]}</Link>
-      ) : (
-        <button className={styles.navItem} key={section.key} type='button' disabled>{sectionLabels[section.key]}<span className={styles.notReady}>Sắp có</span></button>
-      ); })}
-    </nav>
-  );
+  const base = '/languages/' + language.slug + buildLanguageHubSearch(filters);
+  const links = [
+    { key: 'overview', href: base + '#overview-heading' },
+    ...buildHubJourneys(language, filters),
+    { key: 'grammar', href: base + '#hub-grammar' },
+    { key: 'pronunciation', href: base + '#hub-pronunciation' },
+    ...buildHubSocialJourneys(language),
+    { key: 'practice', href: base + '#hub-practice' },
+  ] as const;
+  // All routes are audited product contracts; scaffolding metadata is not an authorization decision.
+  return <nav className={styles.sectionNav} aria-label={t('hub.navigation')}>{links.map(({ key, href }) => {
+    const active = href.endsWith(hash || '#overview-heading') && href.startsWith(base + '#');
+    return <Link className={active ? styles.navItemActive : styles.navItem} key={key} to={href} aria-current={active ? 'location' : undefined}>{t(`hub.${key}`)}</Link>;
+  })}</nav>;
 }
 
 function LanguageFilters({ filters, levelOptions, queryIssue, onChange }: { filters: LanguageHubFilters; levelOptions: CefrLevel[]; queryIssue: 'invalid' | null; onChange: (filters: LanguageHubFilters) => void }) {
@@ -248,15 +237,6 @@ function LanguageFilters({ filters, levelOptions, queryIssue, onChange }: { filt
       </div>
     </section>
   );
-}
-
-function HubMetrics({ overview }: { overview: LanguageHubOverview }) {
-  const metrics = [
-    ['Người học', overview.metrics.learnerCount],
-    ['Người đóng góp', overview.metrics.contributorCount],
-    ['Tài nguyên', overview.metrics.resourceCount],
-  ] as const;
-  return <dl className={styles.metrics}>{metrics.map(([label, metric]) => <div key={label}><dt>{label}</dt><dd>{metric.state === 'AVAILABLE' && metric.value !== null ? metric.value.toLocaleString('vi-VN') : 'Chưa khả dụng'}</dd></div>)}</dl>;
 }
 
 function HubErrorState({ cause, onRetry }: { cause: unknown; onRetry: () => void }) {

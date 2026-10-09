@@ -179,16 +179,16 @@ describe('LanguageHubPage', () => {
     expect(await screen.findByRole('heading', { name: 'English' })).toBeVisible();
     expect(api.getLanguage).toHaveBeenCalledWith('english');
     expect(api.getOverview).toHaveBeenCalledWith('english', { levels: ['B2'], topic: 'travel' });
-    expect(screen.getAllByText('Chưa khả dụng')).toHaveLength(3);
+    expect(screen.queryByText('Chưa khả dụng')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Từ vựng' })).toHaveAttribute('href', '/library?language=en&type=VOCABULARY&level=B2&topic=travel');
-    expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', '/languages/english');
+    expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', '/languages/english?level=B2&topic=travel#overview-heading');
     expect(screen.getByRole('heading', { name: 'Tài nguyên học tập cho English' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Mở Mẫu câu trong Thư viện' })).toHaveAttribute('href', '/library?language=en&type=SENTENCE&level=B2&topic=travel');
     expect(screen.getByRole('link', { name: 'Đóng góp nội dung của bạn' })).toHaveAttribute('href', '/library/contribute');
     expect(screen.getByText(/Kết quả phù hợp có thể trống/)).toBeVisible();
-    expect(screen.getByRole('heading', { name: 'Không gian tương lai cho English' })).toBeVisible();
-    expect(screen.getAllByText('Cộng đồng').some((node) => node.closest('[aria-disabled=true]'))).toBe(true);
-    expect(screen.queryByRole('link', { name: /Cộng đồng/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Kết nối việc học' })).toBeVisible();
+    expect(screen.getByText(/Trang Cộng đồng và Hỏi đáp hiện sử dụng tiếng Việt/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Cộng đồng' })).toHaveAttribute('href', '/community?languageCode=en');
     expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 
@@ -259,11 +259,48 @@ describe('LanguageHubPage', () => {
     renderPage(api, `/languages/${language.slug}`);
 
     expect(await screen.findByRole('heading', { name: language.nativeName })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', `/languages/${language.slug}`);
+    expect(screen.getByRole('link', { name: 'Tổng quan' })).toHaveAttribute('href', `/languages/${language.slug}#overview-heading`);
     expect(screen.getByRole('heading', { name: `Tài nguyên học tập cho ${language.nativeName}` })).toBeVisible();
-    expect(screen.getByRole('heading', { name: `Không gian tương lai cho ${language.nativeName}` })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Kết nối việc học' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Từ vựng' })).toHaveAttribute('href', `/library?language=${language.code}&type=VOCABULARY`);
-    expect(screen.queryByRole('link', { name: /Cộng đồng/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cộng đồng' })).toHaveAttribute('href', `/community?languageCode=${language.code}`);
     expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
+});
+
+describe('Phase25 remaining surfaces', () => {
+ it('exposes real routes and explicit blockers while omitting even supplied aggregate values', async () => {
+ const api={getLanguage:vi.fn().mockResolvedValue(english),getOverview:vi.fn().mockResolvedValue({...overview,metrics:{learnerCount:{state:'AVAILABLE',value:999},contributorCount:{state:'AVAILABLE',value:999},resourceCount:{state:'AVAILABLE',value:999}}})};
+ renderPage(api); await screen.findByRole('heading',{name:'English'});
+ expect(screen.getByRole('link',{name:'Cộng đồng'})).toHaveAttribute('href','/community?languageCode=en');
+ expect(screen.getByRole('link',{name:'Hỏi đáp'})).toHaveAttribute('href','/community/ask/question');
+ expect(screen.getByRole('link',{name:'Trao đổi'})).toHaveAttribute('href','/exchange');
+ expect(screen.getByRole('link',{name:'Phát âm'})).toHaveAttribute('href',expect.stringContaining('#hub-pronunciation'));
+ expect(screen.getByText(/Chưa có nguồn âm thanh/)).toBeVisible();
+ expect(screen.getByText(/Chưa có nội dung bài tập/)).toBeVisible();
+ expect(screen.queryByText('999')).not.toBeInTheDocument();
+ expect(screen.queryByText('Chưa khả dụng')).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:/Sắp có/})).not.toBeInTheDocument();
+ });
+ it('localizes remaining Hub chrome and preserves the destination language limitation', async () => {
+ localStorage.setItem('congdongngonngu.ui-locale.v1','en');
+ const api={getLanguage:vi.fn().mockResolvedValue(english),getOverview:vi.fn().mockResolvedValue(overview)};
+ render(<UiLocaleProvider><MemoryRouter initialEntries={['/languages/english#hub-practice']}><Routes><Route path='/languages/:slug' element={<LanguageHubPage api={api}/>} /></Routes></MemoryRouter></UiLocaleProvider>);
+ await screen.findByRole('heading',{name:'English'});
+ expect(screen.getByRole('heading',{name:'Overview of English'})).toBeVisible();
+ expect(screen.getByText(/destination pages currently use Vietnamese/)).toBeVisible();
+ expect(screen.getByRole('link',{name:'Practice'})).toHaveAttribute('aria-current','location');
+ expect(screen.getByRole('heading',{name:'Practice'})).toHaveFocus();
+ expect(document.title).toBe('English — Language Hub | CongDongNgonNgu.vn');
+ expect(screen.queryByText('Sắp có')).not.toBeInTheDocument();
+ });
+});
+
+it('restores target focus when the current deferred link is activated again', async () => {
+ const api={getLanguage:vi.fn().mockResolvedValue(english),getOverview:vi.fn().mockResolvedValue(overview)};
+ renderPage(api,'/languages/english#hub-practice');
+ const heading=await screen.findByRole('heading',{name:'Luyện tập'});
+ expect(heading).toHaveFocus();
+ await userEvent.setup().click(screen.getByRole('link',{name:'Luyện tập'}));
+ expect(heading).toHaveFocus();
 });

@@ -49,6 +49,30 @@ try {
       report.screenshots.push(file);
       record(`${locale}-core-${width}`, geometry);
     }
+    const nav = page.getByRole('navigation', { name: locale === 'en' ? 'Language hub sections' : 'Các phần của không gian ngôn ngữ' });
+    assert.equal(await nav.getByRole('link').count(), 10);
+    assert.equal(await nav.getByRole('button').count(), 0);
+    assert.equal(await nav.getByRole('link', {name: locale === 'en' ? 'Community' : 'Cộng đồng', exact: true}).getAttribute('href'), '/community?languageCode=vi');
+    assert.equal(await nav.getByRole('link', {name: locale === 'en' ? 'Q&A' : 'Hỏi đáp', exact: true}).getAttribute('href'), '/community/ask/question');
+    assert.equal(await nav.getByRole('link', {name: locale === 'en' ? 'Exchange' : 'Trao đổi', exact: true}).getAttribute('href'), '/exchange');
+    assert.ok(!(await page.locator('main').innerText()).match(/Sắp có|Coming soon|Chưa khả dụng/));
+    for (const [key, name] of [['grammar', locale === 'en' ? 'Grammar' : 'Ngữ pháp'], ['pronunciation', locale === 'en' ? 'Pronunciation' : 'Phát âm'], ['practice', locale === 'en' ? 'Practice' : 'Luyện tập']]) {
+      const entry = nav.getByRole('link', {name, exact: true});
+      await entry.press('Enter');
+      const heading = page.locator('#hub-' + key);
+      assert.equal(await heading.evaluate(el => el === document.activeElement), true);
+      assert.equal(await entry.getAttribute('aria-current'), 'location');
+      await entry.press('Enter');
+      assert.equal(await heading.evaluate(el => el === document.activeElement), true);
+      record(locale + '-deferred-' + key + '-focus-repeat');
+    }
+    await page.goBack();
+    await page.waitForFunction(() => location.hash === '#hub-pronunciation' && document.activeElement?.id === 'hub-pronunciation');
+    await page.goBack();
+    await page.waitForFunction(() => location.hash === '#hub-grammar' && document.activeElement?.id === 'hub-grammar');
+    await page.goForward();
+    await page.waitForFunction(() => location.hash === '#hub-pronunciation' && document.activeElement?.id === 'hub-pronunciation');
+    record(locale + '-deferred-history-and-route-contracts');
     await page.getByRole('link', { name: locale === 'en' ? 'Open Vocabulary in Library' : 'Mở Từ vựng trong Thư viện' }).press('Enter');
     await page.getByRole('link', { name: /xin chào/ }).first().waitFor();
     assert.equal(new URL(page.url()).searchParams.get('language'), 'vi');
