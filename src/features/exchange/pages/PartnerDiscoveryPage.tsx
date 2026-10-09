@@ -167,6 +167,7 @@ export function PartnerDiscoveryPageView({ api, authenticated, authLoading = fal
           <p className={styles.heroDescription}>
             {t('exchange.browseIntro')}
           </p>
+          {authenticated && <Link to='/exchange/connections'>{t('exchange.connections.title')}</Link>}
         </div>
         <div className={styles.heroMark} aria-hidden='true'>
           <Icon name='arrow-left-right' size={24} />

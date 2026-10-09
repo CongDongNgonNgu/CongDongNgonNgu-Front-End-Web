@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import {
   createNotificationApi,
@@ -43,6 +43,12 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
   const { api: authApi, status, user } = useAuth();
   const notificationApi = useMemo(() => createNotificationApi(authApi), [authApi]);
   const active = enabled && status === 'authenticated' && Boolean(user);
+  const scope = useMemo(() => ({ owner: active ? user?.id : null, api: notificationApi }), [active, user?.id, notificationApi]);
+  const currentScope = useRef<typeof scope | null>(scope);
+  currentScope.current = scope;
+  const [dataScope, setDataScope] = useState(scope);
+  const listRequest = useRef(0);
+  const dataRevision = useRef(0);
   const [items, setItems] = useState<NotificationStreamItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState<NotificationFilter>('ALL');
@@ -55,71 +61,67 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
   const [preferencesSaving, setPreferencesSaving] = useState(false);
 
   const loadList = useCallback(async () => {
-    if (!active) return;
+    if (!active || currentScope.current !== scope) return;
+    const request = ++listRequest.current;
+    const revision = dataRevision.current;
     setLoading(true);
     try {
       const response = await notificationApi.list({ status: 'ALL', limit: 50 });
+      if (currentScope.current !== scope || request !== listRequest.current || revision !== dataRevision.current) return;
       setItems(response.items);
       setUnreadCount(response.unreadCount);
       setError(null);
     } catch {
+      if (currentScope.current !== scope || request !== listRequest.current || revision !== dataRevision.current) return;
       setError('Không thể tải thông báo lúc này. Vui lòng thử lại.');
     } finally {
-      setLoading(false);
+      if (currentScope.current === scope && request === listRequest.current) setLoading(false);
     }
-  }, [active, notificationApi]);
+  }, [active, notificationApi, scope]);
 
   const loadPreferences = useCallback(async () => {
-    if (!active) return;
+    if (!active || currentScope.current !== scope) return;
     setPreferencesLoading(true);
     try {
-      setPreferences(await notificationApi.getPreferences());
+      const response = await notificationApi.getPreferences();
+      if (currentScope.current === scope) setPreferences(response);
     } catch {
+      if (currentScope.current !== scope) return;
       setError('Không thể tải tùy chọn thông báo lúc này.');
     } finally {
-      setPreferencesLoading(false);
+      if (currentScope.current === scope) setPreferencesLoading(false);
     }
-  }, [active, notificationApi]);
+  }, [active, notificationApi, scope]);
 
   useEffect(() => {
+    currentScope.current = scope;
+    setDataScope(scope);
+    setItems([]);
+    setUnreadCount(0);
+    setPreferences(null);
+    setAnnouncement('');
+    setPreferencesSaving(false);
+    setError(null);
+    setConnectionStatus('idle');
     if (!active) {
       setItems([]);
       setUnreadCount(0);
       setPreferences(null);
       setError(null);
       setConnectionStatus('idle');
+      setLoading(false);
+      setPreferencesLoading(false);
       return;
     }
 
-    let cancelled = false;
-    setLoading(true);
-    setPreferencesLoading(true);
-    void Promise.allSettled([notificationApi.list({ status: 'ALL', limit: 50 }), notificationApi.getPreferences()])
-      .then(([listResult, preferenceResult]) => {
-        if (cancelled) return;
-        if (listResult.status === 'fulfilled') {
-          setItems(listResult.value.items);
-          setUnreadCount(listResult.value.unreadCount);
-        } else {
-          setError('Không thể tải thông báo lúc này. Vui lòng thử lại.');
-        }
-        if (preferenceResult.status === 'fulfilled') {
-          setPreferences(preferenceResult.value);
-        } else {
-          setError((current) => current ?? 'Không thể tải tùy chọn thông báo lúc này.');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-          setPreferencesLoading(false);
-        }
-      });
-
-    return () => { cancelled = true; };
-  }, [active, notificationApi]);
+    void loadList();
+    void loadPreferences();
+    return () => { if (currentScope.current === scope) currentScope.current = null; };
+  }, [active, loadList, loadPreferences, scope]);
 
   const handleIncoming = useCallback((notification: NotificationStreamItem) => {
+    if (!active || currentScope.current !== scope) return;
+    dataRevision.current++;
     setItems((current) => [notification, ...current.filter((item) => item.id !== notification.id)]);
     setUnreadCount((current) => {
       const existing = items.find((item) => item.id === notification.id);
@@ -127,7 +129,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       return current + 1;
     });
     setAnnouncement('Bạn có thông báo mới.');
-  }, [items]);
+  }, [active, items, scope]);
 
   const accessToken = active ? authApi.getAccessToken() ?? undefined : undefined;
   useNotificationStream(accessToken, {
@@ -138,27 +140,34 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
   });
 
   const markRead = useCallback(async (notificationId: string) => {
+    if (!active || currentScope.current !== scope) return;
     const current = items.find((item) => item.id === notificationId);
     if (!current || current.read) return;
+    dataRevision.current++;
     try {
       const response = await notificationApi.markRead(notificationId);
+      if (currentScope.current !== scope) return;
+      dataRevision.current++;
       setItems((existing) => existing.map((item) => item.id === notificationId
         ? { ...item, read: true, readAt: response.readAt }
         : item));
       setUnreadCount((count) => Math.max(0, count - 1));
     } catch {
+      if (currentScope.current !== scope) return;
       setError('Không thể cập nhật trạng thái thông báo.');
     }
-  }, [items, notificationApi]);
+  }, [active, items, notificationApi, scope]);
 
   const markAllRead = useCallback(async () => {
-    if (!active) return;
+    if (!active || currentScope.current !== scope) return;
+    dataRevision.current++;
     try {
       const ids = new Set(items.filter((item) => !item.read).map((item) => item.id));
       let cursor: string | undefined;
       const seenCursors = new Set<string>();
       for (let page = 0; page < 100; page += 1) {
         const response = await notificationApi.list({ status: 'UNREAD', limit: 50, cursor });
+        if (currentScope.current !== scope) return;
         response.items.forEach((item) => ids.add(item.id));
         if (!response.nextCursor) break;
         if (seenCursors.has(response.nextCursor)) throw new Error('Notification pagination repeated.');
@@ -171,29 +180,36 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       let remainingUnread = 0;
       for (let index = 0; index < notificationIds.length; index += 100) {
         const response = await notificationApi.markManyRead(notificationIds.slice(index, index + 100));
+        if (currentScope.current !== scope) return;
         remainingUnread = response.unreadCount;
       }
+      dataRevision.current++;
       setItems((existing) => existing.map((item) => notificationIds.includes(item.id)
         ? { ...item, read: true, readAt: item.readAt ?? new Date().toISOString() }
         : item));
       setUnreadCount(remainingUnread);
     } catch {
+      if (currentScope.current !== scope) return;
       setError('Không thể đánh dấu tất cả thông báo đã đọc.');
     }
-  }, [active, items, notificationApi]);
+  }, [active, items, notificationApi, scope]);
 
   const updatePreferences = useCallback(async (changes: readonly NotificationPreferenceChange[]) => {
+    if (!active || currentScope.current !== scope) return;
     setPreferencesSaving(true);
     try {
-      setPreferences(await notificationApi.updatePreferences(changes));
+      const response = await notificationApi.updatePreferences(changes);
+      if (currentScope.current !== scope) return;
+      setPreferences(response);
       setError(null);
     } catch {
+      if (currentScope.current !== scope) return;
       setError('Không thể lưu tùy chọn thông báo.');
       throw new Error('Notification preferences could not be saved.');
     } finally {
-      setPreferencesSaving(false);
+      if (currentScope.current === scope) setPreferencesSaving(false);
     }
-  }, [notificationApi]);
+  }, [active, notificationApi, scope]);
 
   const visibleItems = useMemo(
     () => items.filter((item) => filter === 'ALL'
@@ -203,9 +219,9 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
 
   const value = useMemo<NotificationCenterContextValue>(() => ({
     active,
-    items,
-    visibleItems,
-    unreadCount,
+    items: dataScope === scope ? items : [],
+    visibleItems: dataScope === scope ? visibleItems : [],
+    unreadCount: dataScope === scope ? unreadCount : 0,
     filter,
     setFilter,
     loading,
@@ -215,12 +231,12 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
     refresh: loadList,
     markRead,
     markAllRead,
-    preferences,
+    preferences: dataScope === scope ? preferences : null,
     preferencesLoading,
     preferencesSaving,
     reloadPreferences: loadPreferences,
     updatePreferences,
-  }), [active, announcement, connectionStatus, error, filter, items, loadList, loadPreferences, loading, markAllRead, markRead, preferences, preferencesLoading, preferencesSaving, unreadCount, updatePreferences, visibleItems]);
+  }), [active, announcement, connectionStatus, dataScope, scope, error, filter, items, loadList, loadPreferences, loading, markAllRead, markRead, preferences, preferencesLoading, preferencesSaving, unreadCount, updatePreferences, visibleItems]);
 
   return <NotificationCenterContext.Provider value={value}>{children}</NotificationCenterContext.Provider>;
 }

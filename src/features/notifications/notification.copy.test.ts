@@ -16,6 +16,25 @@ const baseNotification: NotificationStreamItem = {
 };
 
 describe('notification presentation', () => {
+  it.each(['vi', 'en'] as const)('distinguishes requested and accepted connections in %s without saved subjects', locale => {
+    const item: NotificationStreamItem = { ...baseNotification, category: 'EXCHANGE',
+      notificationType: 'BUDDY_REQUEST', actor: { kind: 'USER', displayName: 'Current learner', profilePath: null },
+      target: { kind: 'EXCHANGE_CONNECTION', path: '/exchange/connections' }, variables: { subject: 'Stale private text' } };
+    const requested = getNotificationPresentation(item, locale);
+    const connected = getNotificationPresentation({ ...item, notificationType: 'BUDDY_CONNECTED' }, locale);
+    expect(requested.title).toBe(locale === 'en' ? 'New study connection request' : 'Có yêu cầu kết nối học tập');
+    expect(connected.title).toBe(locale === 'en' ? 'Study connection accepted' : 'Kết nối học tập đã được chấp nhận');
+    expect(connected.description).toContain('Current learner');
+    expect(requested.description + connected.description).not.toContain('Stale private text');
+  });
+
+  it.each(['BUDDY_REQUEST', 'BUDDY_CONNECTED'])('uses generic unavailable copy for a redacted %s', notificationType => {
+    const copy = getNotificationPresentation({ ...baseNotification, notificationType, category: 'EXCHANGE', target: null }, 'en');
+    expect(copy.title).toBe('Connection notification unavailable');
+    expect(copy.description).not.toContain('Phiên đăng nhập');
+    expect(copy.targetLabel).toBeNull();
+  });
+
   it('renders a safe learner-facing projection without raw paths or IDs', () => {
     const presentation = getNotificationPresentation(baseNotification);
 

@@ -30,6 +30,7 @@ const CommunityCorrectionRequestPage = lazy(() => import('./features/community/p
 const CommunityQuestionRequestPage = lazy(() => import('./features/community/pages/CommunityQuestionRequestPage').then(({ CommunityQuestionRequestPage }) => ({ default: CommunityQuestionRequestPage })));
 const PartnerDiscoveryPage = lazy(() => import('./features/exchange/pages/PartnerDiscoveryPage').then(({ PartnerDiscoveryPage }) => ({ default: PartnerDiscoveryPage })));
 const BuddyProfilePreviewPage = lazy(() => import('./features/exchange/pages/BuddyProfilePreviewPage').then(({ BuddyProfilePreviewPage }) => ({ default: BuddyProfilePreviewPage })));
+const ConnectionsPage = lazy(() => import('./features/exchange/pages/ConnectionsPage').then(({ ConnectionsPage }) => ({ default: ConnectionsPage })));
 const AiConversationPage = lazy(() => import('./features/ai/conversation/pages/AiConversationPage').then(({ AiConversationPage }) => ({ default: AiConversationPage })));
 const AiCoachingPage = lazy(() => import('./features/ai/coaching/pages/AiCoachingPage').then(({ AiCoachingPage }) => ({ default: AiCoachingPage })));
 const MembershipPage = lazy(() => import('./features/membership/MembershipPage').then(({ MembershipPage }) => ({ default: MembershipPage })));
@@ -83,6 +84,7 @@ function RoutedApp() {
             <Route path='/community/ask/question' element={<CommunityQuestionRequestPage />} />
             <Route path='/community/posts/:postId' element={<CommunityPostDetailPage />} />
             <Route path='/exchange' element={<PartnerDiscoveryPage />} />
+            <Route path='/exchange/connections' element={<ConnectionsPage />} />
             <Route path='/exchange/profile/:userId' element={<BuddyProfilePreviewPage />} />
             <Route path='/membership' element={<MembershipPage />} />
             <Route path='/membership/checkout/:orderId' element={<MembershipPage />} />
