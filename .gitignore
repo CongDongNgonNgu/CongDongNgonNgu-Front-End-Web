@@ -12,3 +12,4 @@ pnpm-debug.log*
 *.log
 artifacts/member-locale*/
 artifacts/phase24/
+artifacts/phase25*/

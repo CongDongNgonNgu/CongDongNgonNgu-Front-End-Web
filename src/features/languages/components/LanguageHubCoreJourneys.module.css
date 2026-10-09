@@ -1,0 +1,9 @@
+﻿.surface { margin-top: var(--space-8); min-width: 0; }
+.surface h2 { color: var(--color-text-primary); font-size: clamp(1.5rem, 3vw, 2rem); }
+.surface p { color: var(--color-text-secondary); line-height: var(--leading-body); overflow-wrap: anywhere; }
+.surface a { color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); overflow-wrap: anywhere; }
+.surface a:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 4px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.item { min-width: 0; padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated); }
+.item h3 { margin: 0; color: var(--color-text-primary); }
+@media (max-width: 47.999rem) { .grid { grid-template-columns: 1fr; } }
