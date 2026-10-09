@@ -61,6 +61,45 @@ afterEach(() => {
 });
 
 describe('useNotificationStream', () => {
+  it('rejects the previous actor event during render before passive effect cleanup', () => {
+    connect.mockImplementation(() => new Promise<void>(() => undefined));
+    const receive = vi.fn();
+    const { rerender, unmount } = renderHook(({ owner }) => {
+      useNotificationStream('access-token', { onNotification: receive, onPoll: vi.fn(), userScope: owner });
+      if (owner === 'user-b') connect.mock.calls[0][0].onNotification(notification);
+    }, { initialProps: { owner: 'user-a' } });
+    rerender({ owner: 'user-b' });
+    expect(receive).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it('reconciles persisted notifications every 30 seconds while SSE stays connected', async () => {
+    vi.useFakeTimers();
+    connect.mockImplementation(options => { options.onConnected(); return new Promise<void>(() => undefined); });
+    const onPoll = vi.fn();
+    const { unmount } = renderHook(() => useNotificationStream('access-token', { onNotification: vi.fn(), onPoll, userScope: 'user-a' }));
+    await act(async () => { await Promise.resolve(); });
+    expect(onPoll).toHaveBeenCalledTimes(1);
+    await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
+    expect(onPoll).toHaveBeenCalledTimes(3);
+    unmount();
+    await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+    expect(onPoll).toHaveBeenCalledTimes(3);
+  });
+
+  it('discards a late event from a stream belonging to the previous account', () => {
+    connect.mockImplementation(() => new Promise<void>(() => undefined));
+    const receive = vi.fn();
+    const { rerender, unmount } = renderHook(({ owner }) => useNotificationStream('access-token', {
+      onNotification: receive, onPoll: vi.fn(), userScope: owner,
+    }), { initialProps: { owner: 'user-a' } });
+    const first = connect.mock.calls[0][0];
+    rerender({ owner: 'user-b' });
+    act(() => first.onNotification(notification));
+    expect(receive).not.toHaveBeenCalled();
+    unmount();
+  });
+
   it('falls back to polling with bounded reconnect backoff and cleans up on unmount', async () => {
     vi.useFakeTimers();
     connect

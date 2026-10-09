@@ -1,4 +1,5 @@
 import type { NotificationStreamItem } from './notification.types';
+import { translate, type UiLocale } from '../ui-locale/ui-locale';
 
 const CATEGORY_LABELS: Record<string, string> = {
   COMMUNITY: 'Cộng đồng',
@@ -29,7 +30,18 @@ export interface NotificationPresentation {
   readonly targetLabel: string | null;
 }
 
-export function getNotificationPresentation(item: NotificationStreamItem): NotificationPresentation {
+export function getNotificationPresentation(item: NotificationStreamItem, locale: UiLocale = 'vi'): NotificationPresentation {
+  if (item.notificationType === 'BUDDY_REQUEST' || item.notificationType === 'BUDDY_CONNECTED') {
+    const available = item.actor.kind === 'USER' && item.target?.kind === 'EXCHANGE_CONNECTION' && Boolean(item.target.path);
+    const actor = item.actor.kind === 'USER' ? item.actor.displayName : translate(locale, 'exchange.notices.actorHidden');
+    const connected = item.notificationType === 'BUDDY_CONNECTED';
+    return {
+      categoryLabel: translate(locale, 'exchange.notices.category'), actorLabel: actor,
+      title: translate(locale, available ? connected ? 'exchange.notices.connectedTitle' : 'exchange.notices.requestTitle' : 'exchange.notices.unavailableTitle'),
+      description: translate(locale, available ? connected ? 'exchange.notices.connectedDescription' : 'exchange.notices.requestDescription' : 'exchange.notices.unavailableDescription', { actor }),
+      targetLabel: available ? translate(locale, 'exchange.notices.target') : null,
+    };
+  }
   const actor = getActorLabel(item);
   const subject = getSafeVariable(item, ['subject', 'title', 'label', 'name']);
   const subjectSuffix = subject ? ` Chủ đề: “${subject}”.` : '';

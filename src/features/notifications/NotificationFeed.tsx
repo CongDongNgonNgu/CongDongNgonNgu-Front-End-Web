@@ -6,6 +6,7 @@ import {
   getNotificationPresentation,
 } from './notification.copy';
 import type { NotificationStreamItem } from './notification.types';
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import styles from './NotificationFeed.module.css';
 
 interface NotificationFeedProps {
@@ -43,7 +44,8 @@ export function NotificationFeed({ items, compact = false, onMarkRead, emptyMess
 }
 
 function NotificationRow({ item, onMarkRead }: { item: NotificationStreamItem; onMarkRead: NotificationFeedProps['onMarkRead'] }) {
-  const presentation = getNotificationPresentation(item);
+  const { locale } = useUiLocale();
+  const presentation = getNotificationPresentation(item, locale);
   const content = (
     <div className={styles.rowContent}>
       <div className={styles.rowMeta}>

@@ -1,4 +1,13 @@
 export const viExchange = {
+  'exchange.notices.category': 'Kết nối',
+  'exchange.notices.actorHidden': 'Thành viên đã ẩn',
+  'exchange.notices.target': 'kết nối học tập',
+  'exchange.notices.requestTitle': 'Có yêu cầu kết nối học tập',
+  'exchange.notices.requestDescription': '{actor} gửi một yêu cầu kết nối học tập.',
+  'exchange.notices.connectedTitle': 'Kết nối học tập đã được chấp nhận',
+  'exchange.notices.connectedDescription': '{actor} đã chấp nhận kết nối học tập với bạn.',
+  'exchange.notices.unavailableTitle': 'Thông báo kết nối không còn khả dụng',
+  'exchange.notices.unavailableDescription': 'Bạn không còn quyền xem thông báo kết nối này.',
   'exchange.connections.title': 'Bạn học của bạn',
   'exchange.connections.intro': 'Quản lý kết nối và lời mời học cùng nhau.',
   'exchange.connections.connected': 'Bạn học',
@@ -181,6 +190,15 @@ export const viExchange = {
 } as const;
 
 export const enExchange: Record<keyof typeof viExchange, string> = {
+  'exchange.notices.category': 'Connections',
+  'exchange.notices.actorHidden': 'Hidden member',
+  'exchange.notices.target': 'study connection',
+  'exchange.notices.requestTitle': 'New study connection request',
+  'exchange.notices.requestDescription': '{actor} sent you a study connection request.',
+  'exchange.notices.connectedTitle': 'Study connection accepted',
+  'exchange.notices.connectedDescription': '{actor} accepted your study connection.',
+  'exchange.notices.unavailableTitle': 'Connection notification unavailable',
+  'exchange.notices.unavailableDescription': 'You no longer have access to this connection notification.',
   'exchange.connections.title': 'Your study partners',
   'exchange.connections.intro': 'Manage your connections and study invitations.',
   'exchange.connections.connected': 'Study partners',
