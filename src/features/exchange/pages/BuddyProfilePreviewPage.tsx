@@ -12,6 +12,7 @@ import { Dialog, DropdownMenu } from '../../../components/ui/Overlays';
 import { Avatar, Badge } from '../../../components/ui/Surface';
 import { useAuth } from '../../auth/AuthProvider';
 import { ExchangeApi } from '../exchange-api';
+import { OpenConversationButton } from '../components/OpenConversationButton';
 import type {
   BuddyProfilePreview,
   BuddyProfilePreviewApi,
@@ -287,6 +288,7 @@ export function BuddyProfilePreviewPageView({
           {activeAction ? <p className={styles.liveMessage} role='status' aria-live='polite'>{t('exchange.relationshipLoading')}</p> : null}
           {actionMessage ? <p className={styles.successMessage} role='status' aria-live='polite'>{t(actionMessage)}</p> : null}
           {actionError ? <p className={styles.errorMessage} role='alert'>{t(actionError)}</p> : null}
+          {profile.relationship.state === 'CONNECTED' && <OpenConversationButton partnerUserId={userId}/>}
           <RelationshipActions
             relationship={profile.relationship}
             activeAction={activeAction}

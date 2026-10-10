@@ -1,0 +1,4 @@
+.composer { display: grid; gap: var(--space-3); padding: var(--space-4); border-top: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.composer textarea { min-height: 6rem; max-height: 12rem; field-sizing: content; line-height: var(--leading-body); }
+.composer button { justify-self: end; min-height: 2.75rem; }
+@media (max-width: 47.99rem) { .composer button { width: 100%; } }

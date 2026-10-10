@@ -1,0 +1,26 @@
+.page { width: min(var(--container-max), calc(100% - 2 * var(--gutter-desktop))); margin: var(--space-8) auto var(--space-16); color: var(--color-text-primary); }
+.header { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); }
+.header h1 { margin: 0; font-size: var(--font-size-2xl); line-height: 1.25; }
+.header p { margin: var(--space-2) 0 0; color: var(--color-text-secondary); }
+.link { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--color-brand-navy); font-weight: var(--font-weight-semibold); text-underline-offset: .2em; }
+.link:focus-visible, .row:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+.back { margin-bottom: var(--space-3); }
+.layout { display: grid; grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr); border: 1px solid var(--color-border); border-radius: var(--radius-surface); overflow: hidden; }
+.sidebar { min-width: 0; border-right: 1px solid var(--color-border); }
+.sidebar h2 { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); margin: 0; padding: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.list { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); min-height: 4.5rem; color: var(--color-text-primary); text-decoration: none; border-left: 3px solid transparent; }
+.row strong { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--font-size-sm); }
+.row:hover { background: var(--color-surface-muted); }
+.row[aria-current='page'] { background: var(--color-surface-active); border-left-color: var(--color-brand-navy); }
+.unread { flex-shrink: 0; padding: var(--space-1) var(--space-2); background: var(--color-brand-navy); color: var(--color-text-on-brand); border-radius: var(--radius-pill); font-size: var(--font-size-xs); }
+.feedback { padding: var(--space-4); margin: 0; color: var(--color-text-secondary); }
+.prompt { display: grid; place-items: center; min-height: 25rem; padding: var(--space-5); color: var(--color-text-secondary); }
+@media (max-width: 47.99rem) {
+  .page { width: calc(100% - 2 * var(--gutter-mobile)); margin-top: var(--space-4); }
+  .header { flex-direction: column; gap: 0; }
+  .header h1 { font-size: 1.75rem; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { border-right: 0; }
+  .selected .sidebar, .prompt { display: none; }
+}
