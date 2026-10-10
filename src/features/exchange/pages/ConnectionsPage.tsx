@@ -39,6 +39,7 @@ export function ConnectionsPageView({api,authenticated,authLoading=false,actorKe
     </header>
     {authLoading ? <p role='status'>{t('exchange.sessionLoading')}</p> : !authenticated ?
       <div><p>{t('exchange.connections.login')}</p><Link className={styles.link} to='/login?returnTo=%2Fexchange%2Fconnections'>{t('exchange.login')}</Link></div> : <>
+      <Link className={styles.link} to='/exchange/conversations'>{t('exchange.messaging.title')}</Link>
       <nav className={styles.tabs} aria-label={t('exchange.connections.title')}>
         {tabs.map(tab=><button type='button' key={tab.kind} aria-pressed={data.kind===tab.kind}
           disabled={!!data.busy} onClick={()=>{setRemoval(null);data.setKind(tab.kind as ConnectionListKind);}}>{t(tab.label)}</button>)}

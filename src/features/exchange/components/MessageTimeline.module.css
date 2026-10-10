@@ -1,0 +1,12 @@
+.viewport { flex: 1; min-height: 8rem; overflow-y: auto; overflow-anchor: none; padding: var(--space-5); }
+.viewport:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
+.messages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.message { max-width: 85%; width: fit-content; padding: var(--space-3) var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-muted); overflow-wrap: anywhere; }
+.message p { margin: 0 0 var(--space-2); white-space: pre-wrap; }
+.message time { display: block; color: var(--color-text-primary); font-size: var(--font-size-xs); }
+.own { align-self: flex-end; color: var(--color-text-on-brand); background: var(--color-brand-navy); border-color: var(--color-brand-navy); }
+.own time { color: var(--color-text-on-brand); }
+.speaker { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.older { display: flex; justify-content: center; margin-bottom: var(--space-4); }
+.empty { color: var(--color-text-secondary); }
+@media (max-width: 47.99rem) { .viewport { padding: var(--space-4); } .message { max-width: 93%; } }
