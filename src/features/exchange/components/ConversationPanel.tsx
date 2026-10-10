@@ -7,20 +7,22 @@ import { useMessageThread } from '../hooks/use-message-thread';
 import { useMessageComposer } from '../hooks/use-message-composer';
 import { useMessageStream } from '../hooks/use-message-stream';
 import { useVisibleMessageRead } from '../hooks/use-visible-message-read';
-import type { MessagingApiContract } from '../messaging.types';
+import { useMessageContexts } from '../hooks/use-message-contexts';
+import type { MessagingApiContract, MessageContextApi } from '../messaging.types';
 import { MessageComposer } from './MessageComposer';
 import { MessageTimeline } from './MessageTimeline';
 import styles from './ConversationPanel.module.css';
 
 type StreamOptions = Parameters<typeof useMessageStream>[0];
 export interface ConversationPanelProps {
-  api: MessagingApiContract; id: string; actor: string;
+  api: MessagingApiContract & Partial<MessageContextApi>; id: string; actor: string;
   streamAuth: StreamOptions['auth']; streamClient?: StreamOptions['client'];
   onConversationChange?: () => Promise<void>;
 }
 export function ConversationPanel({ api, id, actor, streamAuth, streamClient, onConversationChange }: ConversationPanelProps) {
   const { t } = useUiLocale();
   const thread = useMessageThread(api, id, actor);
+  const contextQueue = useMessageContexts(api, id, actor, thread.loading);
   const [atLatest, setAtLatest] = useState(true);
   useEffect(() => { if (thread.summary || thread.unavailable) void onConversationChange?.(); },
     [thread.summary?.changeVersion, thread.unavailable, onConversationChange]);
@@ -44,6 +46,7 @@ export function ConversationPanel({ api, id, actor, streamAuth, streamClient, on
       </header>
       {stream !== 'connected' && <p className={styles.status} role='status'>{t(stream === 'connecting' ? 'exchange.messaging.connecting' : stream === 'unavailable' ? 'exchange.messaging.unavailable' : 'exchange.messaging.reconnecting')}</p>}
       <MessageTimeline messages={thread.messages} actor={actor} partner={thread.summary.partner.displayName}
+        contextQueue={contextQueue}
         hasOlder={thread.hasOlder} loading={thread.loading} onLoadOlder={thread.loadOlder} onAtLatestChange={setAtLatest}/>
       <MessageComposer composer={composer} enabled={enabled} onSubmit={submit}/>
     </>}

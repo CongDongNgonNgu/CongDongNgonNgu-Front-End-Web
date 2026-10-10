@@ -87,6 +87,7 @@ export class MessageContextRefresh {
       while (this.queued.size && !this.abort.signal.aborted) {
         const id = this.queued.values().next().value!;
         this.queued.delete(id);const generation = this.generation;
+        const sink = this.sinks.get(id);
         this.attempted.set(id, generation);
         let card: MessageContextCard | null = null;
         try {
@@ -94,8 +95,8 @@ export class MessageContextRefresh {
           if (result.messageId === id) card = result.context;
         } catch { /* Failure leaves the card masked; never restore old data. */ }
         if (!this.abort.signal.aborted && generation === this.generation) {
-          if (card && this.sinks.has(id)) this.cards.set(id, card);
-          if (this.displayed.has(id)) this.sinks.get(id)?.(card ?? undefined);
+          if (card && sink && this.sinks.get(id) === sink) this.cards.set(id, card);
+          if (sink && this.sinks.get(id) === sink && this.displayed.has(id)) sink(card ?? undefined);
         }
         const pending = this.waiters.get(id) ?? [];
         const newer = pending.filter(waiter => waiter.generation > generation);

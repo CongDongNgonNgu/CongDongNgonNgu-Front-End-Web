@@ -8,6 +8,17 @@ const available: MessageContextCard = { availability: 'AVAILABLE', type: 'LIBRAR
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
 describe('serialized current message-card refresh', () => {
+  it('ignores a response for an unsubscribed card when the same ID is mounted again', async () => {
+    let finish!: (value: MessageContextProjection) => void;
+    const context = vi.fn().mockImplementationOnce(() => new Promise(done => { finish = done; }))
+      .mockResolvedValue({ messageId: 'a', context: { availability: 'UNAVAILABLE' } });
+    const queue = new MessageContextRefresh({ context }, 'room');
+    const unsubscribe = queue.watch('a', vi.fn());queue.visible('a', true);unsubscribe();
+    const fresh = vi.fn();queue.watch('a', fresh);queue.visible('a', true);
+    finish({ messageId: 'a', context: available });await flush();
+    expect(fresh).not.toHaveBeenCalledWith(available);
+    expect(fresh).toHaveBeenLastCalledWith({ availability: 'UNAVAILABLE' });queue.dispose();
+  });
   it('masks old and offscreen cards immediately, refreshes only visible cards and never restores on failure', async () => {
     const context = vi.fn(async (_room: string, messageId: string): Promise<MessageContextProjection> => ({ messageId, context: available }));
     const queue = new MessageContextRefresh({ context }, 'room');

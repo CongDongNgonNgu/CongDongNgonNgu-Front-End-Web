@@ -1,4 +1,9 @@
 export const viMessaging = {
+  'exchange.messaging.contextUnavailable': 'Nội dung không còn khả dụng',
+  'exchange.messaging.contextChecking': 'Đang kiểm tra nội dung…',
+  'exchange.messaging.contextOpen': 'Mở nội dung',
+  'exchange.messaging.contextDiscussion': 'Thảo luận',
+  'exchange.messaging.contextQuestion': 'Câu hỏi',
   'exchange.messaging.title': 'Tin nhắn',
   'exchange.messaging.intro': 'Trao đổi cùng bạn học đã kết nối.',
   'exchange.messaging.connections': 'Bạn học của bạn',
@@ -33,6 +38,11 @@ export const viMessaging = {
 } as const;
 
 export const enMessaging: Record<keyof typeof viMessaging, string> = {
+  'exchange.messaging.contextUnavailable': 'Content is no longer available',
+  'exchange.messaging.contextChecking': 'Checking content…',
+  'exchange.messaging.contextOpen': 'Open content',
+  'exchange.messaging.contextDiscussion': 'Discussion',
+  'exchange.messaging.contextQuestion': 'Question',
   'exchange.messaging.title': 'Messages',
   'exchange.messaging.intro': 'Keep learning with your connected partners.',
   'exchange.messaging.connections': 'Your learning partners',
