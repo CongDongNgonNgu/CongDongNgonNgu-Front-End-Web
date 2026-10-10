@@ -1,12 +1,12 @@
 import type { AuthApi } from '../auth/auth-api';
 import type { DirectConversationPage, DirectConversationSummary, DirectMessage, MessageHistoryInput,
-  MessageHistoryPage, MessagingApiContract, SendMessageInput } from './messaging.types';
+  MessageHistoryPage, MessageContextApi, MessageContextProjection, MessagingApiContract, SendMessageInput } from './messaging.types';
 
 const root = '/exchange/conversations';
 const path = (id: string) => root + '/' + encodeURIComponent(id);
 const cancellation = (signal?: AbortSignal): RequestInit => signal ? { signal } : {};
 
-export class MessagingApi implements MessagingApiContract {
+export class MessagingApi implements MessagingApiContract, MessageContextApi {
   constructor(private readonly auth: Pick<AuthApi, 'requestProtected'>) {}
 
   open(partnerUserId: string, signal?: AbortSignal): Promise<DirectConversationSummary> {
@@ -29,7 +29,11 @@ export class MessagingApi implements MessagingApiContract {
   send(id: string, input: SendMessageInput, signal?: AbortSignal): Promise<DirectMessage> {
     // Construct the allowed body explicitly: sender and sequence are server-owned.
     return this.auth.requestProtected(path(id) + '/messages', { ...cancellation(signal), method: 'POST',
-      body: JSON.stringify({ clientMessageId: input.clientMessageId, text: input.text }) });
+      body: JSON.stringify({ clientMessageId: input.clientMessageId, text: input.text,
+        contextType: input.contextType, contextId: input.contextId }) });
+  }
+  context(id: string, messageId: string, signal?: AbortSignal): Promise<MessageContextProjection> {
+    return this.auth.requestProtected(path(id) + '/messages/' + encodeURIComponent(messageId) + '/context', cancellation(signal));
   }
   async markRead(id: string, sequence: string, signal?: AbortSignal): Promise<void> {
     await this.auth.requestProtected(path(id) + '/read', { ...cancellation(signal), method: 'POST', body: JSON.stringify({ sequence }) });

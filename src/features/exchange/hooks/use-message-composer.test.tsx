@@ -5,7 +5,7 @@ import type { DirectMessage, SendMessageInput } from '../messaging.types';
 import { useMessageComposer } from './use-message-composer';
 
 const response = (input: SendMessageInput): DirectMessage => ({ id: 'persisted', conversationId: 'room',
-  senderUserId: 'A', sequence: '9007199254740993', ...input, createdAt: '2026-10-10T00:00:00.000Z' });
+  senderUserId: 'A', sequence: '9007199254740993', ...input, text: input.text ?? '', createdAt: '2026-10-10T00:00:00.000Z' });
 
 describe('owned idempotent message composer', () => {
   it('reuses the same client ID and normalized text after an ambiguous network failure', async () => {
