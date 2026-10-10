@@ -1,4 +1,5 @@
 export const viMessaging = {
+  'exchange.messaging.shareWithPartner': 'Chia sẻ với bạn học',
   'exchange.messaging.shareTitle': 'Chia sẻ nội dung',
   'exchange.messaging.shareIntro': 'Chọn bạn học đã kết nối để cùng trao đổi về nội dung này.',
   'exchange.messaging.sharePartner': 'Bạn học đã kết nối',
@@ -48,6 +49,7 @@ export const viMessaging = {
 } as const;
 
 export const enMessaging: Record<keyof typeof viMessaging, string> = {
+  'exchange.messaging.shareWithPartner': 'Share with a learning partner',
   'exchange.messaging.shareTitle': 'Share content',
   'exchange.messaging.shareIntro': 'Choose a connected learning partner to discuss this content together.',
   'exchange.messaging.sharePartner': 'Connected learning partner',

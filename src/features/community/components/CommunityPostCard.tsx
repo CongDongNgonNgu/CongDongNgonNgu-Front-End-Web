@@ -11,6 +11,7 @@ import type {
   CommunityShareResponse,
 } from '../community.types';
 import { COMMUNITY_POST_TYPE_LABELS } from '../community.constants';
+import { ShareContextButton } from '../../exchange/components/ShareContextButton';
 import { CommunityReportDialog, type CommunityReportApiPort } from './CommunityReportDialog';
 import styles from './CommunityPostCard.module.css';
 
@@ -176,6 +177,8 @@ export function CommunityPostCard({
             <span>{post.commentCount} bình luận</span>
           </div>
           <div className={styles.actions} aria-label='Hành động bài viết'>
+            {post.visibility === 'PUBLIC' && post.isShareable && ['DISCUSSION', 'QUESTION'].includes(post.postType)
+              ? <ShareContextButton reference={{ type: 'COMMUNITY_POST', id: post.id }}/> : null}
             <Button
               variant='quiet'
               size='sm'

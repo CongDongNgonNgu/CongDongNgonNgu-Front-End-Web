@@ -21,11 +21,16 @@ function fixture() {
 }
 function Location() { return <output data-testid='location'>{useLocation().pathname}</output>; }
 describe('native context share dialog', () => {
+  it('isolates native dialog controls from Community host descendant styles', async () => {
+    render(<MemoryRouter><section className='community-detail'><ShareContextDialog open actor='A' api={fixture()} reference={reference} onClose={vi.fn()}/></section></MemoryRouter>);
+    expect(screen.getByRole('dialog').closest('.community-detail')).toBeNull();
+    await screen.findByRole('option', { name: partner.displayName });
+  });
   it('labels connected partner and optional note, escapes names and offers the stable conversation after context-only success', async () => {
     const api = fixture();const onClose = vi.fn();
-    const view = render(<MemoryRouter><ShareContextDialog open actor='A' api={api} reference={reference} onClose={onClose}/><Location/></MemoryRouter>);
+    render(<MemoryRouter><ShareContextDialog open actor='A' api={api} reference={reference} onClose={onClose}/><Location/></MemoryRouter>);
     expect(screen.getByRole('dialog', { name: 'Chia sẻ nội dung' })).toHaveAttribute('aria-modal', 'true');
-    await screen.findByRole('option', { name: partner.displayName });expect(view.container.querySelector('img')).toBeNull();
+    await screen.findByRole('option', { name: partner.displayName });expect(document.querySelector('[role="dialog"] img')).toBeNull();
     await userEvent.selectOptions(screen.getByRole('combobox', { name: /Bạn học đã kết nối/ }), 'B');
     expect(screen.getByLabelText('Ghi chú (không bắt buộc)')).toHaveValue('');
     await userEvent.click(screen.getByRole('button', { name: 'Gửi nội dung' }));

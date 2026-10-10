@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { Button } from '../../../components/ui/Button';
 import { SelectControl, Textarea } from '../../../components/ui/FormControls';
 import { Dialog } from '../../../components/ui/Overlays';
@@ -10,7 +11,7 @@ import styles from './ShareContextDialog.module.css';
 
 interface Props { open: boolean; actor?: string; api: ContextShareApi; reference: ShareReference; onClose: () => void }
 export function ShareContextDialog(props: Props) {
-  return props.open && props.actor ? <OpenShareContextDialog {...props}/> : null;
+  return props.open && props.actor ? createPortal(<OpenShareContextDialog {...props}/>, document.body) : null;
 }
 function OpenShareContextDialog({ actor, api, reference, onClose }: Props) {
   const { t } = useUiLocale();const navigate = useNavigate();

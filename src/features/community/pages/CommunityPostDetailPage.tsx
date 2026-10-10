@@ -11,6 +11,7 @@ import { communityApi } from '../api/community-api';
 import { correctionsApi } from '../api/corrections-api';
 import type { CommunityComposerApiPort } from '../components/CommunityComposer';
 import type { CommunityPostActionsApi } from '../components/CommunityPostCard';
+import { ShareContextButton } from '../../exchange/components/ShareContextButton';
 import { StructuredResponseExperience } from '../components/StructuredResponseExperience';
 import './CommunityPostDetailPage.css';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -924,6 +925,8 @@ export function CommunityPostDetailPageView({
             <p className="community-detail__content">{post.content}</p>
 
             <div className="community-detail__post-actions" aria-label="Thao tác bài viết">
+              {post.visibility === 'PUBLIC' && post.isShareable && ['DISCUSSION', 'QUESTION'].includes(post.postType)
+                ? <ShareContextButton reference={{ type: 'COMMUNITY_POST', id: post.id }}/> : null}
               <button
                 type="button"
                 onClick={() => void handlePostAction('helpful')}
