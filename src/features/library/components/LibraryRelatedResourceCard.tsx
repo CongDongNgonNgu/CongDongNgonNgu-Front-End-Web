@@ -3,6 +3,7 @@ import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import type { LibraryRelatedPage } from '../library.types';
 import { contentLanguage, resourceTypeLabelKeys } from '../library.presentation';
 import { LibraryAttributionList } from './LibraryAttributionList';
+import { ShareContextButton } from '../../exchange/components/ShareContextButton';
 import styles from './LibraryRelatedResourceCard.module.css';
 
 export const relationLabelKeys = {
@@ -32,5 +33,6 @@ export function LibraryRelatedResourceCard({ item }: { item: LibraryRelatedPage[
     {excerpt ? <p className={styles.excerpt} dir='auto' lang={d.resourceType === 'TRANSLATION' ? contentLanguage(resource.secondaryLanguageCode) : undefined}>{excerpt}</p> : null}
     <p className={styles.meta}><span>{t(resourceTypeLabelKeys[resource.resourceType])}</span><span>{t('library.verified')}</span><span>{resource.primaryLanguageCode.toUpperCase()}{resource.secondaryLanguageCode ? ` · ${resource.secondaryLanguageCode.toUpperCase()}` : ''}</span>{resource.cefrLevel ? <span>CEFR {resource.cefrLevel}</span> : null}</p>
     <LibraryAttributionList entries={resource.provenance} compact />
+    <ShareContextButton reference={{ type: 'LIBRARY_RESOURCE', id: resource.id }}/>
   </article>;
 }

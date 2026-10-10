@@ -7,6 +7,15 @@ const message = (id: string, sequence: string, conversationId = 'room'): DirectM
   text: 'hello', createdAt: '2026-10-10T00:00:00.000Z',
 });
 describe('message reconciliation', () => {
+  it('replaces mutable context cards with fresh authorization results without retaining preview metadata', () => {
+    const original = { ...message('a', '1'), context: { availability: 'AVAILABLE' as const,
+      type: 'LIBRARY_RESOURCE' as const, id: 'resource', category: 'VOCABULARY' as const,
+      languageCode: 'en', previewText: 'Old preview', canonicalPath: '/library/resource' } };
+    const revoked = { ...message('a', '1'), context: { availability: 'UNAVAILABLE' as const } };
+    expect(mergeMessages('room', [original], [revoked])).toEqual([revoked]);
+    expect(JSON.stringify(mergeMessages('room', [original], [revoked]))).not.toContain('Old preview');
+    expect(() => mergeMessages('room', [original], [{ ...original, context: { ...original.context, id: 'other' } }])).toThrow();
+  });
   it('deduplicates retries/history and orders exact bigint sequences without rounding', () => {
     const older = message('a', '9007199254740992');
     const newer = message('b', '9007199254740993');

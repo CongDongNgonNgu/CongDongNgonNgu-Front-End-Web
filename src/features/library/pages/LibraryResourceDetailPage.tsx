@@ -6,6 +6,7 @@ import { Icon } from '../../../components/ui/Icon/Icon';
 import { LibraryRelatedResources } from '../components/LibraryRelatedResources';
 import type { LibraryRelatedApiPort } from '../library.types';
 import { LibraryAttributionList } from '../components/LibraryAttributionList';
+import { ShareContextButton } from '../../exchange/components/ShareContextButton';
 import { LibraryLearnFromResourcePanel } from '../components/LibraryLearnFromResourcePanel';
 import { libraryApi } from '../library.api';
 import type { LibraryPublicResource, LibraryResourceDetails } from '../library.types';
@@ -71,6 +72,7 @@ function ResourceDetail({ resource }: { resource: LibraryPublicResource }) {
           </div>
           <h1 lang={contentLanguage(resource.primaryLanguageCode)} dir='auto'>{title}</h1>
           <p className={styles.lede} dir='auto'>{getResourceLede(resource.details, t)}</p>
+          <ShareContextButton reference={{ type: 'LIBRARY_RESOURCE', id: resource.id }}/>
         </div>
         <aside className={styles.metaRail} aria-label={t('library.metadata')}>
           <span className={styles.metaLabel}>{t('library.publicResource')}</span>

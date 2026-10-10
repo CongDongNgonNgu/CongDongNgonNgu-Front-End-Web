@@ -14,7 +14,8 @@ export function normalizeDraft(input: string): string {
   return text;
 }
 
-// Immutable persisted messages may arrive repeatedly through send/history/catch-up.
+// Persisted message identity is immutable; live context cards can be revoked or
+// edited. Always replace their projection with the newest authorized response.
 // Reject conflicting projections rather than displaying uncertain private data.
 export function mergeMessages(conversationId: string, previous: readonly DirectMessage[], incoming: readonly DirectMessage[]): DirectMessage[] {
   const byId = new Map<string, DirectMessage>();
@@ -24,6 +25,9 @@ export function mergeMessages(conversationId: string, previous: readonly DirectM
       throw new Error('Message does not belong to this conversation');
     const sameSequenceId = bySequence.get(message.sequence);
     const existing = byId.get(message.id);
+    if (existing?.context?.availability === 'AVAILABLE' && message.context?.availability === 'AVAILABLE'
+      && (existing.context.type !== message.context.type || existing.context.id !== message.context.id))
+      throw new Error('Conflicting message context identity');
     if ((sameSequenceId && sameSequenceId !== message.id) || (existing && (
       existing.sequence !== message.sequence || existing.senderUserId !== message.senderUserId ||
       existing.clientMessageId !== message.clientMessageId || existing.text !== message.text ||

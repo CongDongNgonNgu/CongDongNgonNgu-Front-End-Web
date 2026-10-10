@@ -2,6 +2,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { MessagingApi } from './messaging-api';
 
 describe('MessagingApi protected contract', () => {
+  it('refreshes a message-scoped context through protected transport with cancellation', async () => {
+    const requestProtected = vi.fn().mockResolvedValue({ messageId: 'message/2', context: { availability: 'UNAVAILABLE' } });
+    const api = new MessagingApi({ requestProtected });
+    const signal = new AbortController().signal;
+    expect(await api.context('room/1', 'message/2', signal))
+      .toEqual({ messageId: 'message/2', context: { availability: 'UNAVAILABLE' } });
+    expect(requestProtected).toHaveBeenCalledWith('/exchange/conversations/room%2F1/messages/message%2F2/context', { signal });
+  });
+  it('sends only canonical context reference fields and optional note, never presentation metadata', async () => {
+    const requestProtected = vi.fn().mockResolvedValue({});
+    const api = new MessagingApi({ requestProtected });
+    const input = { clientMessageId: 'stable-context-id', contextType: 'LIBRARY_RESOURCE' as const,
+      contextId: 'eb52692c-752c-4627-aa43-745927171d6a', previewText: 'forged', canonicalPath: 'https://evil.invalid' };
+    await api.send('room', input);
+    expect(JSON.parse(requestProtected.mock.calls[0][1].body)).toEqual({
+      clientMessageId: input.clientMessageId, contextType: input.contextType, contextId: input.contextId,
+    });
+  });
   it('encodes paths/cursors and leaves sequence strings and actor ownership intact', async () => {
     const requestProtected = vi.fn().mockResolvedValue({});
     const api = new MessagingApi({ requestProtected });

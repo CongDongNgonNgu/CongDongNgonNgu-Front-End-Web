@@ -7,12 +7,12 @@ import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useConversations } from '../hooks/use-conversations';
 import { MessagingApi } from '../messaging-api';
 import { parseMessageSequence } from '../messaging-state';
-import type { MessagingApiContract } from '../messaging.types';
+import type { MessagingApiContract, MessageContextApi } from '../messaging.types';
 import { ConversationPanel, type ConversationPanelProps } from '../components/ConversationPanel';
 import styles from './MessagesPage.module.css';
 
 interface Props {
-  api: MessagingApiContract; actor?: string; authLoading?: boolean; conversationId?: string;
+  api: MessagingApiContract & Partial<MessageContextApi>; actor?: string; authLoading?: boolean; conversationId?: string;
   streamAuth: ConversationPanelProps['streamAuth']; streamClient?: ConversationPanelProps['streamClient'];
 }
 export function MessagesPage() {
