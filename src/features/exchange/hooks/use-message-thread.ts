@@ -10,8 +10,9 @@ interface ThreadState {
   error: boolean;
   unavailable: boolean;
   hasOlder: boolean;
+  readThroughSequence: string;
 }
-const empty = (): ThreadState => ({ summary: null, messages: [], loading: false, error: false, unavailable: false, hasOlder: false });
+const empty = (): ThreadState => ({ summary: null, messages: [], loading: false, error: false, unavailable: false, hasOlder: false, readThroughSequence: '0' });
 interface Scope {
   api: MessagingApiContract;
   id: string;
@@ -64,7 +65,10 @@ export function useMessageThread(api: MessagingApiContract, id: string, actor?: 
           throw new Error('History cursor did not advance');
         if (boundary === null) before = page.nextCursor;
         after = page.afterCursor;
-        publish({ summary, messages, error: false, unavailable: false, hasOlder: before !== null });
+        const pageTail = page.items[page.items.length - 1]?.sequence ?? state.readThroughSequence;
+        const readThroughSequence = parseMessageSequence(pageTail) > parseMessageSequence(state.readThroughSequence)
+          ? pageTail : state.readThroughSequence;
+        publish({ summary, messages, readThroughSequence, error: false, unavailable: false, hasOlder: before !== null });
         // Initial/latest history is backwards-paged; its nextCursor belongs to
         // loadOlder, not forward catch-up.
         if (boundary === null || page.nextCursor === null) break;

@@ -74,10 +74,12 @@ describe('owned message history and reconciliation', () => {
     const view = renderHook(() => useMessageThread(source, 'room', 'actor'));
     await waitFor(() => expect(view.result.current.messages).toHaveLength(1));
     act(() => view.result.current.acceptSent(message('3')));
+    expect(view.result.current.readThroughSequence).toBe('1');
     vi.mocked(source.history).mockResolvedValueOnce(page(['2', '3'], 'tail3'));
     await act(() => view.result.current.reconcile());
     expect(vi.mocked(source.history).mock.calls[1][1]).toEqual({ after: 'tail', limit: 50 });
     expect(view.result.current.messages.map(item => item.sequence)).toEqual(['1', '2', '3']);
+    expect(view.result.current.readThroughSequence).toBe('3');
   });
   it('rejects a nonprogressing catch-up cursor instead of polling endlessly', async () => {
     const source = api();
