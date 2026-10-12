@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type RefObject } from "react";
 import { Dialog } from "../../../components/ui/Overlays";
 import { Button } from "../../../components/ui/Button";
 import { TextInput } from "../../../components/ui/FormControls";
@@ -9,10 +9,12 @@ export function IssuedInvitationDialog({
   invite,
   groupId,
   onClose,
+  returnFocusRef,
 }: {
   invite: IssuedInvite;
   groupId: string;
   onClose: () => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }) {
   const { t, formatDate } = useUiLocale();
   const [message, setMessage] = useState("");
@@ -35,6 +37,7 @@ export function IssuedInvitationDialog({
       closeLabel={t("groups.close")}
       description={t("groups.rawHelp")}
       onClose={onClose}
+      returnFocusRef={returnFocusRef}
     >
       <div className={styles.content}>
         <TextInput label={t("groups.groupId")} value={groupId} readOnly />

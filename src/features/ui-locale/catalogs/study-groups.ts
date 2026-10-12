@@ -1,4 +1,12 @@
 export const viStudyGroups = {
+  "groups.connectedInvite": "Mời bạn đã kết nối",
+  "groups.connectedInviteHelp": "Chọn một bạn đã kết nối để tạo mã mời cho nhóm này.",
+  "groups.connectedInviteNote": "Mã chỉ hiển thị một lần. Sao chép và chia sẻ ngoài cuộc trò chuyện cùng mã nhóm để người nhận chấp nhận thủ công. Tạo mã không tự thêm thành viên.",
+  "groups.connectedPartners": "Bạn đã kết nối",
+  "groups.connected": "Đã kết nối",
+  "groups.noConnectedPartners": "Chưa có bạn đã kết nối.",
+  "groups.loadMorePartners": "Tải thêm bạn",
+  "groups.createConnectedInvite": "Tạo mã mời cho bạn",
   "groups.targetMember": "Thành viên được chọn: {name}",
   "groups.targetGroup": "Nhóm được chọn: {name}",
   "groups.title": "Nhóm học của tôi",
@@ -89,6 +97,14 @@ export const viStudyGroups = {
   "groups.reasonBound": "Tối đa 500 ký tự.",
 } as const;
 export const enStudyGroups: Record<keyof typeof viStudyGroups, string> = {
+  "groups.connectedInvite": "Invite a connected partner",
+  "groups.connectedInviteHelp": "Choose a connected partner to create an invitation for this group.",
+  "groups.connectedInviteNote": "The code is shown once. Copy and share it outside chat with the group ID for manual acceptance. Creating a code does not add a member.",
+  "groups.connectedPartners": "Connected partners",
+  "groups.connected": "Connected",
+  "groups.noConnectedPartners": "No connected partners yet.",
+  "groups.loadMorePartners": "Load more partners",
+  "groups.createConnectedInvite": "Create invitation code",
   "groups.targetMember": "Selected member: {name}",
   "groups.targetGroup": "Selected group: {name}",
   "groups.title": "My study groups",

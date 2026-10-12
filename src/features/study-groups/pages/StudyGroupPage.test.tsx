@@ -7,9 +7,27 @@ import { StudyGroupsApi } from "../study-groups.api";
 import { ApiClientError } from "../../../services/api-client";
 import { UiLocaleProvider } from "../../ui-locale/UiLocaleProvider";
 import type { GroupRole } from "../study-groups.types";
+import type { ConnectionListApi } from "../../exchange/exchange.types";
 afterEach(() => {
   cleanup();
   localStorage.clear();
+});
+it('offers the connected invitation flow for the current owned group', async () => {
+  const api = fake();
+  const listConnections = vi.fn().mockResolvedValue({ items: [{ connectionId: 'pair', targetUserId: 'partner', displayName: 'Connected Partner', state: 'CONNECTED', updatedAt: '' }], nextCursor: null });
+  view(api, 'OWNER', { listConnections });
+  await userEvent.click(await screen.findByRole('button', { name: 'Invite a connected partner' }));
+  await userEvent.click(await screen.findByRole('radio', { name: /Connected Partner/ }));
+  await userEvent.click(screen.getByRole('button', { name: 'Create invitation code' }));
+  await screen.findByDisplayValue('connected-secret');
+  expect(api.issueConnectedPartner).toHaveBeenCalledWith('g', 'partner');
+  expect(api.issue).not.toHaveBeenCalled();
+});
+it('does not offer connected invitations to a group member', async () => {
+  const listConnections = vi.fn(); view(fake('MEMBER'), 'MEMBER', { listConnections });
+  await screen.findByRole('heading', { name: 'Synthetic group' });
+  expect(screen.queryByRole('button', { name: 'Invite a connected partner' })).not.toBeInTheDocument();
+  expect(listConnections).not.toHaveBeenCalled();
 });
 const page = (items: unknown[]) => ({
   items,
@@ -71,6 +89,7 @@ function fake(role: GroupRole = "OWNER") {
       token: "synthetic-secret",
       expiresAt: "2026-10-08",
     }),
+    issueConnectedPartner: vi.fn().mockResolvedValue({ id: "connected-i", token: "connected-secret", expiresAt: "2030-01-01T00:00:00Z" }),
     transfer: vi.fn().mockResolvedValue({}),
     leave: vi.fn().mockResolvedValue({ left: true }),
     archive: vi.fn().mockResolvedValue({ archived: true }),
@@ -83,7 +102,7 @@ function fake(role: GroupRole = "OWNER") {
     write: vi.fn().mockResolvedValue({}),
   };
 }
-function view(api: ReturnType<typeof fake>, role: GroupRole = "OWNER") {
+function view(api: ReturnType<typeof fake>, role: GroupRole = "OWNER", connectionsApi?: Pick<ConnectionListApi, 'listConnections'>) {
   localStorage.setItem("congdongngonngu.ui-locale.v1", "en");
   return render(
     <UiLocaleProvider>
@@ -94,6 +113,7 @@ function view(api: ReturnType<typeof fake>, role: GroupRole = "OWNER") {
             element={
               <StudyGroupPageView
                 api={api as unknown as StudyGroupsApi}
+                connectionsApi={connectionsApi}
                 groupId="g"
                 userId={role === "OWNER" ? "o" : "u"}
                 authenticated
