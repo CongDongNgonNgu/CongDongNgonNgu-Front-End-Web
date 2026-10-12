@@ -1,5 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useAuth } from '../auth/AuthProvider';
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
+import { translate, type UiLocale } from '../ui-locale/ui-locale';
+import { getNotificationCategoryLabel } from './notification.copy';
 import {
   createNotificationApi,
   type NotificationApi,
@@ -40,6 +43,7 @@ interface NotificationCenterContextValue {
 const NotificationCenterContext = createContext<NotificationCenterContextValue | null>(null);
 
 export function NotificationCenterProvider({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
+  const { locale } = useUiLocale();
   const { api: authApi, status, user } = useAuth();
   const notificationApi = useMemo(() => createNotificationApi(authApi), [authApi]);
   const active = enabled && status === 'authenticated' && Boolean(user);
@@ -73,7 +77,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       setError(null);
     } catch {
       if (currentScope.current !== scope || request !== listRequest.current || revision !== dataRevision.current) return;
-      setError('Không thể tải thông báo lúc này. Vui lòng thử lại.');
+      setError('exchange.notifications.errorLoad');
     } finally {
       if (currentScope.current === scope && request === listRequest.current) setLoading(false);
     }
@@ -87,7 +91,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       if (currentScope.current === scope) setPreferences(response);
     } catch {
       if (currentScope.current !== scope) return;
-      setError('Không thể tải tùy chọn thông báo lúc này.');
+      setError('exchange.notifications.errorPreferencesLoad');
     } finally {
       if (currentScope.current === scope) setPreferencesLoading(false);
     }
@@ -128,7 +132,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       if (notification.read || existing?.read === false) return current;
       return current + 1;
     });
-    setAnnouncement('Bạn có thông báo mới.');
+    setAnnouncement('exchange.notifications.announcement');
   }, [active, items, scope]);
 
   const accessToken = active ? authApi.getAccessToken() ?? undefined : undefined;
@@ -154,7 +158,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       setUnreadCount((count) => Math.max(0, count - 1));
     } catch {
       if (currentScope.current !== scope) return;
-      setError('Không thể cập nhật trạng thái thông báo.');
+      setError('exchange.notifications.errorRead');
     }
   }, [active, items, notificationApi, scope]);
 
@@ -190,7 +194,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       setUnreadCount(remainingUnread);
     } catch {
       if (currentScope.current !== scope) return;
-      setError('Không thể đánh dấu tất cả thông báo đã đọc.');
+      setError('exchange.notifications.errorReadAll');
     }
   }, [active, items, notificationApi, scope]);
 
@@ -204,7 +208,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
       setError(null);
     } catch {
       if (currentScope.current !== scope) return;
-      setError('Không thể lưu tùy chọn thông báo.');
+      setError('exchange.notifications.errorSave');
       throw new Error('Notification preferences could not be saved.');
     } finally {
       if (currentScope.current === scope) setPreferencesSaving(false);
@@ -225,9 +229,9 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
     filter,
     setFilter,
     loading,
-    error,
+    error: error ? translate(locale, error) : null,
     connectionStatus,
-    announcement,
+    announcement: announcement ? translate(locale, announcement) : '',
     refresh: loadList,
     markRead,
     markAllRead,
@@ -236,7 +240,7 @@ export function NotificationCenterProvider({ children, enabled = true }: { child
     preferencesSaving,
     reloadPreferences: loadPreferences,
     updatePreferences,
-  }), [active, announcement, connectionStatus, dataScope, scope, error, filter, items, loadList, loadPreferences, loading, markAllRead, markRead, preferences, preferencesLoading, preferencesSaving, unreadCount, updatePreferences, visibleItems]);
+  }), [active, announcement, connectionStatus, dataScope, scope, error, filter, items, loadList, loadPreferences, loading, markAllRead, markRead, preferences, preferencesLoading, preferencesSaving, unreadCount, updatePreferences, visibleItems, locale]);
 
   return <NotificationCenterContext.Provider value={value}>{children}</NotificationCenterContext.Provider>;
 }
@@ -257,22 +261,11 @@ export function getPreferenceChangeMatrix(
   return preferences.map(({ category, channel, enabled }) => ({ category, channel, enabled }));
 }
 
-export function getPreferenceLabel(preference: NotificationPreferenceItem): string {
-  const category = {
-    COMMUNITY: 'Cộng đồng',
-    CORRECTIONS: 'Hiệu đính',
-    EXCHANGE: 'Kết nối học tập',
-    REPUTATION: 'Uy tín học thuật',
-    MEMBERSHIP: 'Membership',
-    SECURITY: 'Bảo mật',
-    MODERATION: 'Kiểm duyệt',
-    SYSTEM: 'Hệ thống',
-  }[preference.category];
-  const channel = {
-    IN_APP: 'Trong ứng dụng',
-    SSE: 'Cập nhật trực tiếp',
-    EMAIL: 'Email (sắp có)',
-    PUSH: 'Push (sắp có)',
-  }[preference.channel];
+export function getPreferenceLabel(preference: NotificationPreferenceItem, locale: UiLocale = 'vi'): string {
+  const category = preference.category === 'EXCHANGE' ? translate(locale, 'exchange.notifications.preferenceExchange')
+    : preference.category === 'MEMBERSHIP' ? translate(locale, 'exchange.notifications.preferenceMembership')
+    : getNotificationCategoryLabel(preference.category, locale);
+  const channelKey = { IN_APP: 'inApp', SSE: 'live', EMAIL: 'email', PUSH: 'push' }[preference.channel];
+  const channel = translate(locale, `exchange.notifications.channel.${channelKey}`);
   return `${category} · ${channel}`;
 }

@@ -1,5 +1,5 @@
 import type { NotificationStreamItem } from './notification.types';
-import { translate, type UiLocale } from '../ui-locale/ui-locale';
+import { formatUiDate, formatUiRelativeTime, localeMetadata, translate, type UiLocale } from '../ui-locale/ui-locale';
 import { getDirectConversationNotificationTarget } from './notification-target';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -84,29 +84,31 @@ export function getNotificationPresentation(item: NotificationStreamItem, locale
   }
 }
 
-export function getNotificationCategoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] ?? 'Thông báo';
+export function getNotificationCategoryLabel(category: string, locale: UiLocale = 'vi'): string {
+  return Object.prototype.hasOwnProperty.call(CATEGORY_LABELS, category)
+    ? translate(locale, `exchange.notifications.category.${category}`)
+    : translate(locale, 'exchange.notifications.title');
 }
 
 export function getNotificationActorLabel(item: NotificationStreamItem): string {
   return getActorLabel(item);
 }
 
-export function getNotificationGroupLabel(createdAt: string, now = new Date()): string {
+export function getNotificationGroupLabel(createdAt: string, now = new Date(), locale: UiLocale = 'vi'): string {
   const created = new Date(createdAt);
-  const sameDay = created.toLocaleDateString('vi-VN') === now.toLocaleDateString('vi-VN');
-  return sameDay ? 'Hôm nay' : 'Trước đó';
+  const sameDay = created.toLocaleDateString(localeMetadata[locale].intl) === now.toLocaleDateString(localeMetadata[locale].intl);
+  return translate(locale, sameDay ? 'exchange.notifications.today' : 'exchange.notifications.earlier');
 }
 
-export function formatNotificationTime(createdAt: string, now = new Date()): string {
+export function formatNotificationTime(createdAt: string, now = new Date(), locale: UiLocale = 'vi'): string {
   const created = new Date(createdAt);
   const minutes = Math.max(0, Math.floor((now.getTime() - created.getTime()) / 60_000));
-  if (minutes < 1) return 'Vừa xong';
-  if (minutes < 60) return `${minutes} phút trước`;
-  if (minutes < 24 * 60 && created.toLocaleDateString('vi-VN') === now.toLocaleDateString('vi-VN')) {
-    return created.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  if (minutes < 1) return translate(locale, 'exchange.notifications.justNow');
+  if (minutes < 60) return formatUiRelativeTime(locale, -minutes, 'minute');
+  if (minutes < 24 * 60 && getNotificationGroupLabel(createdAt, now, locale) === translate(locale, 'exchange.notifications.today')) {
+    return formatUiDate(locale, created, { hour: '2-digit', minute: '2-digit' });
   }
-  return created.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  return formatUiDate(locale, created, { day: '2-digit', month: '2-digit' });
 }
 
 function presentation(

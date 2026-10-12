@@ -38,13 +38,13 @@ export function NotificationBell() {
 
   if (!center?.active) return null;
 
-  const unreadLabel = center.unreadCount > 99 ? '99+' : String(center.unreadCount);
+  const unreadLabel = center.unreadCount > 99 ? '99+' : formatNumber(center.unreadCount);
   const connectionLabel = center.connectionStatus === 'offline'
-    ? 'Ngoại tuyến · Đang thử kết nối lại'
+    ? t('exchange.notifications.offline')
     : center.connectionStatus === 'reconnecting'
-      ? 'Đang kết nối lại luồng cập nhật'
+      ? t('exchange.notifications.reconnecting')
       : center.connectionStatus === 'connecting'
-        ? 'Đang kết nối luồng cập nhật'
+        ? t('exchange.notifications.connecting')
         : null;
 
   return (
@@ -63,26 +63,26 @@ export function NotificationBell() {
         {center.unreadCount ? <span className={styles.badge} aria-hidden='true'>{unreadLabel}</span> : null}
       </button>
       {open ? (
-        <div ref={panelRef} className={styles.panel} id='notification-panel' role='dialog' aria-label='Thông báo'>
+        <div ref={panelRef} className={styles.panel} id='notification-panel' role='dialog' aria-label={t('exchange.notifications.title')}>
           <div className={styles.panelHeader}>
             <div>
-              <p className={styles.kicker}>Cập nhật của bạn</p>
-              <h2>Thông báo</h2>
-              <p className={styles.count}>{center.unreadCount} chưa đọc</p>
+              <p className={styles.kicker}>{t('exchange.notifications.updates')}</p>
+              <h2>{t('exchange.notifications.title')}</h2>
+              <p className={styles.count}>{t('exchange.notifications.count', { count: center.unreadCount })}</p>
             </div>
-            <button className={styles.close} type='button' onClick={close} aria-label='Đóng bảng thông báo'><Icon name='x' size={18} /></button>
+            <button className={styles.close} type='button' onClick={close} aria-label={t('exchange.notifications.close')}><Icon name='x' size={18} /></button>
           </div>
           <div className={styles.panelToolbar}>
-            <div className={styles.filters} role='tablist' aria-label='Lọc thông báo'>
-              <button className={center.filter === 'ALL' ? styles.filterActive : styles.filter} type='button' role='tab' aria-selected={center.filter === 'ALL'} onClick={() => center.setFilter('ALL')}>Tất cả</button>
-              <button className={center.filter === 'UNREAD' ? styles.filterActive : styles.filter} type='button' role='tab' aria-selected={center.filter === 'UNREAD'} onClick={() => center.setFilter('UNREAD')}>Chưa đọc</button>
+            <div className={styles.filters} role='tablist' aria-label={t('exchange.notifications.filter')}>
+              <button className={center.filter === 'ALL' ? styles.filterActive : styles.filter} type='button' role='tab' aria-selected={center.filter === 'ALL'} onClick={() => center.setFilter('ALL')}>{t('exchange.notifications.all')}</button>
+              <button className={center.filter === 'UNREAD' ? styles.filterActive : styles.filter} type='button' role='tab' aria-selected={center.filter === 'UNREAD'} onClick={() => center.setFilter('UNREAD')}>{t('exchange.notifications.unread')}</button>
             </div>
-            <button className={styles.markAll} type='button' onClick={() => void center.markAllRead()} disabled={!center.unreadCount}>Đọc hết</button>
+            <button className={styles.markAll} type='button' onClick={() => void center.markAllRead()} disabled={!center.unreadCount}>{t('exchange.notifications.markAll')}</button>
           </div>
           {connectionLabel ? <p className={styles.connection} role='status'><Icon name='refresh-cw' size={16} />{connectionLabel}</p> : null}
           {center.error ? <p className={styles.error} role='alert'>{center.error}</p> : null}
           {center.loading ? <NotificationSkeleton /> : <NotificationFeed items={center.visibleItems} compact onMarkRead={center.markRead} />}
-          <Link className={styles.allLink} to='/notifications' onClick={close}>Xem tất cả thông báo <Icon name='arrow-left-right' size={16} /></Link>
+          <Link className={styles.allLink} to='/notifications' onClick={close}>{t('exchange.notifications.viewAll')} <Icon name='arrow-left-right' size={16} /></Link>
         </div>
       ) : null}
     </div>
@@ -90,8 +90,9 @@ export function NotificationBell() {
 }
 
 function NotificationSkeleton() {
+  const { t } = useUiLocale();
   return (
-    <div className={styles.skeleton} aria-busy='true' aria-label='Đang tải thông báo'>
+    <div className={styles.skeleton} aria-busy='true' aria-label={t('exchange.notifications.loading')}>
       {[1, 2, 3].map((item) => <span key={item} />)}
     </div>
   );

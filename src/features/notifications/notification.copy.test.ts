@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getNotificationPresentation } from './notification.copy';
+import { formatNotificationTime, getNotificationGroupLabel, getNotificationPresentation } from './notification.copy';
 import type { NotificationStreamItem } from './notification.types';
 
 const baseNotification: NotificationStreamItem = {
@@ -16,6 +16,14 @@ const baseNotification: NotificationStreamItem = {
 };
 
 describe('notification presentation', () => {
+  it('formats notification group and relative time metadata in the selected locale', () => {
+    const now = new Date('2026-10-12T12:00:00.000Z');
+    expect(getNotificationGroupLabel('2026-10-12T11:55:00.000Z', now, 'en')).toBe('Today');
+    expect(getNotificationGroupLabel('2026-10-01T11:55:00.000Z', now, 'en')).toBe('Earlier');
+    expect(formatNotificationTime('2026-10-12T11:59:50.000Z', now, 'en')).toBe('Just now');
+    expect(formatNotificationTime('2026-10-12T11:55:00.000Z', now, 'en')).toBe('5 minutes ago');
+    expect(formatNotificationTime('2026-10-12T11:55:00.000Z', now, 'vi')).toContain('5 phút trước');
+  });
   it.each(['vi', 'en'] as const)('renders generic direct-message copy in %s without private variables', locale => {
     const copy = getNotificationPresentation({ ...baseNotification, notificationType: 'DIRECT_MESSAGE', category: 'EXCHANGE',
       actor: { kind: 'SYSTEM', label: 'System' },
