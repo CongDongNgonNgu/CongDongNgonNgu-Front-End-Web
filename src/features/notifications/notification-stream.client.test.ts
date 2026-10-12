@@ -29,6 +29,18 @@ function streamResponse(payload: string): Response {
 }
 
 describe('NotificationStreamClient', () => {
+  it('sanitizes direct-message variables and rejects hidden actor navigation in REST/SSE shared parsing', () => {
+    const direct = { ...notification, notificationType: 'DIRECT_MESSAGE', category: 'EXCHANGE',
+      actor: { kind: 'SYSTEM', label: 'System' },
+      target: { kind: 'DIRECT_CONVERSATION', path: '/exchange/conversations/11111111-1111-4111-8111-111111111111' },
+      variables: { subject: 'Private subject', body: 'Private body', contextTitle: 'Private context' } };
+    expect(parseNotification(JSON.stringify(direct))).toMatchObject({ actor: direct.actor, target: direct.target, variables: {} });
+    expect(parseNotification(JSON.stringify(direct))?.variables).toEqual({});
+    const hidden = parseNotification(JSON.stringify({ ...direct, actor: notification.actor }));
+    expect(hidden).toMatchObject({ actor: { kind: 'DELETED', label: 'Deleted member' }, target: null, variables: {} });
+    expect(JSON.stringify(hidden)).not.toMatch(/Private|Notification Actor|profiles/u);
+  });
+
   it('sends bearer authentication and Last-Event-ID without putting credentials in the URL', async () => {
     const fetcher = vi.fn().mockResolvedValue(
       streamResponse(`id: ${notification.id}\nevent: notification\ndata: ${JSON.stringify(notification)}\n\n`),

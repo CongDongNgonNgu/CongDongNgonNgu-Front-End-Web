@@ -6,6 +6,11 @@ export type NotificationActor =
   | { kind: 'PROVIDER'; label: 'Service' }
   | { kind: 'DELETED'; label: 'Deleted member' };
 
+export interface DirectConversationNotificationTarget {
+  readonly kind: 'DIRECT_CONVERSATION';
+  readonly path: string;
+}
+
 export interface NotificationStreamItem {
   id: string;
   notificationType: string;

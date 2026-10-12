@@ -1,5 +1,6 @@
 import { resolveApiBaseUrl } from '../../services/api-client';
 import type { NotificationStreamItem } from './notification.types';
+import { getDirectConversationNotificationTarget } from './notification-target';
 
 type StreamFetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
@@ -140,14 +141,16 @@ export function parseNotificationValue(value: unknown): NotificationStreamItem |
       (parsed.read && parsed.readAt === null)
     ) return undefined;
 
+    const direct = parsed.notificationType === 'DIRECT_MESSAGE';
+    const directTarget = direct ? getDirectConversationNotificationTarget({ actor: parsed.actor, target: parsed.target }) : null;
     return {
       id: parsed.id,
       notificationType: parsed.notificationType,
       category: parsed.category,
       priority: parsed.priority,
-      actor: parsed.actor,
-      target: parsed.target,
-      variables: parsed.variables,
+      actor: direct ? directTarget ? { kind: 'SYSTEM', label: 'System' } : { kind: 'DELETED', label: 'Deleted member' } : parsed.actor,
+      target: direct ? directTarget : parsed.target,
+      variables: direct ? {} : parsed.variables,
       createdAt: parsed.createdAt,
       read: parsed.read,
       readAt: parsed.readAt,

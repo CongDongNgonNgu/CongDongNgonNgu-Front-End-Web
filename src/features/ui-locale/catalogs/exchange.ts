@@ -1,4 +1,10 @@
 export const viExchange = {
+  'exchange.notices.systemActor': 'Hệ thống',
+  'exchange.notices.messageTitle': 'Có tin nhắn riêng mới',
+  'exchange.notices.messageDescription': 'Bạn có tin nhắn chưa đọc trong một cuộc trò chuyện học tập.',
+  'exchange.notices.messageTarget': 'Mở cuộc trò chuyện',
+  'exchange.notices.messageUnavailableTitle': 'Thông báo trò chuyện không còn khả dụng',
+  'exchange.notices.messageUnavailableDescription': 'Bạn không còn quyền xem thông báo trò chuyện này.',
   'exchange.notices.category': 'Kết nối',
   'exchange.notices.actorHidden': 'Thành viên đã ẩn',
   'exchange.notices.target': 'kết nối học tập',
@@ -190,6 +196,12 @@ export const viExchange = {
 } as const;
 
 export const enExchange: Record<keyof typeof viExchange, string> = {
+  'exchange.notices.systemActor': 'System',
+  'exchange.notices.messageTitle': 'New direct message',
+  'exchange.notices.messageDescription': 'You have unread messages in a study conversation.',
+  'exchange.notices.messageTarget': 'Open conversation',
+  'exchange.notices.messageUnavailableTitle': 'Conversation notification unavailable',
+  'exchange.notices.messageUnavailableDescription': 'You no longer have access to this conversation notification.',
   'exchange.notices.category': 'Connections',
   'exchange.notices.actorHidden': 'Hidden member',
   'exchange.notices.target': 'study connection',

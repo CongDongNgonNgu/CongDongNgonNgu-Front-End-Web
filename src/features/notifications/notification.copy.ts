@@ -1,5 +1,6 @@
 import type { NotificationStreamItem } from './notification.types';
 import { translate, type UiLocale } from '../ui-locale/ui-locale';
+import { getDirectConversationNotificationTarget } from './notification-target';
 
 const CATEGORY_LABELS: Record<string, string> = {
   COMMUNITY: 'Cộng đồng',
@@ -31,6 +32,16 @@ export interface NotificationPresentation {
 }
 
 export function getNotificationPresentation(item: NotificationStreamItem, locale: UiLocale = 'vi'): NotificationPresentation {
+  if (item.notificationType === 'DIRECT_MESSAGE') {
+    const available = Boolean(getDirectConversationNotificationTarget(item));
+    return {
+      categoryLabel: translate(locale, 'exchange.notices.category'),
+      actorLabel: translate(locale, 'exchange.notices.systemActor'),
+      title: translate(locale, available ? 'exchange.notices.messageTitle' : 'exchange.notices.messageUnavailableTitle'),
+      description: translate(locale, available ? 'exchange.notices.messageDescription' : 'exchange.notices.messageUnavailableDescription'),
+      targetLabel: available ? translate(locale, 'exchange.notices.messageTarget') : null,
+    };
+  }
   if (item.notificationType === 'BUDDY_REQUEST' || item.notificationType === 'BUDDY_CONNECTED') {
     const available = item.actor.kind === 'USER' && item.target?.kind === 'EXCHANGE_CONNECTION' && Boolean(item.target.path);
     const actor = item.actor.kind === 'USER' ? item.actor.displayName : translate(locale, 'exchange.notices.actorHidden');

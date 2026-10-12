@@ -6,6 +6,7 @@ import {
   getNotificationPresentation,
 } from './notification.copy';
 import type { NotificationStreamItem } from './notification.types';
+import { getNotificationTargetPath } from './notification-target';
 import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import styles from './NotificationFeed.module.css';
 
@@ -46,6 +47,7 @@ export function NotificationFeed({ items, compact = false, onMarkRead, emptyMess
 function NotificationRow({ item, onMarkRead }: { item: NotificationStreamItem; onMarkRead: NotificationFeedProps['onMarkRead'] }) {
   const { locale } = useUiLocale();
   const presentation = getNotificationPresentation(item, locale);
+  const targetPath = getNotificationTargetPath(item);
   const content = (
     <div className={styles.rowContent}>
       <div className={styles.rowMeta}>
@@ -63,8 +65,8 @@ function NotificationRow({ item, onMarkRead }: { item: NotificationStreamItem; o
 
   return (
     <article className={[styles.row, item.read ? styles.rowRead : styles.rowUnread].join(' ')} role='listitem'>
-      {item.target?.path ? (
-        <Link className={styles.rowLink} to={item.target.path} onClick={() => { if (!item.read) void onMarkRead(item.id); }}>
+      {targetPath ? (
+        <Link className={styles.rowLink} to={targetPath} onClick={() => { if (!item.read) void onMarkRead(item.id); }}>
           {content}
         </Link>
       ) : content}

@@ -32,6 +32,48 @@ const readNotification: NotificationStreamItem = {
 };
 
 describe('NotificationFeed', () => {
+  it('opens only a current canonical direct conversation without rendering forged private fields', async () => {
+    const user = userEvent.setup(); const onMarkRead = vi.fn();
+    render(<MemoryRouter><NotificationFeed onMarkRead={onMarkRead} items={[{
+      ...unreadNotification, notificationType: 'DIRECT_MESSAGE', category: 'EXCHANGE',
+      actor: { kind: 'SYSTEM', label: 'System' },
+      target: { kind: 'DIRECT_CONVERSATION', path: '/exchange/conversations/11111111-1111-4111-8111-111111111111' },
+      variables: { subject: 'Private subject', body: 'Private body', contextTitle: 'Private context' },
+    }]} /></MemoryRouter>);
+    expect(screen.getByText('Có tin nhắn riêng mới')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('Private');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/exchange/conversations/11111111-1111-4111-8111-111111111111');
+    await user.click(link);
+    expect(onMarkRead).toHaveBeenCalledExactlyOnceWith(unreadNotification.id);
+  });
+
+  it.each([null,
+    { kind: 'DIRECT_CONVERSATION', path: '/exchange/conversations/11111111-1111-4111-8111-111111111111?token=private' },
+    { kind: 'DIRECT_CONVERSATION', path: '/community/groups/private' },
+    { kind: 'COMMUNITY_POST', path: '/exchange/conversations/11111111-1111-4111-8111-111111111111' },
+  ])('does not offer navigation for an unavailable or forged direct-message target %j', target => {
+    render(<MemoryRouter><NotificationFeed onMarkRead={vi.fn()} items={[{
+      ...unreadNotification, notificationType: 'DIRECT_MESSAGE', actor: { kind: 'SYSTEM', label: 'System' }, target,
+      variables: { subject: 'Private subject' },
+    }]} /></MemoryRouter>);
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText('Thông báo trò chuyện không còn khả dụng')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('Private');
+  });
+
+  it('masks a forged or hidden actor even when a direct-conversation path is present', () => {
+    render(<MemoryRouter><NotificationFeed onMarkRead={vi.fn()} items={[{
+      ...unreadNotification, notificationType: 'DIRECT_MESSAGE',
+      actor: { kind: 'USER', displayName: 'Private actor', profilePath: '/profiles/private' },
+      target: { kind: 'DIRECT_CONVERSATION', path: '/exchange/conversations/11111111-1111-4111-8111-111111111111' },
+      variables: { subject: 'Private subject' },
+    }]} /></MemoryRouter>);
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText('Thông báo trò chuyện không còn khả dụng')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('Private');
+  });
+
   it('renders safe links and marks only unread notifications as read', async () => {
     const user = userEvent.setup();
     const onMarkRead = vi.fn();
