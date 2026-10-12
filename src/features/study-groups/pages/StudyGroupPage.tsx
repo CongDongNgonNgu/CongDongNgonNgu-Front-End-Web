@@ -4,6 +4,9 @@ import { Button } from "../../../components/ui/Button";
 import { useAuth } from "../../auth/AuthProvider";
 import { useUiLocale } from "../../ui-locale/UiLocaleProvider";
 import { StudyGroupsApi } from "../study-groups.api";
+import { ExchangeApi } from "../../exchange/exchange-api";
+import type { ConnectionListApi } from "../../exchange/exchange.types";
+import { ConnectedPartnerInvitation } from "../components/ConnectedPartnerInvitation";
 import { useStudyGroup } from "../hooks/useStudyGroup";
 import { canManage, canModerate, groupErrorKey } from "../study-groups.policy";
 import { GroupMembers } from "../components/GroupMembers";
@@ -19,10 +22,12 @@ export function StudyGroupPage() {
   const auth = useAuth();
   const { groupId = "" } = useParams();
   const api = useMemo(() => new StudyGroupsApi(auth.api), [auth.api]);
+  const connectionsApi = useMemo(() => new ExchangeApi(auth.api), [auth.api]);
   return (
     <StudyGroupPageView
       key={auth.user?.id + ":" + groupId}
       api={api}
+      connectionsApi={connectionsApi}
       groupId={groupId}
       userId={auth.user?.id ?? ""}
       authenticated={auth.status === "authenticated"}
@@ -32,12 +37,14 @@ export function StudyGroupPage() {
 }
 export function StudyGroupPageView({
   api,
+  connectionsApi,
   groupId,
   userId,
   authenticated,
   authLoading = false,
 }: {
   api: StudyGroupsApi;
+  connectionsApi?: Pick<ConnectionListApi, 'listConnections'>;
   groupId: string;
   userId: string;
   authenticated: boolean;
@@ -109,6 +116,7 @@ export function StudyGroupPageView({
             <div className={styles.actions}>
               {canManage(data.group.role) ? (
                 <>
+                  {connectionsApi ? <ConnectedPartnerInvitation api={api} connectionsApi={connectionsApi} groupId={groupId} groupName={data.group.name} userId={userId} enabled={authenticated && !resource.error} /> : null}
                   <Button disabled={busy} onClick={() => void issue()}>
                     {t("groups.issue")}
                   </Button>

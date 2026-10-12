@@ -1,0 +1,15 @@
+.content { display: grid; gap: var(--space-4); min-width: 0; }
+.group { font-weight: 600; overflow-wrap: anywhere; margin: 0; }
+.note { margin: 0; padding: var(--space-3); background: var(--color-surface-muted); border-radius: var(--radius-md); }
+.partners { border: 0; padding: 0; margin: 0; min-width: 0; }
+.partners legend { font-weight: 600; margin-bottom: var(--space-3); }
+.list { max-height: 20rem; overflow-y: auto; }
+.partner { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding: var(--space-2); border-bottom: 1px solid var(--color-border); cursor: pointer; }
+.partner:focus-within { outline: 2px solid var(--color-text-primary); outline-offset: -2px; }
+.partner input { flex: 0 0 auto; width: 20px; height: 20px; }
+.avatar { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 50%; background: var(--color-surface-muted); }
+.name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.badge { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.footer { display: flex; justify-content: flex-end; gap: var(--space-3); flex-wrap: wrap; }
+.footer button, .content button { min-height: 44px; }
+@media (max-width: 420px) { .partner { flex-wrap: wrap; column-gap: var(--space-2); } .badge { margin-left: 68px; } .footer > button { flex: 1 1 120px; } }

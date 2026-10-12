@@ -1,6 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { StudyGroupsApi } from "./study-groups.api";
 describe("protected group transport", () => {
+  it("posts a connected partner only to the encoded owned group route", async () => {
+    const requestProtected = vi.fn().mockResolvedValue({});
+    await new StudyGroupsApi({ requestProtected }).issueConnectedPartner("g/owned", "partner");
+    expect(requestProtected).toHaveBeenCalledWith("/study-groups/g%2Fowned/invitations/connected-partner", expect.objectContaining({ method: "POST", body: JSON.stringify({ partnerUserId: "partner" }) }));
+  });
   it("posts acceptance without a token URL and bounds pagination", async () => {
     const requestProtected = vi.fn().mockResolvedValue({});
     const api = new StudyGroupsApi({ requestProtected });

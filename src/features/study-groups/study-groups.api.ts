@@ -63,6 +63,12 @@ export class StudyGroupsApi {
       json("POST"),
     );
   }
+  issueConnectedPartner(groupId: string, partnerUserId: string) {
+    return this.client.requestProtected<IssuedInvite>(
+      "/study-groups/" + encodeURIComponent(groupId) + "/invitations/connected-partner",
+      json("POST", { partnerUserId }),
+    );
+  }
   accept(groupId: string, token: string) {
     return this.client.requestProtected<StudyGroup>(
       "/study-groups/invitations/accept",

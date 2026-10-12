@@ -7,19 +7,22 @@ import { NotificationFeed } from './NotificationFeed';
 import { NotificationPreferencesDialog } from './NotificationPreferencesDialog';
 import { useNotificationCenter, type NotificationFilter } from './NotificationCenterProvider';
 import styles from './NotificationsPage.module.css';
+import { useUiLocale } from '../ui-locale/UiLocaleProvider';
+import type { TranslationKey } from '../ui-locale/ui-locale';
 
-const filters: Array<{ value: NotificationFilter; label: string }> = [
-  { value: 'ALL', label: 'Tất cả' },
-  { value: 'UNREAD', label: 'Chưa đọc' },
-  { value: 'COMMUNITY', label: 'Thảo luận' },
-  { value: 'CORRECTIONS', label: 'Hiệu đính' },
-  { value: 'EXCHANGE', label: 'Kết nối' },
-  { value: 'REPUTATION', label: 'Uy tín' },
-  { value: 'MEMBERSHIP', label: 'Tài khoản' },
-  { value: 'SECURITY', label: 'Bảo mật' },
+const filters: Array<{ value: NotificationFilter; label: TranslationKey }> = [
+  { value: 'ALL', label: 'exchange.notifications.all' },
+  { value: 'UNREAD', label: 'exchange.notifications.unread' },
+  { value: 'COMMUNITY', label: 'exchange.notifications.communityFilter' },
+  { value: 'CORRECTIONS', label: 'exchange.notifications.category.CORRECTIONS' },
+  { value: 'EXCHANGE', label: 'exchange.notifications.category.EXCHANGE' },
+  { value: 'REPUTATION', label: 'exchange.notifications.reputationFilter' },
+  { value: 'MEMBERSHIP', label: 'exchange.notifications.membershipFilter' },
+  { value: 'SECURITY', label: 'exchange.notifications.category.SECURITY' },
 ];
 
 export function NotificationsPage() {
+  const { t, formatNumber } = useUiLocale();
   const { status } = useAuth();
   const center = useNotificationCenter();
   const [preferencesOpen, setPreferencesOpen] = useState(false);
@@ -28,36 +31,36 @@ export function NotificationsPage() {
     return (
       <div className={styles.guest}>
         <Icon name='bell' size={24} />
-        <h1>Thông báo</h1>
-        <p>Đăng nhập để xem các cập nhật riêng tư của bạn.</p>
-        <Link className={styles.primaryLink} to='/login'>Đăng nhập</Link>
+        <h1>{t('exchange.notifications.title')}</h1>
+        <p>{t('exchange.notifications.guest')}</p>
+        <Link className={styles.primaryLink} to='/login'>{t('exchange.notifications.login')}</Link>
       </div>
     );
   }
 
   const connectionLabel = center.connectionStatus === 'offline'
-    ? 'Mất kết nối mạng tạm thời. Đang thử kết nối lại.'
+    ? t('exchange.notifications.pageOffline')
     : center.connectionStatus === 'reconnecting'
-      ? 'Đang kết nối lại luồng thông báo thời gian thực.'
+      ? t('exchange.notifications.pageReconnecting')
       : center.connectionStatus === 'connecting'
-        ? 'Đang kết nối luồng thông báo thời gian thực.'
+        ? t('exchange.notifications.pageConnecting')
         : null;
 
   return (
     <div className={styles.page}>
       <div className={styles.topBar}>
-        <Link className={styles.backLink} to='/' aria-label='Quay lại trang chủ'><Icon name='chevron-down' size={20} />Trang chủ</Link>
+        <Link className={styles.backLink} to='/' aria-label={t('exchange.notifications.backHome')}><Icon name='chevron-down' size={20} />{t('exchange.notifications.home')}</Link>
         <div className={styles.headingBlock}>
-          <p className={styles.kicker}>Trung tâm cập nhật</p>
-          <h1>Thông báo</h1>
-          <p className={styles.subtitle}>{center.unreadCount} thông báo chưa đọc</p>
+          <p className={styles.kicker}>{t('exchange.notifications.center')}</p>
+          <h1>{t('exchange.notifications.title')}</h1>
+          <p className={styles.subtitle}>{t('exchange.notifications.pageCount', { count: center.unreadCount })}</p>
         </div>
         <div className={styles.actions}>
           <Button variant='quiet' size='sm' onClick={() => void center.markAllRead()} disabled={!center.unreadCount}>
-            <Icon name='check-circle' size={16} /> Đánh dấu đã đọc tất cả
+            <Icon name='check-circle' size={16} /> {t('exchange.notifications.markAllLong')}
           </Button>
           <Button variant='quiet' size='sm' onClick={() => setPreferencesOpen(true)}>
-            <Icon name='more-horizontal' size={16} /> Tùy chọn
+            <Icon name='more-horizontal' size={16} /> {t('exchange.notifications.preferences')}
           </Button>
         </div>
       </div>
@@ -67,12 +70,12 @@ export function NotificationsPage() {
         <div className={styles.connection} role='status'>
           <Icon name={center.connectionStatus === 'offline' ? 'wifi-off' : 'refresh-cw'} size={18} />
           <span>{connectionLabel}</span>
-          <Button variant='quiet' size='sm' onClick={() => void center.refresh()}>Thử lại</Button>
+          <Button variant='quiet' size='sm' onClick={() => void center.refresh()}>{t('exchange.notifications.retry')}</Button>
         </div>
       ) : null}
       {center.error ? <div className={styles.error} role='alert'>{center.error}</div> : null}
 
-      <div className={styles.filterScroller} role='tablist' aria-label='Lọc thông báo'>
+      <div className={styles.filterScroller} role='tablist' aria-label={t('exchange.notifications.filter')}>
         {filters.map((item) => (
           <button
             className={center.filter === item.value ? styles.filterActive : styles.filter}
@@ -82,12 +85,12 @@ export function NotificationsPage() {
             aria-selected={center.filter === item.value}
             onClick={() => center.setFilter(item.value)}
           >
-            {item.label}{item.value === 'UNREAD' ? ` (${center.unreadCount})` : ''}
+            {t(item.label)}{item.value === 'UNREAD' ? ` (${formatNumber(center.unreadCount)})` : ''}
           </button>
         ))}
       </div>
 
-      <section className={styles.content} aria-label='Danh sách thông báo'>
+      <section className={styles.content} aria-label={t('exchange.notifications.list')}>
         {center.loading ? <NotificationSkeleton /> : <NotificationFeed items={center.visibleItems} onMarkRead={center.markRead} />}
       </section>
 
@@ -97,8 +100,9 @@ export function NotificationsPage() {
 }
 
 function NotificationSkeleton() {
+  const { t } = useUiLocale();
   return (
-    <div className={styles.skeleton} aria-busy='true' aria-label='Đang tải thông báo'>
+    <div className={styles.skeleton} aria-busy='true' aria-label={t('exchange.notifications.loading')}>
       {[1, 2, 3, 4].map((item) => <span key={item} />)}
     </div>
   );

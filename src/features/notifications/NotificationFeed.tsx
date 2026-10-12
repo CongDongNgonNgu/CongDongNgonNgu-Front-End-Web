@@ -6,6 +6,7 @@ import {
   getNotificationPresentation,
 } from './notification.copy';
 import type { NotificationStreamItem } from './notification.types';
+import { getNotificationTargetPath } from './notification-target';
 import { useUiLocale } from '../ui-locale/UiLocaleProvider';
 import styles from './NotificationFeed.module.css';
 
@@ -16,19 +17,20 @@ interface NotificationFeedProps {
   readonly emptyMessage?: string;
 }
 
-export function NotificationFeed({ items, compact = false, onMarkRead, emptyMessage = 'Không có thông báo trong bộ lọc này.' }: NotificationFeedProps) {
+export function NotificationFeed({ items, compact = false, onMarkRead, emptyMessage }: NotificationFeedProps) {
+  const { locale, t } = useUiLocale();
   if (items.length === 0) {
     return (
       <div className={styles.empty} role='status'>
         <Icon name='inbox' size={24} />
-        <strong>Không có thông báo mới</strong>
-        <span>{emptyMessage}</span>
+        <strong>{t('exchange.notifications.emptyTitle')}</strong>
+        <span>{emptyMessage ?? t('exchange.notifications.emptyDescription')}</span>
       </div>
     );
   }
 
   const visibleItems = compact ? items.slice(0, 5) : items;
-  const groups = groupItems(visibleItems);
+  const groups = groupItems(visibleItems, locale);
   return (
     <div className={[styles.feed, compact ? styles.feedCompact : ''].filter(Boolean).join(' ')} role='list'>
       {groups.map((group) => (
@@ -44,18 +46,19 @@ export function NotificationFeed({ items, compact = false, onMarkRead, emptyMess
 }
 
 function NotificationRow({ item, onMarkRead }: { item: NotificationStreamItem; onMarkRead: NotificationFeedProps['onMarkRead'] }) {
-  const { locale } = useUiLocale();
+  const { locale, t } = useUiLocale();
   const presentation = getNotificationPresentation(item, locale);
+  const targetPath = getNotificationTargetPath(item);
   const content = (
     <div className={styles.rowContent}>
       <div className={styles.rowMeta}>
         <span>{presentation.categoryLabel}</span>
-        {!item.read ? <span className={styles.unreadLabel}><span className={styles.unreadDot} aria-hidden='true' />Chưa đọc</span> : <span>Đã đọc</span>}
+        {!item.read ? <span className={styles.unreadLabel}><span className={styles.unreadDot} aria-hidden='true' />{t('exchange.notifications.unread')}</span> : <span>{t('exchange.notifications.read')}</span>}
       </div>
       <strong className={styles.rowTitle}>{presentation.title}</strong>
       <p className={styles.rowDescription}>{presentation.description}</p>
       <div className={styles.rowFooter}>
-        <time dateTime={item.createdAt}>{formatNotificationTime(item.createdAt)}</time>
+        <time dateTime={item.createdAt}>{formatNotificationTime(item.createdAt, new Date(), locale)}</time>
         {presentation.targetLabel ? <span>{presentation.targetLabel}</span> : null}
       </div>
     </div>
@@ -63,15 +66,15 @@ function NotificationRow({ item, onMarkRead }: { item: NotificationStreamItem; o
 
   return (
     <article className={[styles.row, item.read ? styles.rowRead : styles.rowUnread].join(' ')} role='listitem'>
-      {item.target?.path ? (
-        <Link className={styles.rowLink} to={item.target.path} onClick={() => { if (!item.read) void onMarkRead(item.id); }}>
+      {targetPath ? (
+        <Link className={styles.rowLink} to={targetPath} onClick={() => { if (!item.read) void onMarkRead(item.id); }}>
           {content}
         </Link>
       ) : content}
       <button
         className={styles.readToggle}
         type='button'
-        aria-label={item.read ? 'Thông báo đã đọc' : 'Đánh dấu thông báo đã đọc'}
+        aria-label={t(item.read ? 'exchange.notifications.alreadyRead' : 'exchange.notifications.markRead')}
         disabled={item.read}
         onClick={() => { if (!item.read) void onMarkRead(item.id); }}
       >
@@ -81,10 +84,10 @@ function NotificationRow({ item, onMarkRead }: { item: NotificationStreamItem; o
   );
 }
 
-function groupItems(items: readonly NotificationStreamItem[]): Array<{ label: string; items: NotificationStreamItem[] }> {
+function groupItems(items: readonly NotificationStreamItem[], locale: 'vi' | 'en'): Array<{ label: string; items: NotificationStreamItem[] }> {
   const groups: Array<{ label: string; items: NotificationStreamItem[] }> = [];
   items.forEach((item) => {
-    const label = getNotificationGroupLabel(item.createdAt);
+    const label = getNotificationGroupLabel(item.createdAt, new Date(), locale);
     const current = groups[groups.length - 1];
     if (!current || current.label !== label) groups.push({ label, items: [item] });
     else current.items.push(item);
