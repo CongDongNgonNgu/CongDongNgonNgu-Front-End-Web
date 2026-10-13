@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Button } from '../../../components/ui/Button/Button';
 import { Textarea } from '../../../components/ui/FormControls/Textarea';
@@ -6,6 +7,8 @@ import type {
   StructuredResponseKind,
 } from '../corrections.types';
 import styles from './StructuredResponse.module.css';
+import editorStyles from './StructuredResponseEditor.module.css';
+import { useResponseTextarea } from '../hooks/useResponseTextarea';
 
 const MAX_TEXT_CODE_POINTS = 20_000;
 const MAX_EXPLANATION_CODE_POINTS = 5_000;
@@ -29,41 +32,46 @@ export function StructuredResponseEditor({
   onAuthRequired,
   onSubmit,
 }: StructuredResponseEditorProps) {
+  const { t } = useUiLocale();
   const [text, setText] = useState('');
   const [explanation, setExplanation] = useState('');
+  const [explanationOpen, setExplanationOpen] = useState(false);
+  const textRef = useResponseTextarea(text);
+  const explanationRef = useResponseTextarea(explanationOpen ? explanation : '');
   const [validationError, setValidationError] = useState<string | null>(null);
-  const textLabel = kind === 'CORRECTION_PROPOSAL' ? 'Bản sửa đề xuất' : 'Câu trả lời';
-  const submitLabel = kind === 'CORRECTION_PROPOSAL' ? 'Gửi đề xuất sửa câu' : 'Gửi câu trả lời';
+  const textLabel = kind === 'CORRECTION_PROPOSAL' ? t('community.detail.suggested.correction') : t('community.detail.answer');
+  const submitLabel = kind === 'CORRECTION_PROPOSAL' ? t('community.detail.submit.correction') : t('community.detail.submit.answer');
   const textCount = useMemo(() => Array.from(text).length, [text]);
   const explanationCount = useMemo(() => Array.from(explanation).length, [explanation]);
 
   if (!authenticated) {
     return (
       <section className={styles.editorGate} aria-labelledby='structured-response-editor-title'>
-        <h3 id='structured-response-editor-title'>Đóng góp câu trả lời</h3>
-        <p>Đăng nhập để chia sẻ một bản sửa hoặc câu trả lời có giải thích.</p>
-        <Button variant='secondary' onClick={onAuthRequired}>Đăng nhập để đóng góp</Button>
+        <h3 id='structured-response-editor-title'>{t('community.detail.contribute.an.answer')}</h3>
+        <p>{t('community.detail.sign.in.to.share.a.correction.or.an.answer.with')}</p>
+        <Button variant='secondary' onClick={onAuthRequired}>{t('community.detail.sign.in.to.contribute')}</Button>
       </section>
     );
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (busy) return;
     const normalized = text.replace(/\r\n?/gu, '\n');
     if (!normalized.trim()) {
-      setValidationError(`Vui lòng nhập ${kind === 'CORRECTION_PROPOSAL' ? 'bản sửa đề xuất' : 'câu trả lời'}.`);
+      setValidationError(t('community.detail.required', {label: kind === 'CORRECTION_PROPOSAL' ? t('community.detail.a.suggested.correction') : t('community.detail.an.answer')}));
       return;
     }
     if (Array.from(normalized).length > MAX_TEXT_CODE_POINTS) {
-      setValidationError('Nội dung vượt quá 20.000 ký tự Unicode.');
+      setValidationError(t('community.detail.content.exceeds.twenty.thousand.unicode.characters'));
       return;
     }
     if (kind === 'CORRECTION_PROPOSAL' && normalized === originalText) {
-      setValidationError('Bản sửa cần khác với bản gốc.');
+      setValidationError(t('community.detail.the.correction.must.differ.from.the.original'));
       return;
     }
     if (Array.from(explanation).length > MAX_EXPLANATION_CODE_POINTS) {
-      setValidationError('Giải thích vượt quá 5.000 ký tự Unicode.');
+      setValidationError(t('community.detail.explanation.exceeds.five.thousand.unicode.characters'));
       return;
     }
     setValidationError(null);
@@ -76,39 +84,45 @@ export function StructuredResponseEditor({
     <section className={styles.editor} aria-labelledby='structured-response-editor-title'>
       <div className={styles.sectionHeading}>
         <div>
-          <p className={styles.eyebrow}>Đóng góp có cấu trúc</p>
-          <h3 id='structured-response-editor-title'>Chia sẻ góc nhìn của bạn</h3>
+          <p className={styles.eyebrow}>{t('community.detail.structured.contributions')}</p>
+          <h3 id='structured-response-editor-title'>{t('community.detail.share.your.perspective')}</h3>
         </div>
-        <span className={styles.editorNote}>Giữ phản hồi cụ thể và tôn trọng.</span>
+        <span className={styles.editorNote}>{t('community.detail.keep.your.response.specific.and.respectful')}</span>
       </div>
       <form onSubmit={(event) => void handleSubmit(event)} noValidate>
         <Textarea
+          ref={textRef}
+          className={editorStyles.textarea}
+          disabled={busy}
           label={textLabel}
           value={text}
           onChange={(event) => setText(event.target.value)}
-          rows={kind === 'CORRECTION_PROPOSAL' ? 5 : 6}
-          maxLength={MAX_TEXT_CODE_POINTS}
-          hint={`${textCount.toLocaleString('vi-VN')} / 20.000 ký tự Unicode`}
+          rows={3}
+          hint={t('community.detail.counter', {count: textCount, max: 20000})}
           required
         />
+        <Button type='button' variant='quiet' aria-expanded={explanationOpen} aria-controls='structured-explanation' disabled={busy} onClick={() => setExplanationOpen((current) => !current)}>{explanationOpen ? t('community.detail.hide.explanation') : t('community.detail.add.explanation')}</Button>
+        {explanationOpen ? <div id='structured-explanation'>
         <Textarea
-          label='Giải thích (tuỳ chọn)'
+          ref={explanationRef}
+          className={editorStyles.textarea}
+          disabled={busy}
+          label={t('community.detail.explanation.optional')}
           value={explanation}
           onChange={(event) => setExplanation(event.target.value)}
-          rows={4}
-          maxLength={MAX_EXPLANATION_CODE_POINTS}
-          hint={`${explanationCount.toLocaleString('vi-VN')} / 5.000 ký tự Unicode`}
+          rows={3}
+          hint={t('community.detail.counter', {count: explanationCount, max: 5000})}
         />
+        </div> : null}
         {validationError || error ? <p className={styles.error} role='alert'>{validationError ?? error}</p> : null}
-        <div className={styles.editorActions}>
+        <div className={`${styles.editorActions} ${editorStyles.actions}`}>
           <Button
             type='button'
             variant='quiet'
-            onClick={() => { setText(''); setExplanation(''); setValidationError(null); }}
+            onClick={() => { setText(''); setExplanation(''); setExplanationOpen(false); setValidationError(null); }}
             disabled={busy}
           >
-            Soạn lại
-          </Button>
+            {t('community.detail.reset.draft')}</Button>
           <Button type='submit' loading={busy}>{submitLabel}</Button>
         </div>
       </form>

@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, type IconName } from '../../../components/ui/Icon/Icon';
@@ -29,12 +30,13 @@ export function CommunityRequestPageLayout({
   children,
   guidanceCards,
 }: CommunityRequestPageLayoutProps) {
+  const { t } = useUiLocale();
   return (
     <div className={styles.page}>
-      <nav className={styles.breadcrumbs} aria-label='Breadcrumb'>
-        <Link to='/'>Trang chủ</Link>
+      <nav className={styles.breadcrumbs} aria-label={t("community.posts.breadcrumb")}>
+        <Link to='/'>{t("community.posts.home")}</Link>
         <span aria-hidden='true'>/</span>
-        <Link to='/community'>Cộng đồng</Link>
+        <Link to='/community'>{t("community.posts.community")}</Link>
         <span aria-hidden='true'>/</span>
         <span aria-current='page'>{breadcrumb}</span>
       </nav>
@@ -50,7 +52,7 @@ export function CommunityRequestPageLayout({
           {children}
         </section>
 
-        <aside className={styles.guidanceRail} aria-label='Hướng dẫn gửi yêu cầu'>
+        <aside className={styles.guidanceRail} aria-label={t("community.posts.request.guidance")}>
           {guidanceCards.map((card) => (
             <section
               key={card.title}
@@ -89,17 +91,17 @@ export function CommunityRequestPageLayout({
 }
 
 export function RequestRedirectingState() {
+  const { t } = useUiLocale();
   return (
     <div className={styles.redirectState} role='status' aria-live='polite'>
-      Đang chuyển bạn đến trang đăng nhập…
-    </div>
+      {t("community.posts.redirecting.you.to.sign.in")}</div>
   );
 }
 
 export function RequestAccessLoadingState() {
+  const { t } = useUiLocale();
   return (
     <div className={styles.redirectState} role='status' aria-live='polite'>
-      Đang kiểm tra phiên đăng nhập…
-    </div>
+      {t("community.posts.checking.your.session")}</div>
   );
 }

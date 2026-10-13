@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
@@ -58,6 +59,7 @@ export function CommunityQuestionRequestPageView({
   api,
   catalogApi,
 }: CommunityQuestionRequestPageViewProps) {
+  const { t, locale, formatNumber } = useUiLocale();
   const navigate = useNavigate();
   const [languages, setLanguages] = useState<LanguageCatalogItem[]>([]);
   const [languagesLoading, setLanguagesLoading] = useState(true);
@@ -93,11 +95,11 @@ export function CommunityQuestionRequestPageView({
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'Đặt câu hỏi | CongDongNgonNgu.vn';
+    document.title = t("community.posts.ask.a.question.congdongngonngu.vn");
     return () => {
       document.title = previousTitle;
     };
-  }, []);
+  }, [t]);
 
   const update = (field: keyof QuestionFormInput, value: string) => {
     setInput((current) => ({ ...current, [field]: value }));
@@ -108,7 +110,7 @@ export function CommunityQuestionRequestPageView({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) return;
-    const nextErrors = validateQuestionInput(input);
+    const nextErrors = validateQuestionInput(input, locale);
     setErrors(nextErrors);
     setSubmitError('');
     if (Object.keys(nextErrors).length > 0) return;
@@ -119,7 +121,7 @@ export function CommunityQuestionRequestPageView({
       if (!post?.id) throw new Error('QUESTION_POST_ID_MISSING');
       navigate('/community/posts/' + encodeURIComponent(post.id));
     } catch (error) {
-      setSubmitError(communityRequestErrorMessage(error, 'question'));
+      setSubmitError(communityRequestErrorMessage(error, 'question', locale));
     } finally {
       setIsSubmitting(false);
     }
@@ -127,36 +129,36 @@ export function CommunityQuestionRequestPageView({
 
   return (
     <CommunityRequestPageLayout
-      breadcrumb='Đặt câu hỏi'
-      eyebrow='ĐẶT CÂU HỎI'
-      title='Đặt câu hỏi'
-      description='Đặt một câu hỏi cụ thể để cộng đồng cùng bạn hiểu sâu hơn về ngôn ngữ.'
+      breadcrumb={t("community.posts.ask.a.question")}
+      eyebrow={t("community.posts.ask.a.question.alternative")}
+      title={t("community.posts.ask.a.question")}
+      description={t("community.posts.ask.a.specific.question.to.explore.a.language")}
       guidanceCards={[
         {
           icon: 'users',
-          title: 'Cộng đồng học tập tử tế',
+          title: t("community.posts.a.thoughtful.learning.community"),
           tone: 'accent',
-          description: 'Mỗi câu hỏi là một cơ hội kết nối kiến thức. Hãy đặt câu hỏi với tinh thần xây dựng, tôn trọng văn hóa và sẵn sàng lắng nghe các góc nhìn đa dạng từ người bản xứ.',
+          description: t("community.posts.every.question.is.an.opportunity.to.share.knowledge"),
         },
         {
           icon: 'check-circle',
-          title: 'Mẹo đặt câu hỏi hiệu quả',
+          title: t("community.posts.tips.for.effective.questions"),
           items: [
-            { label: 'Cung cấp ngữ cảnh rõ ràng: ', text: 'Bạn gặp câu này ở đâu, trong tình huống nào? Ngữ cảnh giúp người hỗ trợ định hình chính xác văn phong.' },
-            { label: 'Giữ nguyên câu gốc: ', text: 'Không cắt xén hoặc thay đổi từ ngữ gốc để người hỗ trợ và thành viên hiểu đúng hoàn toàn ý định của bạn.' },
-            { label: 'Lắng nghe đa chiều: ', text: 'Đón nhận góc nhìn từ nhiều thành viên và người bản xứ khác vùng miền để có cái nhìn toàn diện nhất.' },
+            { label: t("community.posts.provide.clear.context"), text: t("community.posts.where.did.you.find.this.sentence.and.in") },
+            { label: t("community.posts.keep.the.original.sentence"), text: t("community.posts.keep.the.original.wording.so.contributors.can.understand") },
+            { label: t("community.posts.listen.to.different.perspectives"), text: t("community.posts.welcome.perspectives.from.members.and.native.speakers.from") },
           ],
         },
         {
           icon: 'circle-help',
-          title: 'Cần hỗ trợ sử dụng tính năng?',
-          description: 'Xem qua hướng dẫn chi tiết hoặc liên hệ với ban quản trị cộng đồng.',
-          link: { label: 'Xem hướng dẫn hỏi đáp', to: '/community' },
+          title: t("community.posts.need.help.using.this.feature"),
+          description: t("community.posts.read.the.guidance.or.contact.the.community.administrators"),
+          link: { label: t("community.posts.view.question.and.answer.guidance"), to: '/community' },
         },
       ]}
     >
       <div className={styles.formCard}>
-        <h2 id='community-request-form-heading' className={styles.visuallyHidden}>Câu hỏi của bạn</h2>
+        <h2 id='community-request-form-heading' className={styles.visuallyHidden}>{t("community.posts.your.question")}</h2>
 
         <form className={styles.form} onSubmit={submit} noValidate>
           {languagesError ? <CatalogError onRetry={() => void loadLanguages()} /> : null}
@@ -172,23 +174,22 @@ export function CommunityQuestionRequestPageView({
 
           <Textarea
             id='question-content'
-            label='Nội dung câu hỏi'
+            label={t("community.posts.question.text")}
             value={input.content}
             onChange={(event) => update('content', event.target.value)}
             error={errors.content}
-            hint='Bạn có thể giữ nguyên dấu cách và xuống dòng.'
+            hint={t("community.posts.you.can.keep.the.original.spacing.and.line")}
             required
           />
           <p className={styles.charCount} aria-live='polite'>
-            {countUnicodeCodePoints(input.content)} / {MAX_CORRECTION_TEXT_CODE_POINTS.toLocaleString('vi-VN')} ký tự
-          </p>
+            {t('community.posts.characterCount', { count: countUnicodeCodePoints(input.content), max: formatNumber(MAX_CORRECTION_TEXT_CODE_POINTS) })}</p>
 
-          <div className={styles.examples} aria-label='Ví dụ câu hỏi'>
-            <strong>Gợi ý cách bắt đầu</strong>
-            <span>“Sự khác nhau giữa hai cách diễn đạt?”</span>
-            <span>“Câu này dùng trong hoàn cảnh nào?”</span>
-            <span>“Từ này có tự nhiên trong hội thoại không?”</span>
-            <span>“Ngữ pháp của mẫu câu này hoạt động thế nào?”</span>
+          <div className={styles.examples} aria-label={t("community.posts.example.questions")}>
+            <strong>{t("community.posts.ways.to.start")}</strong>
+            <span>{t("community.posts.what.is.the.difference.between.these.two.expressions")}</span>
+            <span>{t("community.posts.when.would.i.use.this.sentence")}</span>
+            <span>{t("community.posts.does.this.word.sound.natural.in.conversation")}</span>
+            <span>{t("community.posts.how.does.the.grammar.in.this.sentence.work")}</span>
           </div>
 
           <RequestMetadataFields
@@ -202,16 +203,15 @@ export function CommunityQuestionRequestPageView({
 
           {submitError ? <p className={styles.submitError} role='alert'>{submitError}</p> : null}
           <p className={styles.submitStatus} aria-live='polite' aria-atomic='true'>
-            {isSubmitting ? 'Đang gửi câu hỏi…' : ''}
+            {isSubmitting ? t("community.posts.sending.your.question") : ''}
           </p>
 
           <div className={[styles.formActions, styles.formActionsQuestion].join(' ')}>
             <span className={styles.actionReassurance}>
-              Các câu hỏi rõ ràng, có ngữ cảnh thực tế sẽ giúp cộng đồng hỗ trợ chính xác hơn.
-            </span>
+              {t("community.posts.clear.questions.with.real.context.help.the.community")}</span>
             <div className={styles.actionButtons}>
-              <Link className={styles.cancelLink} to='/community'>Hủy</Link>
-              <Button type='submit' loading={isSubmitting}>Đăng câu hỏi</Button>
+              <Link className={styles.cancelLink} to='/community'>{t("community.posts.cancel")}</Link>
+              <Button type='submit' loading={isSubmitting}>{t("community.posts.post.question")}</Button>
             </div>
           </div>
         </form>

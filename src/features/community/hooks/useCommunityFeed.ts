@@ -1,3 +1,4 @@
+import { translate, type UiLocale } from '../../ui-locale/ui-locale';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiClientError } from '../../../services/api-client';
 import { communityApi } from '../api/community-api';
@@ -38,11 +39,11 @@ export function mergeUniquePosts(first: CommunityPost[], second: CommunityPost[]
   });
 }
 
-export function getCommunityFeedErrorMessage(error: unknown): string {
+export function getCommunityFeedErrorMessage(error: unknown, locale: UiLocale = 'vi'): string {
   if (error instanceof ApiClientError && error.status === 429) {
-    return 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.';
+    return translate(locale, "community.posts.you.have.sent.too.many.requests.please.try.alternative");
   }
-  return 'Không thể tải bảng tin cộng đồng lúc này. Vui lòng thử lại sau ít phút.';
+  return translate(locale, "community.posts.unable.to.load.the.community.feed.please.try");
 }
 
 export function useCommunityFeed({

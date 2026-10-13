@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { SelectControl, TextInput } from '../../../components/ui/FormControls';
 import {
   COMMUNITY_CEFR_LEVELS,
@@ -30,11 +31,12 @@ export function RequestMetadataFields({
   errors,
   onChange,
 }: RequestMetadataFieldsProps) {
+  const { t } = useUiLocale();
   return (
     <section className={styles.metadataSection} aria-labelledby={idPrefix + '-metadata-heading'}>
       <div>
-        <h2 id={idPrefix + '-metadata-heading'}>Thông tin thêm</h2>
-        <p>Không bắt buộc, nhưng sẽ giúp cộng đồng trả lời sát với nhu cầu của bạn hơn.</p>
+        <h2 id={idPrefix + '-metadata-heading'}>{t("community.posts.additional.information")}</h2>
+        <p>{t("community.posts.optional.details.help.the.community.respond.to.your")}</p>
       </div>
 
       <div className={styles.metadataGrid}>
@@ -42,33 +44,33 @@ export function RequestMetadataFields({
           <div className={styles.metadataContext}>
             <TextInput
               id={idPrefix + '-context'}
-              label='Bối cảnh (không bắt buộc)'
+              label={t("community.posts.context.optional")}
               value={context.value}
               onChange={(event) => context.onChange(event.target.value)}
               error={context.error}
-              hint='Không bắt buộc.'
+              hint={t("community.posts.optional.alternative")}
             />
           </div>
         ) : null}
         <SelectControl
           id={idPrefix + '-cefr'}
-          label='Trình độ CEFR'
+          label={t("community.posts.cefr.level")}
           value={cefrLevel}
           onChange={(event) => onChange('cefrLevel', event.target.value)}
           error={errors.cefrLevel}
-          hint='Không bắt buộc'
+          hint={t("community.posts.optional")}
         >
-          <option value=''>Chưa xác định</option>
+          <option value=''>{t("community.posts.not.yet.specified")}</option>
           {COMMUNITY_CEFR_LEVELS.map((level) => <option key={level} value={level}>{level}</option>)}
         </SelectControl>
 
         <TextInput
           id={idPrefix + '-topic'}
-          label='Chủ đề'
+          label={t("community.posts.topic")}
           value={topic}
           onChange={(event) => onChange('topic', event.target.value)}
           error={errors.topic}
-          hint={countUnicodeCodePoints(topic) + ' / 80 ký tự · Không bắt buộc'}
+          hint={t('community.posts.optionalTopicCount', { count: countUnicodeCodePoints(topic) })}
         />
       </div>
 
@@ -77,7 +79,7 @@ export function RequestMetadataFields({
         aria-invalid={Boolean(errors.visibility)}
         aria-describedby={errors.visibility ? idPrefix + '-visibility-error' : undefined}
       >
-        <legend>Phạm vi hiển thị</legend>
+        <legend>{t("community.posts.visibility")}</legend>
         <div className={styles.visibilityOptions}>
           <label className={[styles.visibilityOption, visibility === 'PUBLIC' ? styles.visibilityOptionSelected : ''].filter(Boolean).join(' ')}>
             <input
@@ -88,8 +90,8 @@ export function RequestMetadataFields({
               onChange={(event) => onChange('visibility', event.target.value)}
             />
             <span>
-              <strong>Công khai với cộng đồng</strong>
-              <small>Nhận phản hồi từ các thành viên khác.</small>
+              <strong>{t("community.posts.public.to.the.community")}</strong>
+              <small>{t("community.posts.receive.feedback.from.other.members")}</small>
             </span>
           </label>
           <label className={[styles.visibilityOption, visibility === 'PRIVATE' ? styles.visibilityOptionSelected : ''].filter(Boolean).join(' ')}>
@@ -101,8 +103,8 @@ export function RequestMetadataFields({
               onChange={(event) => onChange('visibility', event.target.value)}
             />
             <span>
-              <strong>Chỉ mình tôi</strong>
-              <small>Lưu lại trong nhật ký cá nhân, không hiện trên bảng tin chung.</small>
+              <strong>{t("community.posts.only.me")}</strong>
+              <small>{t("community.posts.save.to.your.personal.journal.without.appearing.in")}</small>
             </span>
           </label>
         </div>

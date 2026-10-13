@@ -1,0 +1,9 @@
+﻿.textarea {
+  min-height: 0;
+  max-height: 240px;
+  overflow-wrap: anywhere;
+  resize: vertical;
+  line-height: 1.5;
+}
+.actions { flex-wrap: wrap; }
+.actions button { white-space: normal; max-width: 100%; }

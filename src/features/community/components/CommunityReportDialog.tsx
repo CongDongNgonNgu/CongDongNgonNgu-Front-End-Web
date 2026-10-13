@@ -1,10 +1,11 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ApiClientError } from '../../../services/api-client';
 import { Button } from '../../../components/ui/Button';
 import { SelectControl, Textarea } from '../../../components/ui/FormControls';
 import { Dialog } from '../../../components/ui/Overlays';
 import { Icon } from '../../../components/ui/Icon/Icon';
-import { COMMUNITY_REPORT_CATEGORIES, COMMUNITY_REPORT_CATEGORY_LABELS } from '../community.constants';
+import { COMMUNITY_REPORT_CATEGORIES, COMMUNITY_REPORT_CATEGORY_LABELS_KEYS } from '../community.constants';
 import type { CommunityPost, CommunityReportCategory, CommunityReportResponse } from '../community.types';
 import {
   countUnicodeCodePoints,
@@ -37,6 +38,7 @@ export function CommunityReportDialog({
   onAuthRequired,
   authenticated,
 }: CommunityReportDialogProps) {
+  const { t, locale, formatNumber } = useUiLocale();
   const [category, setCategory] = useState('');
   const [details, setDetails] = useState('');
   const [errors, setErrors] = useState<ReportValidationErrors>({});
@@ -61,7 +63,7 @@ export function CommunityReportDialog({
     }
     if (!post) return;
 
-    const nextErrors = validateReportInput({ category, details });
+    const nextErrors = validateReportInput({ category, details }, locale);
     setErrors(nextErrors);
     setSubmitError('');
     if (Object.keys(nextErrors).length > 0) return;
@@ -76,8 +78,8 @@ export function CommunityReportDialog({
     } catch (error) {
       setSubmitError(
         error instanceof ApiClientError && error.status === 429
-          ? 'Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau ít phút.'
-          : 'Không thể gửi báo cáo lúc này. Vui lòng thử lại sau ít phút.',
+          ? t("community.posts.you.have.sent.too.many.reports.please.try")
+          : t("community.posts.unable.to.send.your.report.please.try.again"),
       );
     } finally {
       setIsSubmitting(false);
@@ -85,22 +87,21 @@ export function CommunityReportDialog({
   };
 
   return (
-    <Dialog open={open} title='Báo cáo bài viết' onClose={isSubmitting ? () => undefined : onClose}>
+    <Dialog open={open} title={t("community.posts.report.post")} onClose={isSubmitting ? () => undefined : onClose}>
       {submitted ? (
         <div className={styles.submitted} role='status'>
           <span className={styles.submittedIcon} aria-hidden='true'><Icon name='check' size={20} /></span>
-          <h3>Đã gửi báo cáo</h3>
-          <p>Cảm ơn bạn đã giúp cộng đồng an toàn hơn. Báo cáo của bạn đã được ghi nhận.</p>
-          <Button onClick={onClose}>Đóng</Button>
+          <h3>{t("community.posts.report.sent")}</h3>
+          <p>{t("community.posts.thank.you.for.helping.keep.the.community.safe")}</p>
+          <Button onClick={onClose}>{t("community.posts.close")}</Button>
         </div>
       ) : (
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <p className={styles.intro}>
-            Chọn lý do phù hợp. Báo cáo sẽ được xem xét theo quy định cộng đồng.
-          </p>
+            {t("community.posts.choose.the.appropriate.reason.your.report.will.be")}</p>
           <SelectControl
             id='community-report-category'
-            label='Lý do báo cáo'
+            label={t("community.posts.report.reason")}
             value={category}
             onChange={(event) => {
               setCategory(event.target.value);
@@ -109,30 +110,29 @@ export function CommunityReportDialog({
             error={errors.category}
             required
           >
-            <option value=''>Chọn lý do</option>
+            <option value=''>{t("community.posts.choose.a.reason")}</option>
             {COMMUNITY_REPORT_CATEGORIES.map((value) => (
-              <option key={value} value={value}>{COMMUNITY_REPORT_CATEGORY_LABELS[value]}</option>
+              <option key={value} value={value}>{t(COMMUNITY_REPORT_CATEGORY_LABELS_KEYS[value])}</option>
             ))}
           </SelectControl>
           <Textarea
             id='community-report-details'
-            label='Chi tiết bổ sung'
+            label={t("community.posts.additional.details")}
             value={details}
             onChange={(event) => {
               setDetails(event.target.value);
               setErrors((current) => ({ ...current, details: undefined }));
             }}
             error={errors.details}
-            hint='Không bắt buộc'
+            hint={t("community.posts.optional")}
             rows={5}
           />
           <p className={styles.charCount} aria-live='polite'>
-            {countUnicodeCodePoints(details).toLocaleString('vi-VN')} / 1.000 ký tự
-          </p>
+            {t('community.posts.characterCount', { count: countUnicodeCodePoints(details), max: formatNumber(1000) })}</p>
           {submitError ? <p className={styles.submitError} role='alert'>{submitError}</p> : null}
           <div className={styles.actions}>
-            <Button variant='quiet' type='button' onClick={onClose} disabled={isSubmitting}>Hủy</Button>
-            <Button type='submit' loading={isSubmitting}>Gửi báo cáo</Button>
+            <Button variant='quiet' type='button' onClick={onClose} disabled={isSubmitting}>{t("community.posts.cancel")}</Button>
+            <Button type='submit' loading={isSubmitting}>{t("community.posts.send.report")}</Button>
           </div>
         </form>
       )}

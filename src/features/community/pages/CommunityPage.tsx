@@ -46,7 +46,7 @@ export function CommunityPageView({
   authenticated,
   onAuthRequired,
 }: CommunityPageViewProps) {
-  const { t } = useUiLocale();
+  const { t, locale } = useUiLocale();
   const [searchParams, setSearchParams] = useSearchParams();
   const languageCode = searchParams.get('languageCode') ?? '';
   const [languages, setLanguages] = useState<LanguageCatalogItem[]>([]);
@@ -80,13 +80,13 @@ export function CommunityPageView({
     const previousTitle = document.title;
     const meta = document.querySelector('meta[name=description]');
     const previousDescription = meta?.getAttribute('content');
-    document.title = 'Cộng đồng học ngôn ngữ | CongDongNgonNgu.vn';
-    meta?.setAttribute('content', 'Trao đổi, đặt câu hỏi và chia sẻ khoảnh khắc học ngôn ngữ cùng cộng đồng.');
+    document.title = t("community.posts.language.learning.community.congdongngonngu.vn");
+    meta?.setAttribute('content', t("community.posts.discuss.ask.questions.and.share.language.learning.moments"));
     return () => {
       document.title = previousTitle;
       if (meta && typeof previousDescription === 'string') meta.setAttribute('content', previousDescription);
     };
-  }, []);
+  }, [t]);
 
   const handleOpenComposer = () => {
     if (!authenticated) {
@@ -107,57 +107,54 @@ export function CommunityPageView({
 
   return (
     <div className={styles.page}>
-      <nav className={styles.breadcrumbs} aria-label='Breadcrumb'>
-        <Link to='/'>Trang chủ</Link>
+      <nav className={styles.breadcrumbs} aria-label={t("community.posts.breadcrumb")}>
+        <Link to='/'>{t("community.posts.home")}</Link>
         <span aria-hidden='true'>/</span>
-        <span aria-current='page'>Cộng đồng</span>
+        <span aria-current='page'>{t("community.posts.community")}</span>
       </nav>
 
       <header className={styles.hero}>
-        <p className={styles.eyebrow}>CỘNG ĐỒNG HỌC NGÔN NGỮ</p>
-        <h1>Cùng học, cùng góp tiếng nói.</h1>
+        <p className={styles.eyebrow}>{t("community.posts.language.learning.community")}</p>
+        <h1>{t("community.posts.learn.together.share.your.voice")}</h1>
         <p className={styles.heroDescription}>
-          Nơi người học và người bản ngữ trao đổi câu hỏi, chia sẻ tài nguyên và giúp nhau tiến bộ từng bước.
-        </p>
+          {t("community.posts.a.place.for.learners.and.native.speakers.to")}</p>
       </header>
 
       <p><Link to='/community/groups'>{t('groups.title')}</Link></p>
       <div className={styles.contentGrid}>
         <section className={styles.feedColumn} aria-labelledby='community-feed-heading'>
-          <section className={styles.composerPrompt} aria-label='Tạo bài viết'>
+          <section className={styles.composerPrompt} aria-label={t("community.posts.create.a.post")}>
             <div className={styles.promptIcon} aria-hidden='true'><Icon name='users' size={24} /></div>
             <div className={styles.promptCopy}>
-              <strong>{authenticated ? 'Bạn đang học điều gì?' : 'Muốn chia sẻ cùng cộng đồng?'}</strong>
-              <p>{authenticated ? 'Đặt một câu hỏi hoặc ghi lại một khám phá mới.' : 'Đăng nhập để tạo bài viết của riêng bạn.'}</p>
+              <strong>{authenticated ? t("community.posts.what.are.you.learning") : t("community.posts.want.to.share.with.the.community")}</strong>
+              <p>{authenticated ? t("community.posts.ask.a.question.or.write.about.a.new") : t("community.posts.sign.in.to.create.your.own.post")}</p>
             </div>
             <div className={styles.promptActions}>
               <Button onClick={handleOpenComposer}>
-                {authenticated ? 'Tạo bài viết' : 'Đăng nhập để viết'}
+                {authenticated ? t("community.posts.create.a.post") : t("community.posts.sign.in.to.write")}
               </Button>
               <Link className={styles.promptActionLink} to='/community/ask/correction'>
-                Nhờ cộng đồng sửa giúp
-              </Link>
+                {t("community.posts.ask.the.community.for.corrections")}</Link>
               <Link className={styles.promptActionLink} to='/community/ask/question'>
-                Đặt câu hỏi
-              </Link>
+                {t("community.posts.ask.a.question")}</Link>
             </div>
           </section>
 
           <section className={styles.feedSection}>
             <div className={styles.feedHeading}>
               <div>
-                <p className={styles.eyebrow}>COMMUNITY</p>
-                <h2 id='community-feed-heading'>Mới nhất</h2>
+                <p className={styles.eyebrow}>{t("community.posts.community.alternative")}</p>
+                <h2 id='community-feed-heading'>{t("community.posts.newest")}</h2>
               </div>
               <div className={styles.filterField}>
-                <label htmlFor='community-language-filter'>Theo ngôn ngữ</label>
+                <label htmlFor='community-language-filter'>{t("community.posts.by.language")}</label>
                 <select
                   id='community-language-filter'
                   value={languageCode}
                   onChange={(event) => handleLanguageChange(event.target.value)}
                   disabled={isLoadingLanguages && languages.length === 0}
                 >
-                  <option value=''>Tất cả ngôn ngữ</option>
+                  <option value=''>{t("community.posts.all.languages")}</option>
                   {languages.map((language) => (
                     <option key={language.code} value={language.code}>
                       {language.nativeName} · {language.englishName}
@@ -169,29 +166,29 @@ export function CommunityPageView({
 
             {languageError ? (
               <div className={styles.inlineNotice} role='alert'>
-                <span>Không thể tải danh mục ngôn ngữ. Bộ lọc sẽ hoạt động lại khi tải thành công.</span>
-                <Button variant='quiet' size='sm' onClick={() => void loadLanguages()}>Thử lại</Button>
+                <span>{t("community.posts.unable.to.load.languages.the.filter.will.be")}</span>
+                <Button variant='quiet' size='sm' onClick={() => void loadLanguages()}>{t("community.posts.try.again")}</Button>
               </div>
             ) : null}
 
             {feed.isLoading ? (
               <div className={styles.loadingCard}>
-                <Skeleton lines={5} label='Đang tải bảng tin cộng đồng' />
+                <Skeleton lines={5} label={t("community.posts.loading.the.community.feed")} />
               </div>
             ) : null}
 
             {!feed.isLoading && feed.error && feed.items.length === 0 ? (
               <ErrorState
-                title='Không thể tải bảng tin cộng đồng'
-                description={getCommunityFeedErrorMessage(feed.error)}
+                title={t("community.posts.unable.to.load.the.community.feed")}
+                description={getCommunityFeedErrorMessage(feed.error, locale)}
                 onRetry={() => void feed.refresh()}
               />
             ) : null}
 
             {!feed.isLoading && !feed.error && feed.items.length === 0 ? (
               <EmptyState
-                title={selectedLanguage ? 'Chưa có bài viết bằng ' + selectedLanguage.nativeName : 'Chưa có bài viết nào'}
-                description='Hãy quay lại sau hoặc là người đầu tiên chia sẻ một câu hỏi trong không gian này.'
+                title={selectedLanguage ? t("community.posts.no.posts.yet.in") + ' ' + selectedLanguage.nativeName : t("community.posts.no.posts.yet")}
+                description={t("community.posts.come.back.later.or.be.the.first.to")}
                 icon='message-circle'
               />
             ) : null}
@@ -210,8 +207,8 @@ export function CommunityPageView({
 
             {feed.error && feed.items.length > 0 ? (
               <div className={styles.inlineNotice} role='alert'>
-                <span>{getCommunityFeedErrorMessage(feed.error)}</span>
-                <Button variant='quiet' size='sm' onClick={() => void (feed.nextCursor ? feed.loadMore() : feed.refresh())}>Thử lại</Button>
+                <span>{getCommunityFeedErrorMessage(feed.error, locale)}</span>
+                <Button variant='quiet' size='sm' onClick={() => void (feed.nextCursor ? feed.loadMore() : feed.refresh())}>{t("community.posts.try.again")}</Button>
               </div>
             ) : null}
 
@@ -222,26 +219,24 @@ export function CommunityPageView({
                 onClick={() => void feed.loadMore()}
                 loading={feed.isLoadingMore}
               >
-                Xem thêm
-              </Button>
+                {t("community.posts.load.more")}</Button>
             ) : null}
           </section>
         </section>
 
-        <aside className={styles.rail} aria-label='Về cộng đồng'>
+        <aside className={styles.rail} aria-label={t("community.posts.about.the.community")}>
           <div className={styles.railHeading}>
             <span className={styles.railIcon} aria-hidden='true'><Icon name='sparkles' size={18} /></span>
-            <h2>Cộng đồng mở</h2>
+            <h2>{t("community.posts.an.open.community")}</h2>
           </div>
           <p>
-            Một câu trả lời tử tế có thể giúp ai đó hiểu thêm một ngôn ngữ. Hãy bắt đầu từ điều bạn đang tò mò.
-          </p>
+            {t("community.posts.a.thoughtful.answer.can.help.someone.understand.a")}</p>
           <ul className={styles.guidelines}>
-            <li>Giữ nội dung rõ ràng và tôn trọng.</li>
-            <li>Chọn đúng ngôn ngữ mục tiêu.</li>
-            <li>Chia sẻ điều hữu ích cho người học khác.</li>
+            <li>{t("community.posts.keep.your.content.clear.and.respectful")}</li>
+            <li>{t("community.posts.choose.the.correct.target.language")}</li>
+            <li>{t("community.posts.share.something.useful.with.other.learners")}</li>
           </ul>
-          <Link className={styles.railLink} to='/languages'>Khám phá danh mục ngôn ngữ <span aria-hidden='true'>→</span></Link>
+          <Link className={styles.railLink} to='/languages'>{t("community.posts.explore.languages")}{' '}<span aria-hidden='true'>→</span></Link>
         </aside>
       </div>
 

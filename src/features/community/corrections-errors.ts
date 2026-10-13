@@ -1,25 +1,23 @@
 import { ApiClientError } from '../../services/api-client';
+import { translate, type UiLocale, type TranslationKey } from '../ui-locale/ui-locale';
 
 type RequestKind = 'correction' | 'question';
 
-export function communityRequestErrorMessage(error: unknown, kind: RequestKind): string {
-  const noun = kind === 'correction' ? 'yêu cầu sửa' : 'câu hỏi';
-  if (!(error instanceof ApiClientError)) {
-    return 'Không thể gửi ' + noun + '. Nội dung vẫn được giữ lại để bạn thử lại.';
-  }
-
+export function communityRequestErrorMessage(error: unknown, kind: RequestKind, locale: UiLocale = 'vi'): string {
+  const t = (key: TranslationKey) => translate(locale, key);
+  const noun = t(kind === 'correction' ? 'community.posts.request.correction' : 'community.posts.request.question');
+  const failed = () => translate(locale, 'community.posts.request.failed', { kind: noun });
+  if (!(error instanceof ApiClientError)) return failed();
   if (error.status === 400) {
-    if (error.code.includes('LANGUAGE')) return 'Ngôn ngữ mục tiêu không còn khả dụng. Vui lòng chọn lại.';
-    if (error.code.includes('TEXT') || error.code.includes('CONTENT')) {
-      return 'Nội dung chưa hợp lệ. Vui lòng kiểm tra các trường được đánh dấu.';
-    }
-    return 'Thông tin ' + noun + ' chưa hợp lệ. Vui lòng kiểm tra lại.';
+    if (error.code.includes('LANGUAGE')) return t("community.posts.the.target.language.is.no.longer.available.please");
+    if (error.code.includes('TEXT') || error.code.includes('CONTENT')) return t("community.posts.the.content.is.invalid.please.check.the.marked");
+    return translate(locale, 'community.posts.request.invalid', { kind: noun });
   }
-  if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.';
-  if (error.status === 403) return 'Tài khoản hiện chưa thể gửi nội dung này.';
-  if (error.status === 404) return 'Ngôn ngữ hoặc không gian cộng đồng không còn khả dụng.';
-  if (error.status === 409) return 'Một ' + noun + ' tương tự vừa được tạo. Vui lòng kiểm tra bảng tin.';
-  if (error.status === 429) return 'Bạn đã gửi khá nhiều yêu cầu. Vui lòng thử lại sau ít phút.';
-  if (error.status >= 500) return 'Hệ thống đang bận. Nội dung vẫn được giữ lại, bạn thử lại sau nhé.';
-  return 'Không thể gửi ' + noun + '. Nội dung vẫn được giữ lại để bạn thử lại.';
+  if (error.status === 401) return t("community.posts.your.session.has.expired.please.sign.in.again");
+  if (error.status === 403) return t("community.posts.your.account.cannot.submit.this.content.right.now");
+  if (error.status === 404) return t("community.posts.the.language.or.community.space.is.no.longer");
+  if (error.status === 409) return translate(locale, 'community.posts.request.conflict', { kind: noun });
+  if (error.status === 429) return t("community.posts.you.have.sent.too.many.requests.please.try");
+  if (error.status >= 500) return t("community.posts.the.service.is.busy.your.draft.has.been");
+  return failed();
 }
