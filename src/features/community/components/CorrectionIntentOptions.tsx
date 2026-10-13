@@ -1,7 +1,8 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import {
   CORRECTION_INTENTS,
-  CORRECTION_INTENT_HELP,
-  CORRECTION_INTENT_LABELS,
+  CORRECTION_INTENT_HELP_KEYS,
+  CORRECTION_INTENT_LABELS_KEYS,
   type CorrectionIntent,
 } from '../corrections.types';
 import styles from '../pages/CommunityRequestPage.module.css';
@@ -13,6 +14,7 @@ interface CorrectionIntentOptionsProps {
 }
 
 export function CorrectionIntentOptions({ value, error, onChange }: CorrectionIntentOptionsProps) {
+  const { t } = useUiLocale();
   return (
     <fieldset
       className={styles.intentFieldset}
@@ -20,9 +22,9 @@ export function CorrectionIntentOptions({ value, error, onChange }: CorrectionIn
       aria-describedby={error ? 'correction-intent-error' : undefined}
     >
       <legend>
-        Bạn muốn cộng đồng giúp điều gì? <span aria-hidden='true'>*</span>
+        {t("community.posts.what.would.you.like.help.with")}<span aria-hidden='true'>*</span>
       </legend>
-      <p className={styles.fieldHint}>Chọn một mục tiêu để người trả lời tập trung đúng vào điều bạn cần.</p>
+      <p className={styles.fieldHint}>{t("community.posts.choose.a.goal.to.help.contributors.focus.on")}</p>
       <div className={styles.intentOptions}>
         {CORRECTION_INTENTS.map((intent) => (
           <label
@@ -37,8 +39,8 @@ export function CorrectionIntentOptions({ value, error, onChange }: CorrectionIn
               onChange={() => onChange(intent)}
             />
             <span className={styles.intentCopy}>
-              <strong>{CORRECTION_INTENT_LABELS[intent]}</strong>
-              <small>{CORRECTION_INTENT_HELP[intent]}</small>
+              <strong>{t(CORRECTION_INTENT_LABELS_KEYS[intent])}</strong>
+              <small>{t(CORRECTION_INTENT_HELP_KEYS[intent])}</small>
             </span>
           </label>
         ))}

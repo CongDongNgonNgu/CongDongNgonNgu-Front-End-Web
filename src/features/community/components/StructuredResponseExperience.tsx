@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/Button/Button';
 import type { CommunityPost } from '../community.types';
@@ -26,16 +27,16 @@ function isStructuredParent(post: CommunityPost): boolean {
   return post.postType === 'CORRECTION_REQUEST' || post.postType === 'QUESTION';
 }
 
-function errorMessage(error: unknown, fallback: string): string {
+function errorMessage(error: unknown, t: ReturnType<typeof useUiLocale>['t'], fallback: string): string {
   if (typeof error === 'object' && error !== null && 'code' in error) {
     const code = (error as { code?: unknown }).code;
-    if (code === 'CORRECTIONS_RATE_LIMITED') return 'Bạn đã thao tác khá nhiều. Vui lòng thử lại sau ít phút.';
-    if (code === 'CORRECTIONS_ACCEPT_FORBIDDEN') return 'Chỉ người hỏi mới có thể chấp nhận câu trả lời.';
-    if (code === 'CORRECTIONS_SELF_VOTE') return 'Bạn không thể đánh dấu phản hồi của chính mình.';
-    if (code === 'CORRECTIONS_ACCEPTANCE_CONFLICT') return 'Lựa chọn đã thay đổi. Vui lòng tải lại danh sách.';
-    if (code === 'CORRECTIONS_CANDIDATE_NOT_ACCEPTED') return 'Chỉ phản hồi đang được chấp nhận mới có thể được đề cử.';
-    if (code === 'CORRECTIONS_CANDIDATE_SOURCE_NOT_PUBLIC') return 'Chỉ nội dung công khai mới có thể được đề cử vào Thư viện.';
-    if (code === 'CORRECTIONS_CANDIDATE_FORBIDDEN') return 'Chỉ người hỏi mới có thể đề cử phản hồi.';
+    if (code === 'CORRECTIONS_RATE_LIMITED') return t('community.detail.you.have.made.many.requests.please.try.again.shortly');
+    if (code === 'CORRECTIONS_ACCEPT_FORBIDDEN') return t('community.detail.only.the.requester.can.accept.an.answer');
+    if (code === 'CORRECTIONS_SELF_VOTE') return t('community.detail.you.cannot.mark.your.own.response.as.helpful');
+    if (code === 'CORRECTIONS_ACCEPTANCE_CONFLICT') return t('community.detail.the.selection.changed.please.reload.the.list');
+    if (code === 'CORRECTIONS_CANDIDATE_NOT_ACCEPTED') return t('community.detail.only.a.currently.accepted.response.can.be.nominated');
+    if (code === 'CORRECTIONS_CANDIDATE_SOURCE_NOT_PUBLIC') return t('community.detail.only.public.content.can.be.nominated.for.the.library');
+    if (code === 'CORRECTIONS_CANDIDATE_FORBIDDEN') return t('community.detail.only.the.requester.can.nominate.a.response');
   }
   return fallback;
 }
@@ -54,12 +55,13 @@ export function StructuredResponseExperience({
   requestApi,
   onAuthRequired,
 }: StructuredResponseExperienceProps) {
+  const { t } = useUiLocale();
   const [correction, setCorrection] = useState<CorrectionRequestResponse | null>(null);
   const [responses, setResponses] = useState<StructuredResponseResponse[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ cause: unknown } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [editorError, setEditorError] = useState<string | null>(null);
@@ -68,11 +70,11 @@ export function StructuredResponseExperience({
 
   const isCorrection = parent.postType === 'CORRECTION_REQUEST';
   const kind = isCorrection ? ('CORRECTION_PROPOSAL' as const) : ('QA_ANSWER' as const);
-  const originalText = correction?.correction.originalText ?? parent.content;
-  const sectionTitle = isCorrection ? 'Đề xuất sửa câu' : 'Câu trả lời chuẩn hóa';
+  const originalText = isCorrection ? correction?.correction.originalText ?? '' : parent.content;
+  const sectionTitle = isCorrection ? t('community.detail.correction.proposal') : t('community.detail.answers');
   const emptyText = isCorrection
-    ? 'Chưa có bản sửa nào. Hãy là người đầu tiên đưa ra một đề xuất có giải thích.'
-    : 'Chưa có câu trả lời nào. Hãy chia sẻ góc nhìn giúp người hỏi tiến bộ.';
+    ? t('community.detail.no.corrections.yet.be.the.first.to.suggest.a.correction')
+    : t('community.detail.no.answers.yet.share.your.perspective.to.help.the.requester');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -89,7 +91,7 @@ export function StructuredResponseExperience({
     } catch (error) {
       setResponses([]);
       setNextCursor(null);
-      setLoadError(errorMessage(error, 'Không thể tải phản hồi có cấu trúc.'));
+      setLoadError({ cause: error });
     } finally {
       setLoading(false);
     }
@@ -111,7 +113,7 @@ export function StructuredResponseExperience({
       setResponses((current) => [...current, ...result.items]);
       setNextCursor(result.nextCursor);
     } catch (error) {
-      setActionError(errorMessage(error, 'Không thể tải thêm phản hồi.'));
+      setActionError(errorMessage(error, t, t('community.detail.could.not.load.more.responses')));
     } finally {
       setLoadingMore(false);
     }
@@ -130,7 +132,7 @@ export function StructuredResponseExperience({
         : await api.addStructuredResponseHelpful(response.id);
       setResponses((current) => replaceResponse(current, updated));
     } catch (error) {
-      setActionError(errorMessage(error, 'Không thể cập nhật đánh dấu hữu ích.'));
+      setActionError(errorMessage(error, t, t('community.detail.could.not.update.helpfulness')));
     } finally {
       setPendingAction(null);
     }
@@ -144,13 +146,13 @@ export function StructuredResponseExperience({
         await api.revokeStructuredResponseAcceptance(parent.id);
         setResponses((current) => current.map((item) => ({ ...item, isAccepted: false, acceptedAt: null })));
       } catch (error) {
-        setActionError(errorMessage(error, 'Không thể bỏ chấp nhận phản hồi.'));
+        setActionError(errorMessage(error, t, t('community.detail.could.not.unaccept.the.response')));
       } finally {
         setPendingAction(null);
       }
       return;
     }
-    if (responses.some((item) => item.isAccepted) && !window.confirm('Thay đổi câu trả lời được chấp nhận?')) return;
+    if (responses.some((item) => item.isAccepted) && !window.confirm(t('community.detail.replace.the.accepted.answer'))) return;
     setPendingAction('accept:' + response.id);
     setActionError(null);
     try {
@@ -161,7 +163,7 @@ export function StructuredResponseExperience({
         acceptedAt: item.id === accepted.id ? accepted.acceptedAt : null,
       })));
     } catch (error) {
-      setActionError(errorMessage(error, 'Không thể chấp nhận phản hồi.'));
+      setActionError(errorMessage(error, t, t('community.detail.could.not.accept.the.response')));
     } finally {
       setPendingAction(null);
     }
@@ -182,7 +184,7 @@ export function StructuredResponseExperience({
         canNominateCandidate: false,
       } : item));
     } catch (error) {
-      setActionError(errorMessage(error, 'Không thể gửi đề cử vào Thư viện.'));
+      setActionError(errorMessage(error, t, t('community.detail.could.not.submit.the.library.nomination')));
     } finally {
       setPendingAction(null);
     }
@@ -196,7 +198,7 @@ export function StructuredResponseExperience({
       setResponses((current) => [created, ...current]);
       setEditorVersion((current) => current + 1);
     } catch (error) {
-      setEditorError(errorMessage(error, 'Không thể gửi phản hồi. Nội dung vẫn được giữ lại để thử lại.'));
+      setEditorError(errorMessage(error, t, t('community.detail.could.not.send.your.response.your.draft.is.preserved.so')));
     } finally {
       setEditorBusy(false);
     }
@@ -206,24 +208,24 @@ export function StructuredResponseExperience({
     <section className={styles.section} aria-labelledby='structured-responses-title'>
       <div className={styles.sectionHeading}>
         <div>
-          <p className={styles.eyebrow}>{isCorrection ? 'Học cùng cộng đồng' : 'Hỏi và giải đáp'}</p>
+          <p className={styles.eyebrow}>{isCorrection ? t('community.detail.learn.with.the.community') : t('community.detail.questions.and.answers')}</p>
           <h2 id='structured-responses-title'>{sectionTitle}</h2>
         </div>
-        <span className={styles.status}>{responses.length} phản hồi</span>
+        <span className={styles.status}>{t('community.detail.responseCount', { count: responses.length })}</span>
       </div>
 
-      <div className={styles.originalBlock}>
-        <p className={styles.eyebrow}>{isCorrection ? 'Bản gốc cần xem xét' : 'Câu hỏi của người học'}</p>
+      {isCorrection && correction && originalText !== parent.content ? <div className={styles.originalBlock}>
+        <p className={styles.eyebrow}>{isCorrection ? t('community.detail.original.for.review') : t('community.detail.learner.question')}</p>
         <p>{originalText}</p>
-        {correction?.correction.context ? <p className={styles.muted}>{correction.correction.context}</p> : null}
-      </div>
+      </div> : null}
+      {correction?.correction.context ? <p className={styles.muted}>{correction.correction.context}</p> : null}
 
       {loading ? (
-        <p className={styles.status} role='status' aria-live='polite'>Đang tải phản hồi...</p>
+        <p className={styles.status} role='status' aria-live='polite'>{t('community.detail.loading.responses')}</p>
       ) : loadError ? (
         <div role='alert'>
-          <p className={styles.error}>{loadError}</p>
-          <Button variant='secondary' size='sm' onClick={() => void load()}>Thử lại</Button>
+          <p className={styles.error}>{errorMessage(loadError.cause, t, t('community.detail.could.not.load.responses'))}</p>
+          <Button variant='secondary' size='sm' onClick={() => void load()}>{t('community.detail.try.again')}</Button>
         </div>
       ) : responses.length ? (
         <div className={styles.responseList}>
@@ -248,8 +250,7 @@ export function StructuredResponseExperience({
               onClick={() => void handleLoadMore()}
               loading={loadingMore}
             >
-              Xem thêm phản hồi
-            </Button>
+              {t('community.detail.load.more.responses')}</Button>
           ) : null}
         </div>
       ) : (
@@ -257,8 +258,8 @@ export function StructuredResponseExperience({
       )}
 
       {parent.isOwner ? (
-        <p className={styles.muted}>Bạn là người hỏi. Hãy chọn phản hồi hữu ích nhất khi đã sẵn sàng.</p>
-      ) : (
+        <p className={styles.muted}>{t('community.detail.you.are.the.requester.choose.the.most.helpful.response.when')}</p>
+      ) : !isCorrection || correction ? (
         <StructuredResponseEditor
           key={editorVersion}
           kind={kind}
@@ -269,7 +270,7 @@ export function StructuredResponseExperience({
           onAuthRequired={onAuthRequired}
           onSubmit={handleEditorSubmit}
         />
-      )}
+      ) : null}
     </section>
   );
 }

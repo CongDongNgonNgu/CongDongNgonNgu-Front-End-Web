@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
@@ -59,6 +60,7 @@ export function CommunityCorrectionRequestPageView({
   api,
   catalogApi,
 }: CommunityCorrectionRequestPageViewProps) {
+  const { t, locale, formatNumber } = useUiLocale();
   const navigate = useNavigate();
   const [languages, setLanguages] = useState<LanguageCatalogItem[]>([]);
   const [languagesLoading, setLanguagesLoading] = useState(true);
@@ -96,11 +98,11 @@ export function CommunityCorrectionRequestPageView({
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'Nhờ cộng đồng sửa giúp | CongDongNgonNgu.vn';
+    document.title = t("community.posts.ask.for.corrections.congdongngonngu.vn");
     return () => {
       document.title = previousTitle;
     };
-  }, []);
+  }, [t]);
 
   const update = (field: keyof CorrectionRequestFormInput, value: string) => {
     setInput((current) => ({ ...current, [field]: value }));
@@ -111,7 +113,7 @@ export function CommunityCorrectionRequestPageView({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) return;
-    const nextErrors = validateCorrectionRequestInput(input);
+    const nextErrors = validateCorrectionRequestInput(input, locale);
     setErrors(nextErrors);
     setSubmitError('');
     if (Object.keys(nextErrors).length > 0) return;
@@ -122,7 +124,7 @@ export function CommunityCorrectionRequestPageView({
       if (!response.post?.id) throw new Error('CORRECTION_POST_ID_MISSING');
       navigate('/community/posts/' + encodeURIComponent(response.post.id));
     } catch (error) {
-      setSubmitError(communityRequestErrorMessage(error, 'correction'));
+      setSubmitError(communityRequestErrorMessage(error, 'correction', locale));
     } finally {
       setIsSubmitting(false);
     }
@@ -130,35 +132,35 @@ export function CommunityCorrectionRequestPageView({
 
   return (
     <CommunityRequestPageLayout
-      breadcrumb='Nhờ cộng đồng sửa giúp'
-      eyebrow='NHỜ CỘNG ĐỒNG SỬA GIÚP'
-      title='Nhờ cộng đồng sửa giúp'
-      description='Chia sẻ một câu bạn đang học để cộng đồng góp ý rõ ràng và tôn trọng.'
+      breadcrumb={t("community.posts.ask.the.community.for.corrections")}
+      eyebrow={t("community.posts.ask.for.corrections")}
+      title={t("community.posts.ask.the.community.for.corrections")}
+      description={t("community.posts.share.a.sentence.you.are.learning.for.clear")}
       guidanceCards={[
         {
           icon: 'users',
-          title: 'Cộng đồng học tập tử tế',
-          description: 'Mỗi câu bạn gửi gắm là một cơ hội học hỏi chung. Người sửa sẽ giải thích ngọn ngành ngữ cảnh thay vì chỉ đưa ra một đáp án khô khan.',
+          title: t("community.posts.a.thoughtful.learning.community"),
+          description: t("community.posts.every.sentence.you.share.is.an.opportunity.to"),
         },
         {
           icon: 'sparkles',
-          title: 'Gợi ý để nhận phản hồi chất lượng',
+          title: t("community.posts.tips.for.useful.feedback"),
           items: [
-            { label: 'Cung cấp ngữ cảnh rõ ràng: ', text: 'Bạn định dùng câu này với ai và trong tình huống nào?' },
-            { label: 'Giữ nguyên câu gốc: ', text: 'Không cần ngại sai sót; lỗi sai thực tế giúp bạn nhớ lâu hơn.' },
-            { label: 'Lắng nghe đa chiều: ', text: 'Ngôn ngữ sống luôn có nhiều cách diễn đạt phù hợp tùy đối tượng.' },
+            { label: t("community.posts.provide.clear.context"), text: t("community.posts.who.will.you.use.this.sentence.with.and") },
+            { label: t("community.posts.keep.the.original.sentence"), text: t("community.posts.do.not.worry.about.mistakes.learning.from.real") },
+            { label: t("community.posts.listen.to.different.perspectives"), text: t("community.posts.living.languages.offer.different.ways.to.express.yourself") },
           ],
         },
         {
           icon: 'user-round',
-          title: 'Cam kết không sử dụng AI tạo tự động',
+          title: t("community.posts.no.automatically.generated.ai.feedback"),
           tone: 'muted',
-          description: 'Mọi lời góp ý đến từ sự sẻ chia của con người thực. Chúng tôi không dùng bot tạo gợi ý sửa giả để đảm bảo tính nhân văn và chiều sâu văn hóa.',
+          description: t("community.posts.feedback.comes.from.real.people.we.do.not"),
         },
       ]}
     >
       <div className={styles.formCard}>
-        <h2 id='community-request-form-heading' className={styles.visuallyHidden}>Gửi câu cần được góp ý</h2>
+        <h2 id='community-request-form-heading' className={styles.visuallyHidden}>{t("community.posts.submit.a.sentence.for.feedback")}</h2>
 
         <form className={styles.form} onSubmit={submit} noValidate>
           {languagesError ? <CatalogError onRetry={() => void loadLanguages()} /> : null}
@@ -174,16 +176,15 @@ export function CommunityCorrectionRequestPageView({
 
           <Textarea
             id='correction-original-text'
-            label='Câu hoặc đoạn văn bản cần sửa'
+            label={t("community.posts.sentence.or.text.to.correct")}
             value={input.originalText}
             onChange={(event) => update('originalText', event.target.value)}
             error={errors.originalText}
-            hint='Giữ nguyên dấu cách và xuống dòng.'
+            hint={t("community.posts.keep.the.original.spacing.and.line.breaks")}
             required
           />
           <p className={styles.charCount} aria-live='polite'>
-            {countUnicodeCodePoints(input.originalText)} / {MAX_CORRECTION_TEXT_CODE_POINTS.toLocaleString('vi-VN')} ký tự
-          </p>
+            {t('community.posts.characterCount', { count: countUnicodeCodePoints(input.originalText), max: formatNumber(MAX_CORRECTION_TEXT_CODE_POINTS) })}</p>
 
           <CorrectionIntentOptions
             value={input.correctionIntent}
@@ -207,15 +208,14 @@ export function CommunityCorrectionRequestPageView({
 
           {submitError ? <p className={styles.submitError} role='alert'>{submitError}</p> : null}
           <p className={styles.submitStatus} aria-live='polite' aria-atomic='true'>
-            {isSubmitting ? 'Đang gửi yêu cầu…' : ''}
+            {isSubmitting ? t("community.posts.sending.your.request") : ''}
           </p>
 
           <div className={[styles.formActions, styles.formActionsCorrection].join(' ')}>
-            <Button type='submit' loading={isSubmitting}>Gửi yêu cầu sửa</Button>
-            <Link className={styles.cancelLink} to='/community'>Hủy</Link>
+            <Button type='submit' loading={isSubmitting}>{t("community.posts.send.correction.request")}</Button>
+            <Link className={styles.cancelLink} to='/community'>{t("community.posts.cancel")}</Link>
             <span className={styles.actionReassurance}>
-              Tuân thủ nguyên tắc cộng đồng học tập phi thương mại.
-            </span>
+              {t("community.posts.follow.the.noncommercial.learning.community.guidelines")}</span>
           </div>
         </form>
       </div>

@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { Button } from '../../../components/ui/Button/Button';
 import type { StructuredResponseResponse } from '../corrections.types';
 import { StructuredResponseDiff } from './StructuredResponseDiff';
@@ -15,11 +16,6 @@ interface StructuredResponseCardProps {
   onNominateCandidate: (response: StructuredResponseResponse) => void;
 }
 
-function formatDate(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
-}
 
 export function StructuredResponseCard({
   response,
@@ -32,31 +28,32 @@ export function StructuredResponseCard({
   onAccept,
   onNominateCandidate,
 }: StructuredResponseCardProps) {
-  const responseLabel = response.responseKind === 'CORRECTION_PROPOSAL' ? 'Đề xuất sửa câu' : 'Câu trả lời';
-  const acceptLabel = response.responseKind === 'CORRECTION_PROPOSAL' ? 'Chấp nhận bản sửa' : 'Chấp nhận câu trả lời';
-  const authorName = response.author?.displayName ?? 'Thành viên ẩn danh';
+  const { t, formatNumber, formatDate: formatLocaleDate } = useUiLocale();
+  const responseLabel = response.responseKind === 'CORRECTION_PROPOSAL' ? t('community.detail.correction.proposal') : t('community.detail.answer');
+  const acceptLabel = response.responseKind === 'CORRECTION_PROPOSAL' ? t('community.detail.accept.correction') : t('community.detail.accept.answer');
+  const authorName = response.author?.displayName ?? t('community.detail.anonymous.member');
 
   return (
-    <article className={styles.responseCard} aria-label={responseLabel + ' của ' + authorName}>
+    <article className={styles.responseCard} aria-label={t('community.detail.by', {kind: responseLabel, name: authorName})}>
       <div className={styles.responseHeader}>
         <div className={styles.author}>
           <span className={styles.avatar} aria-hidden='true'>{authorName.slice(0, 1).toUpperCase()}</span>
           <div>
             <strong className={styles.authorName}>{authorName}</strong>
-            <time dateTime={response.createdAt}>{formatDate(response.createdAt)}</time>
+            <time dateTime={response.createdAt}>{formatLocaleDate(response.createdAt, {dateStyle: 'medium', timeStyle: 'short'})}</time>
           </div>
         </div>
-        {response.isAccepted ? <span className={styles.accepted}>Được người hỏi chấp nhận</span> : null}
+        {response.isAccepted && !response.isDeleted ? <span className={styles.accepted}>{t('community.detail.accepted.by.the.requester')}</span> : null}
       </div>
       {response.isDeleted ? (
-        <p className={styles.muted} role='status'>Phản hồi này không còn khả dụng.</p>
+        <p className={styles.muted} role='status'>{t('community.detail.this.response.is.no.longer.available')}</p>
       ) : (
         <>
           {response.responseKind === 'CORRECTION_PROPOSAL' && response.correctedText ? (
             <StructuredResponseDiff original={originalText} corrected={response.correctedText} />
           ) : (
             <div className={styles.originalBlock}>
-              <p className={styles.eyebrow}>Nội dung trả lời</p>
+              <p className={styles.eyebrow}>{t('community.detail.answer.content')}</p>
               <p>{response.answerText}</p>
             </div>
           )}
@@ -70,7 +67,7 @@ export function StructuredResponseCard({
                 onClick={() => authenticated ? onHelpful(response) : onAuthRequired()}
                 disabled={Boolean(pendingAction)}
               >
-                Hữu ích{response.helpfulCount ? ' · ' + response.helpfulCount : ''}
+                {t(response.responseKind === 'QA_ANSWER' ? 'community.detail.answerHelpful' : 'community.detail.proposalHelpful')}{response.helpfulCount ? ' · ' + formatNumber(response.helpfulCount) : ''}
               </Button>
             ) : null}
             {response.canAccept ? (
@@ -80,11 +77,11 @@ export function StructuredResponseCard({
                 onClick={() => onAccept(response)}
                 loading={pendingAction === 'accept:' + response.id}
               >
-                {response.isAccepted ? 'Bỏ chấp nhận' : acceptLabel}
+                {response.isAccepted ? t('community.detail.unaccept') : acceptLabel}
               </Button>
             ) : null}
             {response.libraryCandidateState === 'PENDING_REVIEW' ? (
-              <span className={styles.candidateStatus} role='status'>Đã gửi để xem xét · chưa được xác minh</span>
+              <span className={styles.candidateStatus} role='status'>{t('community.detail.submitted.for.review.not.yet.verified')}</span>
             ) : null}
             {response.canNominateCandidate ? (
               <Button
@@ -93,8 +90,7 @@ export function StructuredResponseCard({
                 onClick={() => onNominateCandidate(response)}
                 loading={pendingAction === 'candidate:' + response.id}
               >
-                Đề cử vào Thư viện
-              </Button>
+                {t('community.detail.nominate.for.the.library')}</Button>
             ) : null}
           </div>
           {actionError ? <p className={styles.error} role='alert'>{actionError}</p> : null}

@@ -1,0 +1,4 @@
+﻿.disclosure { margin-top: var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: var(--space-4); min-width: 0; }
+.disclosure summary { min-height: 44px; padding-block: var(--space-3); cursor: pointer; color: var(--color-text-primary); font-weight: var(--font-weight-semibold); }
+.disclosure summary:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.hint { color: var(--color-text-secondary); line-height: 1.5; }

@@ -1,3 +1,4 @@
+import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -16,6 +17,7 @@ import type {
 
 afterEach(() => {
   cleanup();
+  window.localStorage.removeItem('congdongngonngu.ui-locale.v1');
   vi.clearAllMocks();
 });
 
@@ -405,11 +407,64 @@ describe('CommunityPostDetailPageView', () => {
 
     renderDetail(api, true);
     await screen.findByText('Minh Hoàng');
-    fireEvent.click(screen.getByRole('button', { name: /Hữu ích/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Bài viết hữu ích/ }));
     await waitFor(() => expect(api.addHelpful).toHaveBeenCalledWith('post-1'));
     fireEvent.click(screen.getAllByRole('button', { name: /Lưu/ })[0]);
     await waitFor(() => expect(api.savePost).toHaveBeenCalledWith('post-1'));
     fireEvent.click(screen.getByRole('button', { name: 'Chia sẻ' }));
     await waitFor(() => expect(api.getShareLink).toHaveBeenCalledWith('post-1'));
   });
+});
+
+it.each(['DISCUSSION', 'RESOURCE', 'LEARNING_JOURNAL', 'CULTURE', 'PRONUNCIATION_REQUEST', 'CHALLENGE'] as const)('keeps comments primary for %s', async (postType) => {
+  const api = createApi({ getPost: vi.fn().mockResolvedValue(post({ postType })) });
+  const { container } = renderDetail(api, true);
+  await screen.findByRole('textbox', { name: 'Chia sẻ suy nghĩ của bạn' });
+  expect(container.querySelector('details summary')?.textContent).not.toContain('Thảo luận chung');
+  expect(screen.getByRole('heading', {name:'Thảo luận & Đóng góp tri thức'})).toBeVisible();
+});
+
+it.each(['QUESTION', 'CORRECTION_REQUEST'] as const)('collapses secondary discussion for %s and preserves keyboard activation', async (postType) => {
+  const user = userEvent.setup();
+  const api = createApi({getPost: vi.fn().mockResolvedValue(post({postType,content:'A question or correction source'}))});
+  const { container } = render(<MemoryRouter><CommunityPostDetailPageView api={api} postId="post-1" authenticated
+    structuredApi={{listStructuredResponses:vi.fn().mockResolvedValue({items:[],nextCursor:null})} as unknown as import('../corrections.types').CommunityStructuredResponseApi}
+    requestApi={{getCorrectionRequest:vi.fn().mockResolvedValue({post:post(),correction:{originalText:'Immutable correction',context:null}})}}/>
+  </MemoryRouter>);
+  const summary = await screen.findByText(/Thảo luận chung/);
+  const disclosure = summary.closest('details');
+  expect(disclosure).not.toHaveAttribute('open');
+  expect(container.querySelectorAll('.community-detail__content')).toHaveLength(1);
+  summary.focus();
+  expect(summary).toHaveFocus();
+  await user.click(summary);
+  expect(disclosure).toHaveAttribute('open');
+  expect(screen.getByRole('textbox',{name:'Chia sẻ suy nghĩ của bạn'})).toBeVisible();
+});
+
+function LocaleSwitch() {
+  const { setLocale } = useUiLocale();
+  return <button onClick={() => setLocale('en')}>Switch to English</button>;
+}
+
+it.each(['QUESTION', 'CORRECTION_REQUEST'] as const)('preserves %s response and explanation drafts across a locale switch without refetching', async (postType) => {
+  const user = userEvent.setup();
+  const api = createApi({getPost:vi.fn().mockResolvedValue(post({postType}))});
+  const listStructuredResponses = vi.fn().mockResolvedValue({items:[],nextCursor:null});
+  const getCorrectionRequest = vi.fn().mockResolvedValue({post:post(),correction:{originalText:'Immutable source',context:null}});
+  render(<UiLocaleProvider><LocaleSwitch/><MemoryRouter><CommunityPostDetailPageView api={api} postId="post-1" authenticated
+    structuredApi={{listStructuredResponses} as unknown as import('../corrections.types').CommunityStructuredResponseApi}
+    requestApi={{getCorrectionRequest}}/>
+  </MemoryRouter></UiLocaleProvider>);
+  const editor = await screen.findByRole('textbox',{name:postType === 'QUESTION' ? 'Câu trả lời' : 'Bản sửa đề xuất'});
+  await user.type(editor,'Draft 😀 unchanged');
+  await user.click(screen.getByRole('button',{name:'Thêm giải thích'}));
+  await user.type(screen.getByRole('textbox',{name:'Giải thích (tuỳ chọn)'}),'Explanation draft');
+  await user.click(screen.getByRole('button',{name:'Switch to English'}));
+  expect(await screen.findByRole('textbox',{name:postType === 'QUESTION' ? 'Answer' : 'Suggested correction'})).toHaveValue('Draft 😀 unchanged');
+  expect(screen.getByRole('textbox',{name:'Explanation (optional)'})).toHaveValue('Explanation draft');
+  expect(api.getPost).toHaveBeenCalledTimes(1);
+  expect(api.listComments).toHaveBeenCalledTimes(1);
+  expect(listStructuredResponses).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText(postType)).toBeNull();
 });

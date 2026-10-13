@@ -1,3 +1,4 @@
+import { translate, type UiLocale } from '../ui-locale/ui-locale';
 import {
   COMMUNITY_CEFR_LEVELS,
   COMMUNITY_VISIBILITIES,
@@ -41,37 +42,37 @@ export type CorrectionRequestValidationErrors = Partial<
 export type QuestionValidationErrors = Partial<Record<keyof QuestionFormInput, string>>;
 
 export function validateCorrectionRequestInput(
-  input: CorrectionRequestFormInput,
+  input: CorrectionRequestFormInput, locale: UiLocale = 'vi',
 ): CorrectionRequestValidationErrors {
   const errors: CorrectionRequestValidationErrors = {};
 
-  if (!input.languageCode) errors.languageCode = 'Vui lòng chọn ngôn ngữ mục tiêu.';
+  if (!input.languageCode) errors.languageCode = translate(locale, "community.posts.please.choose.a.target.language");
   if (!CORRECTION_INTENTS.includes(input.correctionIntent as CorrectionIntent)) {
-    errors.correctionIntent = 'Vui lòng chọn mục tiêu cần cộng đồng hỗ trợ.';
+    errors.correctionIntent = translate(locale, "community.posts.please.choose.what.you.would.like.help.with");
   }
   const originalTextLength = countUnicodeCodePoints(input.originalText);
   if (!input.originalText.trim()) {
-    errors.originalText = 'Nội dung cần có chữ hoặc ký tự khác khoảng trắng.';
+    errors.originalText = translate(locale, "community.posts.text.must.contain.a.character.other.than.whitespace");
   } else if (originalTextLength > MAX_CORRECTION_TEXT_CODE_POINTS) {
-    errors.originalText = 'Nội dung không được vượt quá 20.000 ký tự.';
+    errors.originalText = translate(locale, "community.posts.content.must.not.exceed.twentyThousand.characters");
   }
   if (countUnicodeCodePoints(input.context) > MAX_CORRECTION_CONTEXT_CODE_POINTS) {
-    errors.context = 'Bối cảnh không được vượt quá 5.000 ký tự.';
+    errors.context = translate(locale, "community.posts.context.must.not.exceed.fiveThousand.characters");
   }
-  validateMetadata(input, errors);
+  validateMetadata(input, errors, locale);
   return errors;
 }
 
-export function validateQuestionInput(input: QuestionFormInput): QuestionValidationErrors {
+export function validateQuestionInput(input: QuestionFormInput, locale: UiLocale = 'vi'): QuestionValidationErrors {
   const errors: QuestionValidationErrors = {};
-  if (!input.languageCode) errors.languageCode = 'Vui lòng chọn ngôn ngữ mục tiêu.';
+  if (!input.languageCode) errors.languageCode = translate(locale, "community.posts.please.choose.a.target.language");
   const contentLength = countUnicodeCodePoints(input.content);
   if (!input.content.trim()) {
-    errors.content = 'Câu hỏi không thể chỉ chứa khoảng trắng.';
+    errors.content = translate(locale, "community.posts.a.question.cannot.contain.only.whitespace");
   } else if (contentLength > MAX_CORRECTION_TEXT_CODE_POINTS) {
-    errors.content = 'Câu hỏi không được vượt quá 20.000 ký tự.';
+    errors.content = translate(locale, "community.posts.a.question.must.not.exceed.twentyThousand.characters");
   }
-  validateMetadata(input, errors);
+  validateMetadata(input, errors, locale);
   return errors;
 }
 
@@ -103,15 +104,15 @@ export function buildQuestionPayload(input: QuestionFormInput): QuestionInput {
 
 function validateMetadata(
   input: Pick<CorrectionRequestFormInput, 'cefrLevel' | 'topic' | 'visibility'>,
-  errors: Partial<Record<'cefrLevel' | 'topic' | 'visibility', string>>,
+  errors: Partial<Record<'cefrLevel' | 'topic' | 'visibility', string>>, locale: UiLocale = 'vi',
 ): void {
   if (input.topic && countUnicodeCodePoints(input.topic) > MAX_CORRECTION_TOPIC_CODE_POINTS) {
-    errors.topic = 'Chủ đề không được vượt quá 80 ký tự.';
+    errors.topic = translate(locale, "community.posts.topic.must.not.exceed.eighty.characters");
   }
   if (input.cefrLevel && !COMMUNITY_CEFR_LEVELS.includes(input.cefrLevel as CommunityCefrLevel)) {
-    errors.cefrLevel = 'Vui lòng chọn trình độ CEFR hợp lệ.';
+    errors.cefrLevel = translate(locale, "community.posts.please.choose.a.valid.cefr.level");
   }
   if (!COMMUNITY_VISIBILITIES.includes(input.visibility as CommunityVisibility)) {
-    errors.visibility = 'Vui lòng chọn phạm vi hiển thị hợp lệ.';
+    errors.visibility = translate(locale, "community.posts.please.choose.a.valid.visibility.scope");
   }
 }

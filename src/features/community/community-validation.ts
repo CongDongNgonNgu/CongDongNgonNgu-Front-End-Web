@@ -1,3 +1,4 @@
+import { translate, type UiLocale } from '../ui-locale/ui-locale';
 import {
   COMMUNITY_CEFR_LEVELS,
   COMMUNITY_POST_TYPES,
@@ -24,46 +25,46 @@ export function countUnicodeCodePoints(value: string): number {
   return Array.from(value).length;
 }
 
-export function validateComposerInput(input: CommunityComposerInput): ComposerValidationErrors {
+export function validateComposerInput(input: CommunityComposerInput, locale: UiLocale = 'vi'): ComposerValidationErrors {
   const errors: ComposerValidationErrors = {};
 
   if (!COMMUNITY_POST_TYPES.includes(input.postType as CommunityPostType)) {
-    errors.postType = 'Vui lòng chọn loại bài viết.';
+    errors.postType = translate(locale, "community.posts.please.choose.a.post.type");
   }
 
   if (!input.languageCode) {
-    errors.languageCode = 'Vui lòng chọn ngôn ngữ mục tiêu.';
+    errors.languageCode = translate(locale, "community.posts.please.choose.a.target.language");
   }
 
   const contentLength = countUnicodeCodePoints(input.content);
   if (!input.content.trim()) {
-    errors.content = 'Nội dung không thể chỉ chứa khoảng trắng.';
+    errors.content = translate(locale, "community.posts.content.cannot.contain.only.whitespace");
   } else if (contentLength > MAX_COMMUNITY_CONTENT_CODE_POINTS) {
-    errors.content = 'Nội dung không được vượt quá 20.000 ký tự.';
+    errors.content = translate(locale, "community.posts.content.must.not.exceed.twentyThousand.characters");
   }
 
   if (input.topic && countUnicodeCodePoints(input.topic) > MAX_COMMUNITY_TOPIC_CODE_POINTS) {
-    errors.topic = 'Chủ đề không được vượt quá 80 ký tự.';
+    errors.topic = translate(locale, "community.posts.topic.must.not.exceed.eighty.characters");
   }
 
   if (input.cefrLevel && !COMMUNITY_CEFR_LEVELS.includes(input.cefrLevel as (typeof COMMUNITY_CEFR_LEVELS)[number])) {
-    errors.cefrLevel = 'Vui lòng chọn trình độ CEFR hợp lệ.';
+    errors.cefrLevel = translate(locale, "community.posts.please.choose.a.valid.cefr.level");
   }
 
   if (!COMMUNITY_VISIBILITIES.includes(input.visibility)) {
-    errors.visibility = 'Vui lòng chọn quyền hiển thị hợp lệ.';
+    errors.visibility = translate(locale, "community.posts.please.choose.a.valid.visibility.setting");
   }
 
   return errors;
 }
 
-export function validateCommentInput(input: { content: string }): CommentValidationErrors {
+export function validateCommentInput(input: { content: string }, locale: UiLocale = 'vi'): CommentValidationErrors {
   const errors: CommentValidationErrors = {};
   const contentLength = countUnicodeCodePoints(input.content);
   if (!input.content.trim()) {
-    errors.content = 'Bình luận không thể chỉ chứa khoảng trắng.';
+    errors.content = translate(locale, "community.posts.a.comment.cannot.contain.only.whitespace");
   } else if (contentLength > MAX_COMMUNITY_COMMENT_CONTENT_CODE_POINTS) {
-    errors.content = 'Bình luận không được vượt quá 5.000 ký tự.';
+    errors.content = translate(locale, "community.posts.a.comment.must.not.exceed.fiveThousand.characters");
   }
   return errors;
 }
@@ -87,13 +88,13 @@ export function buildCreatePostPayload(input: CommunityComposerInput): Community
   return payload;
 }
 
-export function validateReportInput(input: { category: string; details: string }): ReportValidationErrors {
+export function validateReportInput(input: { category: string; details: string }, locale: UiLocale = 'vi'): ReportValidationErrors {
   const errors: ReportValidationErrors = {};
   if (!COMMUNITY_REPORT_CATEGORIES.includes(input.category as (typeof COMMUNITY_REPORT_CATEGORIES)[number])) {
-    errors.category = 'Vui lòng chọn lý do báo cáo.';
+    errors.category = translate(locale, "community.posts.please.choose.a.report.reason");
   }
   if (countUnicodeCodePoints(input.details) > MAX_COMMUNITY_REPORT_DETAILS_CODE_POINTS) {
-    errors.details = 'Chi tiết không được vượt quá 1.000 ký tự.';
+    errors.details = translate(locale, "community.posts.details.must.not.exceed.oneThousand.characters");
   }
   return errors;
 }

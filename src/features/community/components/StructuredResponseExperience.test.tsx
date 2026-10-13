@@ -1,3 +1,4 @@
+import { UiLocaleProvider } from '../../ui-locale/UiLocaleProvider';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -58,8 +59,9 @@ function createApis(item = response()) {
   return { api, requestApi };
 }
 
+afterEach(() => { cleanup(); window.localStorage.removeItem('congdongngonngu.ui-locale.v1'); });
+
 describe('StructuredResponseExperience', () => {
-  afterEach(() => cleanup());
 
   it('loads the correction source and renders a semantic diff with safe text', async () => {
     const { api, requestApi } = createApis(response({ correctedText: '<script>alert(1)</script>' }));
@@ -83,7 +85,7 @@ describe('StructuredResponseExperience', () => {
     await user.click(screen.getByRole('button', { name: 'Gửi đề xuất sửa câu' }));
     await waitFor(() => expect(api.createStructuredResponse).toHaveBeenCalledWith('post-1', expect.objectContaining({ responseKind: 'CORRECTION_PROPOSAL' })));
     const firstResponse = screen.getAllByRole('article', { name: 'Đề xuất sửa câu của Lê Mai' })[0];
-    await user.click(within(firstResponse).getByRole('button', { name: 'Hữu ích · 2' }));
+    await user.click(within(firstResponse).getByRole('button', { name: 'Đề xuất hữu ích · 2' }));
     await waitFor(() => expect(api.addStructuredResponseHelpful).toHaveBeenCalledWith('response-2'));
   });
 
@@ -94,7 +96,7 @@ describe('StructuredResponseExperience', () => {
     render(<StructuredResponseExperience parent={post(true)} authenticated requestApi={requestApi} api={api} onAuthRequired={vi.fn()} />);
 
     await screen.findByText('Bản gốc cần xem xét');
-    expect(screen.queryByRole('button', { name: /Hữu ích/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Đề xuất hữu ích/ })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Chấp nhận bản sửa' }));
     await waitFor(() => expect(api.acceptStructuredResponse).toHaveBeenCalledWith('post-1', 'response-1'));
     expect(await screen.findByText('Được người hỏi chấp nhận')).toBeInTheDocument();
@@ -111,4 +113,34 @@ describe('StructuredResponseExperience', () => {
     await waitFor(() => expect(api.nominateStructuredResponseAsLibraryCandidate).toHaveBeenCalledWith('response-1'));
     expect(await screen.findByText('Đã gửi để xem xét · chưa được xác minh')).toBeInTheDocument();
   });
+});
+
+it('keeps the question original outside the structured response area and never adds answer replies', async () => {
+  const { api, requestApi } = createApis(response({responseKind:'QA_ANSWER', answerText:'A useful answer', correctedText:null}));
+  render(<StructuredResponseExperience parent={{...post(),postType:'QUESTION',content:'The question body'}} authenticated api={api} requestApi={requestApi} onAuthRequired={vi.fn()}/>);
+  await screen.findByText('A useful answer');
+  expect(screen.queryByText('The question body')).toBeNull();
+  expect(screen.queryByRole('button',{name:'Trả lời'})).toBeNull();
+  expect(requestApi.getCorrectionRequest).not.toHaveBeenCalled();
+});
+
+it('does not substitute mutable post content when canonical correction lookup fails', async () => {
+  const { api, requestApi } = createApis();
+  vi.mocked(requestApi.getCorrectionRequest).mockRejectedValue(new Error('unavailable'));
+  render(<StructuredResponseExperience parent={{...post(),content:'Edited content'}} authenticated api={api} requestApi={requestApi} onAuthRequired={vi.fn()}/>);
+  await screen.findByRole('alert');
+  expect(screen.queryByText('Edited content')).toBeNull();
+  expect(screen.queryByRole('textbox')).toBeNull();
+});
+
+it('renders English answer controls while preserving contributor text verbatim', async () => {
+  window.localStorage.setItem('congdongngonngu.ui-locale.v1','en');
+  const { api, requestApi } = createApis(response({responseKind:'QA_ANSWER',answerText:'Xin chào — 😀',correctedText:null}));
+  render(<UiLocaleProvider><StructuredResponseExperience parent={{...post(),postType:'QUESTION'}} authenticated api={api} requestApi={requestApi} onAuthRequired={vi.fn()}/></UiLocaleProvider>);
+  expect(await screen.findByText('Xin chào — 😀')).toBeInTheDocument();
+  expect(screen.getByRole('heading',{name:'Answers'})).toBeInTheDocument();
+  expect(screen.getByRole('textbox',{name:'Answer'})).toHaveAttribute('rows','3');
+  expect(screen.getByRole('button',{name:'Add explanation'})).toHaveAttribute('aria-expanded','false');
+  expect(screen.getByRole('button',{name:'Answer helpful · 2'})).toHaveAttribute('aria-pressed','false');
+  expect(screen.queryByText('Câu trả lời')).toBeNull();
 });

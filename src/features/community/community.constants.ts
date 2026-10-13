@@ -26,3 +26,23 @@ export const COMMUNITY_REPORT_CATEGORY_LABELS: Record<CommunityReportCategory, s
 };
 
 export { COMMUNITY_POST_TYPES, COMMUNITY_REPORT_CATEGORIES };
+
+export const COMMUNITY_POST_TYPE_LABELS_KEYS = {
+  "DISCUSSION": "community.posts.discussion",
+  "QUESTION": "community.posts.question",
+  "RESOURCE": "community.posts.resource",
+  "LEARNING_JOURNAL": "community.posts.learning.journal",
+  "CULTURE": "community.posts.culture",
+  "PRONUNCIATION_REQUEST": "community.posts.pronunciation.request",
+  "CORRECTION_REQUEST": "community.posts.correction.request",
+  "CHALLENGE": "community.posts.challenge"
+} as const;
+
+export const COMMUNITY_REPORT_CATEGORY_LABELS_KEYS = {
+  "SPAM": "community.posts.spam",
+  "HARASSMENT": "community.posts.harassment",
+  "HATE": "community.posts.hate.speech",
+  "MISINFORMATION": "community.posts.misinformation",
+  "SEXUAL_CONTENT": "community.posts.sexual.content",
+  "OTHER": "community.posts.other"
+} as const;

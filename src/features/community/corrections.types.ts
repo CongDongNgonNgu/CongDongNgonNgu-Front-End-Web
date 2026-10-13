@@ -151,3 +151,17 @@ export interface CommunityStructuredResponseApi {
 export interface CommunityLanguageCatalogApi {
   listLanguages(search?: string): Promise<import('../languages/languages.types').LanguageCatalogItem[]>;
 }
+
+export const CORRECTION_INTENT_LABELS_KEYS = {
+  "GRAMMAR": "community.posts.grammar",
+  "STYLE": "community.posts.writing.style",
+  "NATURALNESS": "community.posts.natural.expression",
+  "PRONUNCIATION": "community.posts.pronunciation"
+} as const;
+
+export const CORRECTION_INTENT_HELP_KEYS = {
+  "GRAMMAR": "community.posts.check.sentence.structure.and.grammar",
+  "STYLE": "community.posts.suggest.wording.that.fits.the.purpose.or.context",
+  "NATURALNESS": "community.posts.help.the.sentence.sound.more.natural.to.native",
+  "PRONUNCIATION": "community.posts.ask.how.to.pronounce.or.read.this.text"
+} as const;
