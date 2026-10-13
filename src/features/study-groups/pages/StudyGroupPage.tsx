@@ -1,4 +1,10 @@
-import { useMemo, useState } from "react";
+import { ApiClientError } from "../../../services/api-client";
+import { MessageStreamClient } from "../../communication/message-stream.client";
+import { useMessageStream } from "../../communication/hooks/use-message-stream";
+import { useGroupCollaboration } from "../hooks/useGroupCollaboration";
+import { useGroupContexts } from "../hooks/useGroupContexts";
+import type { GroupWriteInput } from "../study-groups.types";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
 import { useAuth } from "../../auth/AuthProvider";
@@ -8,7 +14,12 @@ import { ExchangeApi } from "../../exchange/exchange-api";
 import type { ConnectionListApi } from "../../exchange/exchange.types";
 import { ConnectedPartnerInvitation } from "../components/ConnectedPartnerInvitation";
 import { useStudyGroup } from "../hooks/useStudyGroup";
-import { canManage, canModerate, groupErrorKey } from "../study-groups.policy";
+import {
+  canManage,
+  canModerate,
+  groupErrorKey,
+  isAccessLost,
+} from "../study-groups.policy";
 import { GroupMembers } from "../components/GroupMembers";
 import { GroupTextPanel } from "../components/GroupTextPanel";
 import { GroupInvitations } from "../components/GroupInvitations";
@@ -23,10 +34,18 @@ export function StudyGroupPage() {
   const { groupId = "" } = useParams();
   const api = useMemo(() => new StudyGroupsApi(auth.api), [auth.api]);
   const connectionsApi = useMemo(() => new ExchangeApi(auth.api), [auth.api]);
+  const streamAuth = useMemo(
+    () => ({
+      getAccessToken: () => auth.api.getAccessToken(),
+      refresh: auth.refresh,
+    }),
+    [auth.api, auth.refresh],
+  );
   return (
     <StudyGroupPageView
       key={auth.user?.id + ":" + groupId}
       api={api}
+      streamAuth={streamAuth}
       connectionsApi={connectionsApi}
       groupId={groupId}
       userId={auth.user?.id ?? ""}
@@ -38,13 +57,18 @@ export function StudyGroupPage() {
 export function StudyGroupPageView({
   api,
   connectionsApi,
+  streamAuth,
   groupId,
   userId,
   authenticated,
   authLoading = false,
 }: {
   api: StudyGroupsApi;
-  connectionsApi?: Pick<ConnectionListApi, 'listConnections'>;
+  connectionsApi?: Pick<ConnectionListApi, "listConnections">;
+  streamAuth?: {
+    getAccessToken: () => string | null;
+    refresh: () => Promise<{ id: string }>;
+  };
   groupId: string;
   userId: string;
   authenticated: boolean;
@@ -57,7 +81,151 @@ export function StudyGroupPageView({
     "discussion" | "members" | "invitations" | "reports"
   >("discussion");
   const resource = useStudyGroup(api, groupId, userId, authenticated, page);
-  const data = resource.data;
+  const contextQueueRef = useRef<ReturnType<typeof useGroupContexts>>(null);
+  const deny = useCallback(
+    (error: unknown) => {
+      if (isAccessLost(error)) {
+        contextQueueRef.current?.dispose();
+        resource.clear(error);
+      }
+    },
+    [resource.clear],
+  );
+  const collaboration = useGroupCollaboration({
+    api,
+    groupId,
+    actor: userId,
+    enabled: authenticated && Boolean(resource.data),
+    onAccessLost: deny,
+    onBeforeReconcile: () => contextQueueRef.current?.invalidate(),
+  });
+  const contextDenied = useCallback(
+    (error: unknown) => {
+      // A hidden text and a lost group intentionally share the same safe 404.
+      // Authoritative sync distinguishes them before discarding an active draft.
+      if (
+        error instanceof ApiClientError &&
+        error.status === 404 &&
+        error.code === "GROUP_UNAVAILABLE"
+      ) {
+        void collaboration.reconcile();
+        return;
+      }
+      deny(error);
+    },
+    [collaboration.reconcile, deny],
+  );
+  const contextQueue = useGroupContexts(
+    api,
+    groupId,
+    userId + ":" + collaboration.epoch,
+    authenticated && Boolean(resource.data) && !collaboration.accessLost,
+    contextDenied,
+  );
+  contextQueueRef.current = contextQueue;
+  const streamClient = useMemo(
+    () => new MessageStreamClient(undefined, undefined, "/study-groups/"),
+    [collaboration.epoch],
+  );
+  const unavailable = useCallback(
+    () =>
+      collaboration.clear(
+        new ApiClientError("Group unavailable", 404, "GROUP_UNAVAILABLE"),
+      ),
+    [collaboration.clear],
+  );
+  const fallbackAuth = useMemo(
+    () => ({ getAccessToken: () => null, refresh: async () => ({ id: "" }) }),
+    [],
+  );
+  const streamStatus = useMessageStream({
+    auth: streamAuth ?? fallbackAuth,
+    client: streamClient,
+    conversationId: groupId,
+    actor: userId,
+    enabled:
+      Boolean(streamAuth) &&
+      authenticated &&
+      Boolean(resource.data) &&
+      !collaboration.accessLost,
+    onReconcile: collaboration.reconcile,
+    onUnavailable: unavailable,
+  });
+  useEffect(() => {
+    if (!authenticated || !resource.data || collaboration.accessLost) return;
+    const timer = window.setInterval(() => {
+      void collaboration.reconcile();
+    }, 25000);
+    const refresh = () => {
+      void collaboration.reconcile();
+    };
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [
+    authenticated,
+    Boolean(resource.data),
+    collaboration.accessLost,
+    collaboration.reconcile,
+  ]);
+  // Either current projection may observe a downgrade before the other.
+  const metadataRole = resource.data?.group.role;
+  const levels = { MEMBER: 0, MODERATOR: 1, OWNER: 2 };
+  const currentRole =
+    (collaboration.loading && collaboration.version === "0") || !metadataRole
+      ? metadataRole
+      : levels[metadataRole] < levels[collaboration.role]
+        ? metadataRole
+        : collaboration.role;
+  const observedRole = useRef<{
+    scope: string;
+    role: typeof collaboration.role;
+  } | null>(null);
+  useEffect(() => {
+    const metadataRole = resource.data?.group.role;
+    if (!metadataRole || collaboration.loading) return;
+    const scope = userId + ":" + groupId;
+    const previous = observedRole.current;
+    observedRole.current = { scope, role: collaboration.role };
+    if (previous?.scope === scope && previous.role === collaboration.role)
+      return;
+    if (metadataRole !== collaboration.role) void resource.refresh();
+  }, [
+    resource.data?.group.role,
+    collaboration.loading,
+    collaboration.role,
+    resource.refresh,
+    userId,
+    groupId,
+  ]);
+  const data =
+    resource.data && currentRole
+      ? {
+          ...resource.data,
+          group: { ...resource.data.group, role: currentRole },
+          invitations: canManage(currentRole)
+            ? resource.data.invitations
+            : null,
+          reports: canModerate(currentRole) ? resource.data.reports : null,
+        }
+      : null;
+  const effectiveResource = { ...resource, data };
+  const [sending, setSending] = useState(false);
+  const send = async (input: GroupWriteInput) => {
+    if (sending || collaboration.accessLost || !data) return false;
+    setSending(true);
+    try {
+      const result = await resource.perform(() => api.write(groupId, input));
+      if (result === undefined) return false;
+      await collaboration.reconcile();
+      return true;
+    } finally {
+      setSending(false);
+    }
+  };
+
   const {
     pending,
     setPending,
@@ -65,10 +233,15 @@ export function StudyGroupPageView({
     setIssued,
     busy,
     message,
-    run,
     issue,
     confirm,
-  } = useStudyGroupActions(api, groupId, userId, authenticated, resource);
+  } = useStudyGroupActions(
+    api,
+    groupId,
+    userId,
+    authenticated,
+    effectiveResource,
+  );
   const selected =
     (tab === "invitations" && !data?.invitations) ||
     (tab === "reports" && !data?.reports)
@@ -116,7 +289,16 @@ export function StudyGroupPageView({
             <div className={styles.actions}>
               {canManage(data.group.role) ? (
                 <>
-                  {connectionsApi ? <ConnectedPartnerInvitation api={api} connectionsApi={connectionsApi} groupId={groupId} groupName={data.group.name} userId={userId} enabled={authenticated && !resource.error} /> : null}
+                  {connectionsApi ? (
+                    <ConnectedPartnerInvitation
+                      api={api}
+                      connectionsApi={connectionsApi}
+                      groupId={groupId}
+                      groupName={data.group.name}
+                      userId={userId}
+                      enabled={authenticated && !resource.error}
+                    />
+                  ) : null}
                   <Button disabled={busy} onClick={() => void issue()}>
                     {t("groups.issue")}
                   </Button>
@@ -180,18 +362,47 @@ export function StudyGroupPageView({
           >
             {selected === "discussion" ? (
               <>
+                <div className={styles.collaborationStatus}>
+                  <p role="status">
+                    {t(`groups.collaboration.${streamStatus}`)} ·{" "}
+                    {t("groups.collaboration.unread", {
+                      count: Number(collaboration.unreadCount),
+                    })}
+                  </p>
+                  <Button
+                    variant="quiet"
+                    onClick={() => void collaboration.reconcile()}
+                    disabled={busy || collaboration.loading}
+                  >
+                    {t("groups.collaboration.refresh")}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={
+                      busy || !collaboration.texts.some((text) => !text.hidden)
+                    }
+                    onClick={() => {
+                      const last = collaboration.texts
+                        .filter((text) => !text.hidden)
+                        .at(-1);
+                      if (last) void collaboration.markRead(last.id);
+                    }}
+                  >
+                    {t("groups.collaboration.markRead")}
+                  </Button>
+                </div>
+                {collaboration.error ? (
+                  <p role="alert">{t(groupErrorKey(collaboration.error))}</p>
+                ) : null}
+                <p className={styles.note}>{t("groups.collaboration.full")}</p>
                 <GroupTextPanel
-                  key={groupId}
+                  key={userId + ":" + groupId + ":" + collaboration.epoch}
                   role={data.group.role}
-                  texts={data.texts.items}
-                  busy={busy}
-                  onWrite={(body) => run(() => api.write(groupId, body))}
+                  texts={collaboration.texts}
+                  busy={busy || sending}
+                  contextQueue={contextQueue}
+                  onWrite={send}
                   onAction={(action, id) => setPending({ action, id })}
-                />
-                <GroupPagination
-                  value={data.texts}
-                  onChange={setPage}
-                  busy={busy}
                 />
               </>
             ) : null}

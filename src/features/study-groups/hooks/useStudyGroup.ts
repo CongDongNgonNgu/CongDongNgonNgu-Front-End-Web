@@ -19,5 +19,5 @@ export function useStudyGroup(
     ]);
     return { group, members, texts, invitations, reports };
   }, [api, groupId, page]);
-  return useGroupResource(userId + ":" + groupId + ":" + page, enabled, load);
+  return useGroupResource(userId + ":" + groupId + ":" + page, enabled, load, true);
 }

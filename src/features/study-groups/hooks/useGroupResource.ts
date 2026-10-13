@@ -4,6 +4,7 @@ export function useGroupResource<T>(
   scope: string,
   enabled: boolean,
   load: () => Promise<T>,
+  retainDuringRefresh = false,
 ) {
   const generation = useRef(0);
   const identity = useRef(scope);
@@ -24,7 +25,7 @@ export function useGroupResource<T>(
   const refresh = useCallback(async () => {
     const n = ++generation.current;
     const current = scope;
-    setState({ scope, data: null, loading: enabled, error: null });
+    setState((previous) => ({ scope, data: retainDuringRefresh && previous.scope === scope && enabled ? previous.data : null, loading: enabled, error: null }));
     if (!enabled) return;
     try {
       const data = await load();
@@ -33,10 +34,10 @@ export function useGroupResource<T>(
     } catch (error) {
       if (n === generation.current && identity.current === current) {
         if (isAccessLost(error)) clear(error);
-        else setState({ scope, data: null, loading: false, error });
+        else setState((previous) => ({ scope, data: retainDuringRefresh && previous.scope === scope ? previous.data : null, loading: false, error }));
       }
     }
-  }, [scope, enabled, load, clear]);
+  }, [scope, enabled, load, clear, retainDuringRefresh]);
   useEffect(() => {
     void refresh();
     return () => {

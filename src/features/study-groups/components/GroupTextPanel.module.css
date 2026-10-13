@@ -40,3 +40,17 @@
 .panel button {
   min-height: 44px;
 }
+.editor {
+  min-height: 0;
+  max-height: 240px;
+  overflow-wrap: anywhere;
+  resize: vertical;
+  line-height: 1.5;
+}
+.panel form button {
+  max-width: 100%;
+  white-space: normal;
+}
+.texts strong {
+  overflow-wrap: anywhere;
+}

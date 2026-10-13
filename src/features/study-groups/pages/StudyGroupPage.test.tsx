@@ -12,21 +12,43 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
 });
-it('offers the connected invitation flow for the current owned group', async () => {
+it("offers the connected invitation flow for the current owned group", async () => {
   const api = fake();
-  const listConnections = vi.fn().mockResolvedValue({ items: [{ connectionId: 'pair', targetUserId: 'partner', displayName: 'Connected Partner', state: 'CONNECTED', updatedAt: '' }], nextCursor: null });
-  view(api, 'OWNER', { listConnections });
-  await userEvent.click(await screen.findByRole('button', { name: 'Invite a connected partner' }));
-  await userEvent.click(await screen.findByRole('radio', { name: /Connected Partner/ }));
-  await userEvent.click(screen.getByRole('button', { name: 'Create invitation code' }));
-  await screen.findByDisplayValue('connected-secret');
-  expect(api.issueConnectedPartner).toHaveBeenCalledWith('g', 'partner');
+  const listConnections = vi
+    .fn()
+    .mockResolvedValue({
+      items: [
+        {
+          connectionId: "pair",
+          targetUserId: "partner",
+          displayName: "Connected Partner",
+          state: "CONNECTED",
+          updatedAt: "",
+        },
+      ],
+      nextCursor: null,
+    });
+  view(api, "OWNER", { listConnections });
+  await userEvent.click(
+    await screen.findByRole("button", { name: "Invite a connected partner" }),
+  );
+  await userEvent.click(
+    await screen.findByRole("radio", { name: /Connected Partner/ }),
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: "Create invitation code" }),
+  );
+  await screen.findByDisplayValue("connected-secret");
+  expect(api.issueConnectedPartner).toHaveBeenCalledWith("g", "partner");
   expect(api.issue).not.toHaveBeenCalled();
 });
-it('does not offer connected invitations to a group member', async () => {
-  const listConnections = vi.fn(); view(fake('MEMBER'), 'MEMBER', { listConnections });
-  await screen.findByRole('heading', { name: 'Synthetic group' });
-  expect(screen.queryByRole('button', { name: 'Invite a connected partner' })).not.toBeInTheDocument();
+it("does not offer connected invitations to a group member", async () => {
+  const listConnections = vi.fn();
+  view(fake("MEMBER"), "MEMBER", { listConnections });
+  await screen.findByRole("heading", { name: "Synthetic group" });
+  expect(
+    screen.queryByRole("button", { name: "Invite a connected partner" }),
+  ).not.toBeInTheDocument();
   expect(listConnections).not.toHaveBeenCalled();
 });
 const page = (items: unknown[]) => ({
@@ -89,7 +111,13 @@ function fake(role: GroupRole = "OWNER") {
       token: "synthetic-secret",
       expiresAt: "2026-10-08",
     }),
-    issueConnectedPartner: vi.fn().mockResolvedValue({ id: "connected-i", token: "connected-secret", expiresAt: "2030-01-01T00:00:00Z" }),
+    issueConnectedPartner: vi
+      .fn()
+      .mockResolvedValue({
+        id: "connected-i",
+        token: "connected-secret",
+        expiresAt: "2030-01-01T00:00:00Z",
+      }),
     transfer: vi.fn().mockResolvedValue({}),
     leave: vi.fn().mockResolvedValue({ left: true }),
     archive: vi.fn().mockResolvedValue({ archived: true }),
@@ -99,10 +127,41 @@ function fake(role: GroupRole = "OWNER") {
     report: vi.fn().mockResolvedValue({}),
     revoke: vi.fn().mockResolvedValue({}),
     resolve: vi.fn().mockResolvedValue({}),
+    sync: vi
+      .fn()
+      .mockResolvedValue({
+        items: [
+          {
+            id: "t",
+            sequence: "1",
+            body: "Synthetic protected text",
+            hidden: false,
+            author: { userId: "u", displayName: "Target" },
+            createdAt: "2026-10-07",
+          },
+        ],
+        stillVisibleIds: ["t"],
+        cursor: "cursor",
+        nextCursor: null,
+        hasMore: false,
+        version: "1",
+        unreadCount: "1",
+        lastReadSequence: "0",
+        groupRole: role,
+        groupStatus: "ACTIVE",
+      }),
+    markRead: vi
+      .fn()
+      .mockResolvedValue({ unreadCount: "0", lastReadSequence: "1" }),
+    context: vi.fn().mockResolvedValue({ textId: "t", context: null }),
     write: vi.fn().mockResolvedValue({}),
   };
 }
-function view(api: ReturnType<typeof fake>, role: GroupRole = "OWNER", connectionsApi?: Pick<ConnectionListApi, 'listConnections'>) {
+function view(
+  api: ReturnType<typeof fake>,
+  role: GroupRole = "OWNER",
+  connectionsApi?: Pick<ConnectionListApi, "listConnections">,
+) {
   localStorage.setItem("congdongngonngu.ui-locale.v1", "en");
   return render(
     <UiLocaleProvider>
@@ -291,4 +350,128 @@ describe("group page journey", () => {
     expect(screen.queryByDisplayValue("stale-secret")).toBeNull();
     localStorage.clear();
   });
+});
+
+it("purges discussion bodies and unsent drafts when a current sync loses membership", async () => {
+  const api = fake("MEMBER");
+  view(api, "MEMBER");
+  await screen.findByText("Synthetic protected text");
+  const draft = screen.getByRole("textbox", { name: "Text content" });
+  await userEvent.type(draft, "Unsent private draft");
+  api.sync.mockRejectedValueOnce(
+    new ApiClientError("removed", 404, "GROUP_UNAVAILABLE"),
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Sync texts" }));
+  await waitFor(() =>
+    expect(screen.queryByText("Synthetic protected text")).toBeNull(),
+  );
+  expect(screen.queryByDisplayValue("Unsent private draft")).toBeNull();
+  expect(screen.queryByRole("textbox", { name: "Text content" })).toBeNull();
+});
+
+it("reconciles a hidden reference denial without discarding an active group draft", async () => {
+  const api = fake("MEMBER");
+  const shared = {
+    id: "t",
+    sequence: "1",
+    body: "Synthetic protected text",
+    hidden: false,
+    author: { userId: "u", displayName: "Target" },
+    createdAt: "2026-10-07",
+    context: { availability: "UNAVAILABLE" },
+  };
+  api.sync.mockResolvedValueOnce({
+    items: [shared],
+    stillVisibleIds: ["t"],
+    cursor: "cursor",
+    nextCursor: null,
+    hasMore: false,
+    version: "1",
+    unreadCount: 1,
+    lastReadSequence: "0",
+    groupRole: "MEMBER",
+    groupStatus: "ACTIVE",
+  });
+  api.context.mockResolvedValueOnce({
+    textId: "t",
+    context: {
+      availability: "AVAILABLE",
+      type: "COMMUNITY_POST",
+      id: "00000000-0000-4000-8000-000000000001",
+      category: "DISCUSSION",
+      languageCode: "en",
+      previewText: "Current reference",
+      canonicalPath: "/community/posts/00000000-0000-4000-8000-000000000001",
+    },
+  });
+  view(api, "MEMBER");
+  await screen.findByText("Current reference");
+  await userEvent.type(
+    screen.getByRole("textbox", { name: "Text content" }),
+    "Keep my draft",
+  );
+  api.context.mockRejectedValueOnce(
+    new ApiClientError("hidden", 404, "GROUP_UNAVAILABLE"),
+  );
+  api.sync.mockResolvedValue({
+    items: [],
+    stillVisibleIds: [],
+    cursor: "cursor-2",
+    nextCursor: null,
+    hasMore: false,
+    version: "2",
+    unreadCount: 0,
+    lastReadSequence: "0",
+    groupRole: "MEMBER",
+    groupStatus: "ACTIVE",
+  });
+  await userEvent.click(screen.getByRole("button", { name: "Sync texts" }));
+  await waitFor(() =>
+    expect(screen.queryByText("Synthetic protected text")).toBeNull(),
+  );
+  expect(
+    screen.getByRole("heading", { name: "Synthetic group" }),
+  ).toBeVisible();
+  expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue(
+    "Keep my draft",
+  );
+});
+
+it("closes a privileged pending confirmation on role downgrade while preserving the draft", async () => {
+  const api = fake("OWNER");
+  view(api);
+  await screen.findByText("Synthetic protected text");
+  await userEvent.type(
+    screen.getByRole("textbox", { name: "Text content" }),
+    "Draft after downgrade",
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Archive group" }));
+  expect(screen.getByRole("dialog")).toBeVisible();
+  api.get.mockResolvedValue({
+    id: "g",
+    name: "Synthetic group",
+    description: "group only",
+    role: "MEMBER",
+    status: "ACTIVE",
+    createdAt: "2026-10-07",
+    updatedAt: "2026-10-07",
+  });
+  api.sync.mockResolvedValue({
+    items: [],
+    stillVisibleIds: ["t"],
+    cursor: "cursor",
+    nextCursor: null,
+    hasMore: false,
+    version: "2",
+    unreadCount: 0,
+    lastReadSequence: "0",
+    groupRole: "MEMBER",
+    groupStatus: "ACTIVE",
+  });
+  act(() => window.dispatchEvent(new Event("focus")));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(api.archive).not.toHaveBeenCalled();
+  expect(screen.getByRole("textbox", { name: "Text content" })).toHaveValue(
+    "Draft after downgrade",
+  );
 });

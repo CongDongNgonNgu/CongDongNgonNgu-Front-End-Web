@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUiLocale } from "../../ui-locale/UiLocaleProvider";
-import { canManage, isAccessLost } from "../study-groups.policy";
+import {
+  canManage,
+  canModerate,
+  canRemove,
+  isAccessLost,
+} from "../study-groups.policy";
 import type { StudyGroupsApi } from "../study-groups.api";
 import type { IssuedInvite } from "../study-groups.types";
 import type { PendingGroupAction } from "../components/GroupActionDialog";
@@ -20,8 +25,32 @@ export function useStudyGroupActions(
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const data = resource.data;
+  function allowed(action: PendingGroupAction) {
+    if (!data) return false;
+    const role = data.group.role;
+    switch (action.action) {
+      case "report":
+        return true;
+      case "leave":
+        return role !== "OWNER";
+      case "hide":
+      case "resolve":
+        return canModerate(role);
+      case "remove": {
+        const target = data.members.items.find(
+          (member) => member.userId === action.id,
+        );
+        return Boolean(
+          target && canRemove(role, target.role, target.userId === userId),
+        );
+      }
+      default:
+        return canManage(role);
+    }
+  }
   useEffect(() => {
     if (data && !canManage(data.group.role)) setIssued(null);
+    if (pending && !allowed(pending)) setPending(null);
   }, [data]);
   useEffect(() => {
     setIssued(null);
@@ -61,6 +90,10 @@ export function useStudyGroupActions(
   }
   async function confirm(reason: string) {
     if (!pending || busy) return;
+    if (!allowed(pending)) {
+      setPending(null);
+      return;
+    }
     const { action, id = "" } = pending;
     let operation: () => Promise<unknown>;
     switch (action) {
@@ -114,7 +147,7 @@ export function useStudyGroupActions(
   }
 
   return {
-    pending,
+    pending: pending && allowed(pending) ? pending : null,
     setPending,
     issued,
     setIssued,
