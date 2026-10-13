@@ -38,7 +38,13 @@ export function StructuredResponseEditor({
   const [explanationOpen, setExplanationOpen] = useState(false);
   const textRef = useResponseTextarea(text);
   const explanationRef = useResponseTextarea(explanationOpen ? explanation : '');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [validationIssue, setValidationIssue] = useState<'required' | 'textLimit' | 'sameOriginal' | 'explanationLimit' | null>(null);
+  const validationError = validationIssue === 'required'
+    ? t('community.detail.required', {label: kind === 'CORRECTION_PROPOSAL' ? t('community.detail.a.suggested.correction') : t('community.detail.an.answer')})
+    : validationIssue === 'textLimit' ? t('community.detail.content.exceeds.twenty.thousand.unicode.characters')
+    : validationIssue === 'sameOriginal' ? t('community.detail.the.correction.must.differ.from.the.original')
+    : validationIssue === 'explanationLimit' ? t('community.detail.explanation.exceeds.five.thousand.unicode.characters')
+    : undefined;
   const textLabel = kind === 'CORRECTION_PROPOSAL' ? t('community.detail.suggested.correction') : t('community.detail.answer');
   const submitLabel = kind === 'CORRECTION_PROPOSAL' ? t('community.detail.submit.correction') : t('community.detail.submit.answer');
   const textCount = useMemo(() => Array.from(text).length, [text]);
@@ -59,22 +65,23 @@ export function StructuredResponseEditor({
     if (busy) return;
     const normalized = text.replace(/\r\n?/gu, '\n');
     if (!normalized.trim()) {
-      setValidationError(t('community.detail.required', {label: kind === 'CORRECTION_PROPOSAL' ? t('community.detail.a.suggested.correction') : t('community.detail.an.answer')}));
+      setValidationIssue('required');
       return;
     }
     if (Array.from(normalized).length > MAX_TEXT_CODE_POINTS) {
-      setValidationError(t('community.detail.content.exceeds.twenty.thousand.unicode.characters'));
+      setValidationIssue('textLimit');
       return;
     }
     if (kind === 'CORRECTION_PROPOSAL' && normalized === originalText) {
-      setValidationError(t('community.detail.the.correction.must.differ.from.the.original'));
+      setValidationIssue('sameOriginal');
       return;
     }
     if (Array.from(explanation).length > MAX_EXPLANATION_CODE_POINTS) {
-      setValidationError(t('community.detail.explanation.exceeds.five.thousand.unicode.characters'));
+      setValidationIssue('explanationLimit');
+      setExplanationOpen(true);
       return;
     }
-    setValidationError(null);
+    setValidationIssue(null);
     await onSubmit(kind === 'CORRECTION_PROPOSAL'
       ? { responseKind: kind, correctedText: normalized, ...(explanation ? { explanation } : {}) }
       : { responseKind: kind, answerText: normalized, ...(explanation ? { explanation } : {}) });
@@ -94,9 +101,10 @@ export function StructuredResponseEditor({
           ref={textRef}
           className={editorStyles.textarea}
           disabled={busy}
+          error={validationIssue && validationIssue !== 'explanationLimit' ? validationError : undefined}
           label={textLabel}
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => { setText(event.target.value); if (validationIssue !== 'explanationLimit') setValidationIssue(null); }}
           rows={3}
           hint={t('community.detail.counter', {count: textCount, max: 20000})}
           required
@@ -107,19 +115,20 @@ export function StructuredResponseEditor({
           ref={explanationRef}
           className={editorStyles.textarea}
           disabled={busy}
+          error={validationIssue === 'explanationLimit' ? validationError : undefined}
           label={t('community.detail.explanation.optional')}
           value={explanation}
-          onChange={(event) => setExplanation(event.target.value)}
+          onChange={(event) => { setExplanation(event.target.value); if (validationIssue === 'explanationLimit') setValidationIssue(null); }}
           rows={3}
           hint={t('community.detail.counter', {count: explanationCount, max: 5000})}
         />
         </div> : null}
-        {validationError || error ? <p className={styles.error} role='alert'>{validationError ?? error}</p> : null}
+        {error ? <p className={styles.error} role='alert'>{error}</p> : null}
         <div className={`${styles.editorActions} ${editorStyles.actions}`}>
           <Button
             type='button'
             variant='quiet'
-            onClick={() => { setText(''); setExplanation(''); setExplanationOpen(false); setValidationError(null); }}
+            onClick={() => { setText(''); setExplanation(''); setExplanationOpen(false); setValidationIssue(null); }}
             disabled={busy}
           >
             {t('community.detail.reset.draft')}</Button>
