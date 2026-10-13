@@ -921,6 +921,11 @@
   }
 
   .community-detail__post-topline .community-detail__post-header-actions {
+    display: flex;
+  }
+
+  /* Save/share remain in the mobile header; retain the post options menu. */
+  .community-detail__post-topline .community-detail__post-header-actions > button {
     display: none;
   }
 
