@@ -1,6 +1,6 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, useLocation } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CommunityPageView, type CommunityPageApi } from './CommunityPage';
 import type { CommunityPost } from '../community.types';
@@ -98,7 +98,7 @@ function renderPage(
         authenticated={authenticated}
         onAuthRequired={onAuthRequired}
       />
-      <LocationSearch />
+      <LocationSearch /><HistoryControls/>
     </MemoryRouter>,
   );
 }
@@ -133,6 +133,8 @@ describe('CommunityPageView', () => {
 
     const filter = await screen.findByLabelText('Theo ngôn ngữ');
     await user.selectOptions(filter, 'ja');
+    expect(api.listPosts).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', {name:'Áp dụng bộ lọc'}));
     await waitFor(() => expect(api.listPosts).toHaveBeenLastCalledWith(
       { languageCode: 'ja', limit: 20 },
       false,
@@ -153,11 +155,12 @@ describe('CommunityPageView', () => {
     const user = userEvent.setup();
     renderPage(api, false, vi.fn(), ['/community?languageCode=ja']);
 
-    const filter = await screen.findByRole('combobox');
+    const filter = await screen.findByLabelText('Theo ngôn ngữ');
     expect(filter).toHaveValue('ja');
-    expect(api.listPosts).toHaveBeenCalledWith({ languageCode: 'ja', limit: 20 }, false);
+    await waitFor(() => expect(api.listPosts).toHaveBeenCalledWith({ languageCode: 'ja', limit: 20 }, false));
 
     await user.selectOptions(filter, 'en');
+    await user.click(screen.getByRole('button', {name:'Áp dụng bộ lọc'}));
     await waitFor(() => expect(screen.getByLabelText('location-search')).toHaveTextContent('?languageCode=en'));
   });
 
@@ -181,4 +184,53 @@ describe('CommunityPageView', () => {
     await user.click(await screen.findByRole('button', { name: 'Đăng nhập để viết' }));
     expect(onAuthRequired).toHaveBeenCalledOnce();
   });
+});
+
+function HistoryControls() {
+  const navigate=useNavigate();
+  return <><button onClick={()=>navigate(-1)}>Previous filters</button><button onClick={()=>navigate(1)}>Next filters</button></>;
+}
+
+it('applies combined database filters explicitly, derives QUESTION and resets through URL history', async () => {
+  const api=createApi(Array.from({length:5},()=>({items:[],nextCursor:null})));
+  const user=userEvent.setup();
+  renderPage(api,true);
+  await screen.findByRole('button',{name:'Áp dụng bộ lọc'});
+  await user.type(screen.getByRole('searchbox',{name:'Tìm bài viết cộng đồng'}),'100%_ literal');
+  await user.selectOptions(screen.getByLabelText('Theo ngôn ngữ'),'en');
+  await user.click(screen.getByText('Bộ lọc khác'));
+  await user.type(screen.getByLabelText('Chủ đề chính xác'),'Daily Practice');
+  await user.selectOptions(screen.getByLabelText('Trạng thái câu hỏi'),'ACCEPTED');
+  await user.selectOptions(screen.getByLabelText('Sắp xếp'),'USEFUL');
+  await user.click(screen.getByLabelText('Chỉ bài viết tôi đã lưu'));
+  expect(api.listPosts).toHaveBeenCalledTimes(1);
+  await user.click(screen.getByRole('button',{name:'Áp dụng bộ lọc'}));
+  await waitFor(()=>expect(api.listPosts).toHaveBeenLastCalledWith({q:'100%_ literal',languageCode:'en',postType:'QUESTION',topic:'daily-practice',responseState:'ACCEPTED',savedByMe:true,sort:'USEFUL',limit:20},true));
+  expect(screen.getByLabelText('location-search')).toHaveTextContent('savedByMe=true');
+  await user.click(screen.getByRole('button',{name:'Đặt lại'}));
+  await waitFor(()=>expect(api.listPosts).toHaveBeenLastCalledWith({limit:20},true));
+  expect(screen.getByRole('searchbox')).toHaveValue('');
+  await user.click(screen.getByRole('button',{name:'Previous filters'}));
+  await waitFor(()=>expect(screen.getByRole('searchbox')).toHaveValue('100%_ literal'));
+  await waitFor(()=>expect(api.listPosts).toHaveBeenLastCalledWith(expect.objectContaining({postType:'QUESTION',savedByMe:true}),true));
+});
+
+it.each(['sort=ACTIVITY','postType=DISCUSSION&responseState=ANSWERED','languageCode=zzz'])('blocks an invalid URL without relabelling its results and recovers on reset: %s', async (search) => {
+  const api=createApi([{items:[],nextCursor:null}]);
+  const user=userEvent.setup();
+  renderPage(api,false,vi.fn(),['/community?'+search]);
+  await screen.findByRole('alert');
+  expect(api.listPosts).not.toHaveBeenCalled();
+  expect(screen.queryByText('Chưa có bài viết nào')).toBeNull();
+  await user.click(screen.getByRole('button',{name:'Đặt lại'}));
+  await waitFor(()=>expect(api.listPosts).toHaveBeenCalledWith({limit:20},false));
+});
+
+it('requires sign-in for a saved URL and never sends an anonymous saved request', async () => {
+  const api=createApi([]),onAuthRequired=vi.fn();
+  const user=userEvent.setup();
+  renderPage(api,false,onAuthRequired,['/community?savedByMe=true']);
+  await user.click(await screen.findByRole('button',{name:'Đăng nhập để xem bài đã lưu'}));
+  expect(onAuthRequired).toHaveBeenCalledOnce();
+  expect(api.listPosts).not.toHaveBeenCalled();
 });

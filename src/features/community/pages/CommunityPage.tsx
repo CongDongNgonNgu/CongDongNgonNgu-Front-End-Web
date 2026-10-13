@@ -1,6 +1,9 @@
+import { CommunitySearchForm } from '../components/CommunitySearchForm';
+import { parseCommunitySearch, serializeCommunitySearch, type CommunitySearchQuery } from '../community-search';
+import { COMMUNITY_POST_TYPE_LABELS_KEYS } from '../community.constants';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { EmptyState, ErrorState, Skeleton } from '../../../components/ui/Feedback';
 import { Icon } from '../../../components/ui/Icon/Icon';
@@ -10,7 +13,7 @@ import type { LanguageCatalogItem } from '../../languages/languages.types';
 import { communityApi } from '../api/community-api';
 import { CommunityComposer, type CommunityComposerApiPort } from '../components/CommunityComposer';
 import { CommunityPostCard, type CommunityPostActionsApi } from '../components/CommunityPostCard';
-import { getCommunityFeedErrorMessage, useCommunityFeed, type CommunityFeedApiPort } from '../hooks/useCommunityFeed';
+import { getCommunityFeedErrorMessage, isCommunityCursorError, useCommunityFeed, type CommunityFeedApiPort } from '../hooks/useCommunityFeed';
 import styles from './CommunityPage.module.css';
 
 export interface CommunityPageApi extends CommunityFeedApiPort, CommunityComposerApiPort, CommunityPostActionsApi {}
@@ -24,18 +27,21 @@ interface CommunityPageProps {
 
 interface CommunityPageViewProps extends CommunityPageProps {
   authenticated: boolean;
+  actorId?: string;
   onAuthRequired: () => void;
 }
 
 export function CommunityPage({ api = communityApi, catalogApi = languageApi }: CommunityPageProps) {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   return (
     <CommunityPageView
       api={api}
       catalogApi={catalogApi}
       authenticated={status === 'authenticated'}
-      onAuthRequired={() => navigate('/login', { state: { from: '/community' } })}
+      actorId={user?.id}
+      onAuthRequired={() => navigate('/login', { state: { from: location.pathname + location.search } })}
     />
   );
 }
@@ -44,17 +50,23 @@ export function CommunityPageView({
   api = communityApi,
   catalogApi = languageApi,
   authenticated,
+  actorId,
   onAuthRequired,
 }: CommunityPageViewProps) {
   const { t, locale } = useUiLocale();
   const [searchParams, setSearchParams] = useSearchParams();
-  const languageCode = searchParams.get('languageCode') ?? '';
+  const parsed = useMemo(() => parseCommunitySearch(searchParams), [searchParams]);
+  const query = parsed.query;
+  const languageCode = query.languageCode ?? '';
   const [languages, setLanguages] = useState<LanguageCatalogItem[]>([]);
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(true);
   const [languageError, setLanguageError] = useState<unknown>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const languageRequestId = useRef(0);
-  const feed = useCommunityFeed({ api, authenticated, languageCode: languageCode || undefined });
+  const unknownLanguage = Boolean(languageCode) && !isLoadingLanguages && !languageError && !languages.some((language) => language.code === languageCode && language.active);
+  const invalidFilters = parsed.invalid || unknownLanguage;
+  const signInRequired = query.savedByMe && !authenticated;
+  const feed = useCommunityFeed({ api, authenticated, actorId, query, enabled: !invalidFilters && (!languageCode || (!isLoadingLanguages && !languageError)) });
 
   const loadLanguages = useCallback(async () => {
     const requestId = ++languageRequestId.current;
@@ -96,14 +108,29 @@ export function CommunityPageView({
     setComposerOpen(true);
   };
 
-  const handleLanguageChange = (nextLanguageCode: string) => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (nextLanguageCode) nextParams.set('languageCode', nextLanguageCode);
-    else nextParams.delete('languageCode');
-    setSearchParams(nextParams, { replace: true });
+  const handleApply = (nextQuery: CommunitySearchQuery) => {
+    const params = serializeCommunitySearch(nextQuery);
+    if (params.toString() === searchParams.toString()) void feed.refresh();
+    else setSearchParams(params);
+  };
+  const handleReset = () => {
+    if (!searchParams.toString()) void feed.refresh();
+    else setSearchParams(new URLSearchParams());
   };
 
   const selectedLanguage = languages.find((language) => language.code === languageCode);
+  const summaries = [
+    query.q ? t('community.search.label') + ': “' + query.q + '”' : null,
+    languageCode ? t('community.posts.by.language') + ': ' + (selectedLanguage?.nativeName ?? t('community.search.invalidLanguage')) : null,
+    query.postType ? t(COMMUNITY_POST_TYPE_LABELS_KEYS[query.postType]) : null,
+    query.topic ? t('community.search.topic') + ': ' + query.topic : null,
+    query.responseState ? t(query.responseState === 'UNANSWERED' ? 'community.search.unanswered' : query.responseState === 'ANSWERED' ? 'community.search.answered' : 'community.search.accepted') : null,
+    query.savedByMe ? t('community.search.saved') : null,
+    query.sort === 'USEFUL' ? t('community.search.useful') : null,
+  ].filter(Boolean);
+  const filtered = summaries.length > 0;
+  const showResults = !invalidFilters && !signInRequired;
+
 
   return (
     <div className={styles.page}>
@@ -144,25 +171,17 @@ export function CommunityPageView({
             <div className={styles.feedHeading}>
               <div>
                 <p className={styles.eyebrow}>{t("community.posts.community.alternative")}</p>
-                <h2 id='community-feed-heading'>{t("community.posts.newest")}</h2>
+                <h2 id='community-feed-heading'>{t(filtered ? 'community.search.results' : 'community.posts.newest')}</h2>
               </div>
-              <div className={styles.filterField}>
-                <label htmlFor='community-language-filter'>{t("community.posts.by.language")}</label>
-                <select
-                  id='community-language-filter'
-                  value={languageCode}
-                  onChange={(event) => handleLanguageChange(event.target.value)}
-                  disabled={isLoadingLanguages && languages.length === 0}
-                >
-                  <option value=''>{t("community.posts.all.languages")}</option>
-                  {languages.map((language) => (
-                    <option key={language.code} value={language.code}>
-                      {language.nativeName} · {language.englishName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+
             </div>
+
+            <CommunitySearchForm key={searchParams.toString()} query={query} languages={languages} languagesLoading={isLoadingLanguages} authenticated={authenticated} onApply={handleApply} onReset={handleReset} onAuthRequired={onAuthRequired}/>
+            {invalidFilters ? <p className={styles.inlineNotice} role='alert'>{t('community.search.invalidUrl')}</p> : null}
+            {signInRequired ? <div className={styles.inlineNotice} role='status'><Button variant='secondary' onClick={onAuthRequired}>{t('community.search.signIn')}</Button></div> : null}
+            {showResults ? <p className={styles.searchSummary} role='status'>{filtered ? t('community.search.applied', { filters: summaries.join(' · ') }) : t('community.search.none')}</p> : null}
+            {showResults && query.sort === 'USEFUL' ? <p className={styles.searchSummary}>{t('community.search.rankHint')}</p> : null}
+            {showResults ? <Button variant='quiet' onClick={() => void feed.refresh()} disabled={feed.isLoading}>{t('community.search.refresh')}</Button> : null}
 
             {languageError ? (
               <div className={styles.inlineNotice} role='alert'>
@@ -177,7 +196,7 @@ export function CommunityPageView({
               </div>
             ) : null}
 
-            {!feed.isLoading && feed.error && feed.items.length === 0 ? (
+            {showResults && !feed.isLoading && feed.error && feed.items.length === 0 ? (
               <ErrorState
                 title={t("community.posts.unable.to.load.the.community.feed")}
                 description={getCommunityFeedErrorMessage(feed.error, locale)}
@@ -185,14 +204,15 @@ export function CommunityPageView({
               />
             ) : null}
 
-            {!feed.isLoading && !feed.error && feed.items.length === 0 ? (
+            {showResults && !feed.isLoading && !feed.error && feed.items.length === 0 ? (
               <EmptyState
-                title={selectedLanguage ? t("community.posts.no.posts.yet.in") + ' ' + selectedLanguage.nativeName : t("community.posts.no.posts.yet")}
-                description={t("community.posts.come.back.later.or.be.the.first.to")}
+                title={filtered ? t('community.search.noMatches') : t('community.posts.no.posts.yet')}
+                description={t(filtered ? 'community.search.emptyHelp' : 'community.posts.come.back.later.or.be.the.first.to')}
                 icon='message-circle'
               />
             ) : null}
 
+            {showResults && !feed.isLoading && !feed.error ? <p className={styles.searchSummary}>{t('community.search.shown', { count: feed.items.length })}</p> : null}
             <div className={styles.postList} aria-live='polite'>
               {feed.items.map((post) => (
                 <CommunityPostCard
@@ -208,7 +228,7 @@ export function CommunityPageView({
             {feed.error && feed.items.length > 0 ? (
               <div className={styles.inlineNotice} role='alert'>
                 <span>{getCommunityFeedErrorMessage(feed.error, locale)}</span>
-                <Button variant='quiet' size='sm' onClick={() => void (feed.nextCursor ? feed.loadMore() : feed.refresh())}>{t("community.posts.try.again")}</Button>
+                <Button variant='quiet' size='sm' onClick={() => void (feed.nextCursor ? feed.loadMore() : feed.refresh())}>{t(isCommunityCursorError(feed.error) ? 'community.search.refresh' : 'community.posts.try.again')}</Button>
               </div>
             ) : null}
 
@@ -247,7 +267,7 @@ export function CommunityPageView({
         initialLanguageCode={languageCode}
         api={api}
         onClose={() => setComposerOpen(false)}
-        onCreated={feed.prependPost}
+        onCreated={() => void feed.refresh()}
         onAuthRequired={onAuthRequired}
       />
     </div>

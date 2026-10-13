@@ -165,6 +165,12 @@ export interface CommunityRequestClient {
 }
 
 export interface CommunityPostQuery {
+  q?: string;
+  postType?: CommunityPostType;
+  topic?: string;
+  responseState?: 'UNANSWERED' | 'ANSWERED' | 'ACCEPTED';
+  savedByMe?: boolean;
+  sort?: 'NEWEST' | 'USEFUL';
   languageCode?: string;
   limit?: number;
   cursor?: string;

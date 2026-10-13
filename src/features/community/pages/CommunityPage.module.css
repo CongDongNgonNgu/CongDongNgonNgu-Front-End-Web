@@ -153,33 +153,9 @@
   line-height: var(--leading-tight);
 }
 
-.filterField {
-  display: grid;
-  min-width: min(15rem, 42vw);
-  gap: var(--space-2);
-}
 
-.filterField label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-}
 
-.filterField select {
-  min-height: 2.75rem;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  color: var(--color-text-primary);
-  background: var(--color-surface-elevated);
-  font: inherit;
-  font-size: var(--font-size-sm);
-}
 
-.filterField select:focus {
-  border-color: var(--color-focus);
-  outline: 3px solid rgb(217 110 40 / 0.18);
-}
 
 .postList {
   display: grid;
@@ -310,8 +286,6 @@
     align-items: start;
     flex-direction: column;
   }
-
-  .filterField {
-    width: 100%;
-  }
 }
+
+.searchSummary { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); overflow-wrap: anywhere; }
