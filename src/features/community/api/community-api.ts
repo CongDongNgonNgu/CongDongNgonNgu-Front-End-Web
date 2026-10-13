@@ -40,6 +40,11 @@ export class CommunityApi {
   listPosts(query: CommunityPostQuery = {}, authenticated = false): Promise<CommunityPostListResponse> {
     const params = new URLSearchParams();
 
+    for (const key of ['q', 'postType', 'topic', 'responseState', 'sort'] as const) {
+      if (query[key]) params.set(key, query[key]);
+    }
+    if (query.savedByMe !== undefined) params.set('savedByMe', String(query.savedByMe));
+
     if (query.languageCode) {
       params.set('languageCode', query.languageCode);
     }

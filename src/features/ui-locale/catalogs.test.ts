@@ -18,7 +18,7 @@ describe('static locale catalogs', () => {
   });
   it('detects duplicate keys before object literals can overwrite them', () => {
     const localeKeys: Record<string, string[]> = { vi: [], en: [] };
-    for (const domain of ['common', 'shell', 'library', 'errors', 'study-groups', 'auth', 'onboarding', 'exchange', 'community-posts', 'community-structured']) {
+    for (const domain of ['common', 'shell', 'library', 'errors', 'study-groups', 'auth', 'onboarding', 'exchange', 'community-posts', 'community-structured', 'community-search']) {
       const source = ts.createSourceFile(domain, readFileSync(`src/features/ui-locale/catalogs/${domain}.ts`, 'utf8'), ts.ScriptTarget.Latest, true);
       const visit = (node: ts.Node) => {
         if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /^(vi|en)/.test(node.name.text)) {

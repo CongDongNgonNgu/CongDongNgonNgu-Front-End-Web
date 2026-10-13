@@ -80,3 +80,87 @@ describe('useCommunityFeed', () => {
       .toEqual(['a', 'b', 'c']);
   });
 });
+import { act, renderHook } from '@testing-library/react';
+import type { CommunityPostQuery } from '../community.types';
+
+function deferredPage() {
+  let resolve!: (value:{items:CommunityPost[];nextCursor:string|null})=>void;
+  const promise=new Promise<{items:CommunityPost[];nextCursor:string|null}>((done)=>{resolve=done;});
+  return {promise,resolve};
+}
+
+it('resets a pending pagination request when filters or actor change and ignores its late response', async () => {
+  const oldPage=deferredPage();
+  const listPosts=vi.fn<CommunityFeedApiPort['listPosts']>()
+    .mockResolvedValueOnce({items:[post('old')],nextCursor:'old-cursor'})
+    .mockReturnValueOnce(oldPage.promise)
+    .mockResolvedValueOnce({items:[post('new')],nextCursor:'new-cursor'});
+  const api={listPosts};
+  const {result,rerender}=renderHook(({query,actorId}:{query:CommunityPostQuery;actorId:string})=>useCommunityFeed({api,authenticated:true,actorId,query}),{initialProps:{query:{q:'old'} as CommunityPostQuery,actorId:'A'}});
+  await waitFor(()=>expect(result.current.items[0]?.id).toBe('old'));
+  act(()=>{void result.current.loadMore();});
+  expect(result.current.isLoadingMore).toBe(true);
+  rerender({query:{q:'new',savedByMe:true},actorId:'B'});
+  await waitFor(()=>expect(result.current.items[0]?.id).toBe('new'));
+  expect(result.current.isLoadingMore).toBe(false);
+  await act(async()=>oldPage.resolve({items:[post('stale')],nextCursor:'stale-cursor'}));
+  expect(result.current.items.map(x=>x.id)).toEqual(['new']);
+  expect(result.current.nextCursor).toBe('new-cursor');
+  expect(listPosts).toHaveBeenLastCalledWith({q:'new',savedByMe:true,limit:20},true);
+});
+
+it('never requests saved-by-me anonymously and clears authenticated results on sign-out', async () => {
+  const listPosts=vi.fn<CommunityFeedApiPort['listPosts']>().mockResolvedValue({items:[post('saved')],nextCursor:'private-scope'});
+  const api={listPosts};
+  const {result,rerender}=renderHook(({authenticated})=>useCommunityFeed({api,authenticated,actorId:authenticated?'A':undefined,query:{savedByMe:true}}),{initialProps:{authenticated:true}});
+  await waitFor(()=>expect(result.current.items).toHaveLength(1));
+  rerender({authenticated:false});
+  expect(result.current.items).toEqual([]);
+  expect(result.current.nextCursor).toBeNull();
+  expect(result.current.isLoadingMore).toBe(false);
+  expect(listPosts).toHaveBeenCalledTimes(1);
+});
+
+it('refreshes from the first page instead of accepting a late page after a manual refresh', async () => {
+  const late=deferredPage();
+  const listPosts=vi.fn<CommunityFeedApiPort['listPosts']>()
+    .mockResolvedValueOnce({items:[post('old')],nextCursor:'cursor'})
+    .mockReturnValueOnce(late.promise)
+    .mockResolvedValueOnce({items:[post('refreshed')],nextCursor:null});
+  const api={listPosts};
+  const {result}=renderHook(()=>useCommunityFeed({api,authenticated:true,query:{sort:'USEFUL'}}));
+  await waitFor(()=>expect(result.current.nextCursor).toBe('cursor'));
+  act(()=>{void result.current.loadMore();});
+  await act(async()=>result.current.refresh());
+  await act(async()=>late.resolve({items:[post('late')],nextCursor:'late'}));
+  expect(result.current.items.map(x=>x.id)).toEqual(['refreshed']);
+  expect(result.current.isLoadingMore).toBe(false);
+});
+import { ApiClientError } from '../../../services/api-client';
+
+it('clears a rejected cursor so recovery refreshes the first page in the same filter scope', async () => {
+  const listPosts=vi.fn<CommunityFeedApiPort['listPosts']>()
+    .mockResolvedValueOnce({items:[post('initial')],nextCursor:'bad-cursor'})
+    .mockRejectedValueOnce(new ApiClientError('invalid cursor',400,'COMMUNITY_INVALID_CURSOR'))
+    .mockResolvedValueOnce({items:[post('fresh')],nextCursor:null});
+  const api={listPosts};
+  const {result}=renderHook(()=>useCommunityFeed({api,authenticated:true,query:{q:'literal',sort:'USEFUL'}}));
+  await waitFor(()=>expect(result.current.nextCursor).toBe('bad-cursor'));
+  await act(async()=>result.current.loadMore());
+  expect(result.current.nextCursor).toBeNull();
+  expect(result.current.items[0].id).toBe('initial');
+  await act(async()=>result.current.refresh());
+  expect(listPosts).toHaveBeenLastCalledWith({q:'literal',sort:'USEFUL',limit:20},true);
+  expect(result.current.items[0].id).toBe('fresh');
+});
+
+it('reloads an authoritative filtered page after creation instead of injecting the created post', async () => {
+  const listPosts=vi.fn<CommunityFeedApiPort['listPosts']>().mockResolvedValue({items:[post('matches')],nextCursor:null});
+  const api={listPosts};
+  const {result}=renderHook(()=>useCommunityFeed({api,authenticated:true,query:{postType:'QUESTION'}}));
+  await waitFor(()=>expect(result.current.items).toHaveLength(1));
+  act(()=>result.current.prependPost(post('wrong-type')));
+  await waitFor(()=>expect(listPosts).toHaveBeenCalledTimes(2));
+  expect(result.current.items.map(item=>item.id)).toEqual(['matches']);
+  expect(listPosts).toHaveBeenLastCalledWith({postType:'QUESTION',limit:20},true);
+});

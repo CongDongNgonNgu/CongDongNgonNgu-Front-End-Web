@@ -161,3 +161,14 @@ describe('CommunityApi', () => {
     );
   });
 });
+
+it('serializes every bounded Community filter without dropping literal characters or decoding cursors', async () => {
+  const client=createClient();
+  client.requestProtected.mockResolvedValue({items:[],nextCursor:null});
+  const api=new CommunityApi(client);
+  await api.listPosts({q:'100%_\\ literal',languageCode:'en',postType:'QUESTION',topic:'daily-practice',responseState:'ACCEPTED',savedByMe:true,sort:'USEFUL',limit:50,cursor:'opaque+/=cursor'},true);
+  const path=client.requestProtected.mock.calls[0][0] as string;
+  const params=new URL(path,'https://example.test').searchParams;
+  expect(Object.fromEntries(params)).toEqual({q:'100%_\\ literal',languageCode:'en',postType:'QUESTION',topic:'daily-practice',responseState:'ACCEPTED',savedByMe:'true',sort:'USEFUL',limit:'50',cursor:'opaque+/=cursor'});
+  expect(client.requestPublic).not.toHaveBeenCalled();
+});
