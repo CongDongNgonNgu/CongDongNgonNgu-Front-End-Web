@@ -524,6 +524,15 @@
   margin: 0;
 }
 
+.community-detail__post-topline .community-detail__meta {
+  min-width: 0;
+}
+
+.community-detail__post-topline .community-detail__meta span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .community-detail__eyebrow,
 .community-detail__rail-label {
   color: var(--color-brand-orange-readable, #a64b14);
