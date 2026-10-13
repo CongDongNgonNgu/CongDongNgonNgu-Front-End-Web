@@ -44,3 +44,17 @@ it("qualifies every nested mutation with its group and encodes foreign IDs", asy
     ["/study-groups/g%2Fx/reports/r%2Fx/resolve", "POST"],
   ]);
 });
+
+it('posts scoped bounded collaboration sync, idempotent send, observed read, and context lookup', async () => {
+  const requestProtected=vi.fn().mockResolvedValue({});
+  const api=new StudyGroupsApi({requestProtected});
+  const input={body:'Note',clientMessageId:'11111111-1111-4111-8111-111111111111',contextType:'COMMUNITY_POST' as const,contextId:'22222222-2222-4222-8222-222222222222'};
+  await api.write('g/x',input);
+  expect(requestProtected).toHaveBeenLastCalledWith('/study-groups/g%2Fx/texts',expect.objectContaining({method:'POST',body:JSON.stringify(input)}));
+  await api.sync('g/x',{cursor:'opaque-scope',renderedIds:['33333333-3333-4333-8333-333333333333'],limit:20});
+  expect(requestProtected).toHaveBeenLastCalledWith('/study-groups/g%2Fx/texts/sync',expect.objectContaining({method:'POST',body:JSON.stringify({cursor:'opaque-scope',renderedIds:['33333333-3333-4333-8333-333333333333'],limit:20})}));
+  await api.markRead('g/x','t/x');
+  expect(requestProtected).toHaveBeenLastCalledWith('/study-groups/g%2Fx/read',expect.objectContaining({method:'POST',body:JSON.stringify({textId:'t/x'})}));
+  await api.context('g/x','t/x');
+  expect(requestProtected).toHaveBeenLastCalledWith('/study-groups/g%2Fx/texts/t%2Fx/context',expect.anything());
+});

@@ -1,11 +1,7 @@
+import { parseMessageSequence } from '../communication/sequence';
 import type { DirectMessage } from './messaging.types';
 
-export function parseMessageSequence(value: unknown): bigint {
-  if (typeof value !== 'string' || !/^(0|[1-9][0-9]{0,18})$/.test(value)) throw new Error('Invalid message sequence');
-  const sequence = BigInt(value);
-  if (sequence > 9223372036854775807n) throw new Error('Invalid message sequence');
-  return sequence;
-}
+export { parseMessageSequence } from '../communication/sequence';
 
 export function normalizeDraft(input: string): string {
   const text = input.normalize('NFC').trim();

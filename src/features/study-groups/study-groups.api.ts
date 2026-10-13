@@ -1,3 +1,4 @@
+import type { MessageContextCard } from '../communication/context.types';
 import { authApi, type AuthApi } from "../auth/auth-api";
 import type {
   StudyGroup,
@@ -7,6 +8,10 @@ import type {
   IssuedInvite,
   GroupReport,
   GroupPage,
+  GroupWriteInput,
+  GroupSyncInput,
+  GroupSyncPage,
+  GroupReadState,
 } from "./study-groups.types";
 const id = encodeURIComponent;
 const json = (method: string, body?: unknown): RequestInit => ({
@@ -111,10 +116,10 @@ export class StudyGroupsApi {
       json("POST"),
     );
   }
-  write(g: string, body: string) {
+  write(g: string, input: string | GroupWriteInput) {
     return this.client.requestProtected<GroupText>(
       "/study-groups/" + id(g) + "/texts",
-      json("POST", { body }),
+      json("POST", typeof input === "string" ? { body: input } : input),
     );
   }
   hide(g: string, t: string) {
@@ -135,4 +140,14 @@ export class StudyGroupsApi {
       json("POST"),
     );
   }
+  sync(g: string, input: GroupSyncInput = {}) {
+    return this.client.requestProtected<GroupSyncPage>('/study-groups/' + id(g) + '/texts/sync', json('POST', input));
+  }
+  markRead(g: string, textId: string) {
+    return this.client.requestProtected<GroupReadState>('/study-groups/' + id(g) + '/read', json('POST', {textId}));
+  }
+  context(g: string, textId: string, signal?: AbortSignal) {
+    return this.client.requestProtected<{textId: string; context: MessageContextCard | null}>('/study-groups/' + id(g) + '/texts/' + id(textId) + '/context', {signal});
+  }
+
 }

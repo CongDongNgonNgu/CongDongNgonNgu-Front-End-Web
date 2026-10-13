@@ -1,3 +1,4 @@
+import {viGroupCollaboration,enGroupCollaboration} from './catalogs/group-collaboration';
 import { viCommunitySearch, enCommunitySearch } from './catalogs/community-search';
 import { viCommunityStructured, enCommunityStructured } from './catalogs/community-structured';
 import { viCommunityPosts, enCommunityPosts } from './catalogs/community-posts';
@@ -19,8 +20,8 @@ export const FALLBACK_UI_LOCALE: UiLocale = 'vi';
 export const UI_LOCALE_STORAGE_KEY = 'congdongngonngu.ui-locale.v1';
 export const localeMetadata = { vi: { name: 'Tiếng Việt', intl: 'vi-VN', direction: 'ltr' }, en: { name: 'English', intl: 'en-US', direction: 'ltr' } } as const;
 export const catalogs = {
-  vi: { ...viCommunitySearch, ...viCommunityStructured, ...viCommon, ...viShell, ...viLibrary, ...viErrors, ...viStudyGroups, ...viAuth, ...viOnboarding, ...viExchange, ...viMessaging, ...viHub, ...viCommunityPosts },
-  en: { ...enCommunitySearch, ...enCommunityStructured, ...enCommon, ...enShell, ...enLibrary, ...enErrors, ...enStudyGroups, ...enAuth, ...enOnboarding, ...enExchange, ...enMessaging, ...enHub, ...enCommunityPosts },
+  vi: { ...viGroupCollaboration, ...viCommunitySearch, ...viCommunityStructured, ...viCommon, ...viShell, ...viLibrary, ...viErrors, ...viStudyGroups, ...viAuth, ...viOnboarding, ...viExchange, ...viMessaging, ...viHub, ...viCommunityPosts },
+  en: { ...enGroupCollaboration, ...enCommunitySearch, ...enCommunityStructured, ...enCommon, ...enShell, ...enLibrary, ...enErrors, ...enStudyGroups, ...enAuth, ...enOnboarding, ...enExchange, ...enMessaging, ...enHub, ...enCommunityPosts },
 };
 export type TranslationKey = keyof typeof catalogs.vi;
 export type TranslationParams = Readonly<Record<string, string | number>>;

@@ -37,3 +37,13 @@ it("scope change discards previous user data and late loads", async () => {
   await act(async () => finish("old user secret"));
   expect(result.current.data).toBe("new user");
 });
+
+it('retains mounted data on a transient refresh failure when explicitly requested and still clears on access loss',async()=>{
+ const load=vi.fn().mockResolvedValueOnce('protected').mockRejectedValueOnce(new Error('network'));
+ const {result}=renderHook(()=>useGroupResource('A:g',true,load,true));
+ await waitFor(()=>expect(result.current.data).toBe('protected'));
+ await act(async()=>result.current.refresh());
+ expect(result.current.data).toBe('protected');expect(result.current.error).toBeInstanceOf(Error);
+ await act(async()=>result.current.perform(()=>Promise.reject(new ApiClientError('removed',404,'GROUP_UNAVAILABLE'))));
+ expect(result.current.data).toBeNull();
+});

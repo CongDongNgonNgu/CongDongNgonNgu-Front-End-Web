@@ -9,7 +9,7 @@ export const canRemove = (actor: GroupRole, target: GroupRole, self: boolean) =>
   (actor === "OWNER" || (actor === "MODERATOR" && target === "MEMBER"));
 export const isAccessLost = (e: unknown) =>
   e instanceof ApiClientError &&
-  (e.status === 401 || e.code === "GROUP_UNAVAILABLE");
+  (e.status === 401 || e.status === 403 || e.code === "GROUP_UNAVAILABLE");
 export const groupErrorKey = (e: unknown) =>
   e instanceof ApiClientError && e.code === "GROUP_RATE_LIMITED"
     ? "groups.rate"
