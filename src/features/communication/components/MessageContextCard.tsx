@@ -25,6 +25,7 @@ export function MessageContextCard({
     queue: MessageContextRefresh;
     id: string;
     card: Card | undefined;
+    maskedHeight?: number;
   } | null>(null);
   const [opening, setOpening] = useState(false);
   const focusWithin = useRef(false);
@@ -32,8 +33,18 @@ export function MessageContextCard({
     if (!queue) return;
     let alive = true;
     setOpening(false);
+    let previousCard: Card | undefined;
+    let maskedHeight: number | undefined;
     const unsubscribe = queue.watch(messageId, (card) => {
-      if (alive) setOwned({ queue, id: messageId, card });
+      if (!alive) return;
+      if (card === undefined && previousCard?.availability === "AVAILABLE") {
+        // Masking removes protected content before React commits. Preserve only
+        // its measured geometry so sibling cards do not move out of view.
+        const height = node.current?.getBoundingClientRect().height;
+        if (height && Number.isFinite(height)) maskedHeight = height;
+      } else if (card !== undefined) maskedHeight = undefined;
+      previousCard = card;
+      setOwned({ queue, id: messageId, card, maskedHeight });
     });
     const element = node.current;
     const observer =
@@ -84,6 +95,14 @@ export function MessageContextCard({
     <div
       ref={node}
       className={styles.card}
+      style={
+        card === undefined &&
+        owned?.queue === queue &&
+        owned.id === messageId &&
+        owned.maskedHeight
+          ? { minHeight: owned.maskedHeight, boxSizing: "border-box" }
+          : undefined
+      }
       tabIndex={-1}
       aria-busy={opening || undefined}
       onFocusCapture={() => {

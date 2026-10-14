@@ -55,7 +55,7 @@ export class MessageContextRefresh {
 
   invalidate(): void {
     if (this.abort.signal.aborted) return;
-    this.mask();
+    this.mask(true);
     // Preserve queue order. A superseded in-flight card goes behind cards that
     // were already waiting, so repeated invalidation does not favor the first.
     this.fill();
@@ -98,9 +98,14 @@ export class MessageContextRefresh {
     }
   }
 
-  private mask(): void {
+  private mask(continueOpening = false): void {
     ++this.generation;
     this.cards.clear();
+    // Reconciliation supersedes the response, not the user's opening intent.
+    // Only a fresh response for this generation may complete that intent.
+    if (continueOpening)
+      for (const list of this.waiters.values())
+        for (const waiter of list) waiter.generation = this.generation;
     for (const sink of this.sinks.values()) sink(undefined);
   }
 

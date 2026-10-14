@@ -85,4 +85,38 @@ describe('serialized current message-card refresh', () => {
     expect(settled).toBe(true);expect(await opened).toBeNull();
     expect(context.mock.calls.map(call => call[1])).not.toContain('b');queue.dispose();
   });
+
+  it('keeps an explicit opening pending across reconciliation and requires the newest authorized response', async () => {
+    let old!: (value: MessageContextProjection) => void;
+    let fresh!: (value: MessageContextProjection) => void;
+    const context = vi.fn()
+      .mockResolvedValueOnce({ messageId: 'a', context: available })
+      .mockImplementationOnce(() => new Promise(done => { old = done; }))
+      .mockImplementationOnce(() => new Promise(done => { fresh = done; }));
+    const queue = new MessageContextRefresh({ context }, 'room');
+    queue.watch('a', vi.fn());queue.visible('a', true);await flush();
+    let settled = false;
+    const opening = queue.recheck('a').then(card => { settled = true;return card; });
+    queue.invalidate();
+    old({ messageId: 'a', context: available });await flush();
+    expect(context).toHaveBeenCalledTimes(3);
+    expect(settled).toBe(false);
+    fresh({ messageId: 'a', context: { availability: 'UNAVAILABLE' } });
+    expect(await opening).toEqual({ availability: 'UNAVAILABLE' });
+    queue.dispose();
+  });
+
+  it('opens a still-visible card only after the superseding available projection completes', async () => {
+    let old!: (value: MessageContextProjection) => void;
+    const context = vi.fn()
+      .mockResolvedValueOnce({ messageId: 'a', context: available })
+      .mockImplementationOnce(() => new Promise(done => { old = done; }))
+      .mockResolvedValueOnce({ messageId: 'a', context: available });
+    const queue = new MessageContextRefresh({ context }, 'room');
+    queue.watch('a', vi.fn());queue.visible('a', true);await flush();
+    const opening = queue.recheck('a');queue.invalidate();
+    old({ messageId: 'a', context: { availability: 'UNAVAILABLE' } });
+    expect(await opening).toEqual(available);
+    expect(context).toHaveBeenCalledTimes(3);queue.dispose();
+  });
 });
