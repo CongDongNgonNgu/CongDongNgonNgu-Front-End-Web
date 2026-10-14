@@ -113,6 +113,7 @@ export function StudyGroupsPageView({
                   </Link>
                 </h2>
                 <p>{g.description}</p>
+                <p>{t("groups.visibility.privateInviteOnly")}</p>
                 <span>{t(`groups.${g.role}`)}</span>
               </li>
             ))}

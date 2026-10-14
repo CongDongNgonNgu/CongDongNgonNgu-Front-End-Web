@@ -18,7 +18,7 @@
   white-space: pre-wrap;
   line-height: var(--leading-body);
 }
-.heading span,
+.heading > div > span,
 .note {
   color: var(--color-text-secondary);
 }

@@ -6,7 +6,7 @@ import { StudyGroupPageView } from "./StudyGroupPage";
 import { StudyGroupsApi } from "../study-groups.api";
 import { ApiClientError } from "../../../services/api-client";
 import { UiLocaleProvider } from "../../ui-locale/UiLocaleProvider";
-import type { GroupRole } from "../study-groups.types";
+import type { GroupRole, StudyGroup } from "../study-groups.types";
 import type { ConnectionListApi } from "../../exchange/exchange.types";
 afterEach(() => {
   cleanup();
@@ -65,9 +65,10 @@ function fake(role: GroupRole = "OWNER") {
       description: "group only",
       role,
       status: "ACTIVE",
+      visibility: "PRIVATE_INVITE_ONLY",
       createdAt: "2026-10-07",
       updatedAt: "2026-10-07",
-    }),
+    } satisfies StudyGroup),
     members: vi.fn().mockResolvedValue(
       page([
         { userId: "o", displayName: "Owner", role: "OWNER", joinedAt: "" },
@@ -453,6 +454,7 @@ it("closes a privileged pending confirmation on role downgrade while preserving 
     description: "group only",
     role: "MEMBER",
     status: "ACTIVE",
+    visibility: "PRIVATE_INVITE_ONLY",
     createdAt: "2026-10-07",
     updatedAt: "2026-10-07",
   });
@@ -475,3 +477,27 @@ it("closes a privileged pending confirmation on role downgrade while preserving 
     "Draft after downgrade",
   );
 });
+
+it("references only the mounted group panel as navigation changes", async () => {
+  view(fake("MEMBER"), "MEMBER");
+  const discussion = await screen.findByRole("button", { name: "Discussion" });
+  const members = screen.getByRole("button", { name: "Group members" });
+  expect(discussion).toHaveAttribute("aria-controls", "group-panel-discussion");
+  expect(members).not.toHaveAttribute("aria-controls");
+  expect(document.getElementById(discussion.getAttribute("aria-controls")!)).toBeVisible();
+
+  await userEvent.click(members);
+  expect(members).toHaveAttribute("aria-controls", "group-panel-members");
+  expect(discussion).not.toHaveAttribute("aria-controls");
+  expect(document.getElementById(members.getAttribute("aria-controls")!)).toBeVisible();
+});
+
+it.each(["OWNER", "MEMBER"] as const)(
+  "shows fixed private visibility on an authorized %s detail",
+  async (role) => {
+    view(fake(role), role);
+    await screen.findByRole("heading", { name: "Synthetic group" });
+    expect(screen.getByText("Private · Invitation only")).toBeVisible();
+    expect(screen.queryByRole("combobox", { name: "Visibility" })).toBeNull();
+  },
+);
