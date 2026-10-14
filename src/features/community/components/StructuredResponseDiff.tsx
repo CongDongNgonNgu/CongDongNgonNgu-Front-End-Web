@@ -19,7 +19,7 @@ export function StructuredResponseDiff({ original, corrected }: StructuredRespon
       </div>
       <div className={styles.diffGrid}>
         <div className={styles.diffColumn}>
-          <h4>{t('community.detail.original')}</h4>
+          <h3>{t('community.detail.original')}</h3>
           <p className={styles.diffText}>
             {diff.original.map((segment, index) => segment.kind === 'delete' ? (
               <del key={String(index) + segment.kind} className={styles.diffDeleted}>{segment.text}</del>
@@ -29,7 +29,7 @@ export function StructuredResponseDiff({ original, corrected }: StructuredRespon
           </p>
         </div>
         <div className={styles.diffColumn}>
-          <h4>{t('community.detail.suggested.correction.heading')}</h4>
+          <h3>{t('community.detail.suggested.correction.heading')}</h3>
           <p className={styles.diffText}>
             {diff.corrected.map((segment, index) => segment.kind === 'insert' ? (
               <ins key={String(index) + segment.kind} className={styles.diffInserted}>{segment.text}</ins>
