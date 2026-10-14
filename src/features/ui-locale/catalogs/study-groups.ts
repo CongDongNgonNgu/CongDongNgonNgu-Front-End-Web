@@ -1,4 +1,6 @@
 export const viStudyGroups = {
+  "groups.visibility.privateInviteOnly": "Riêng tư · Chỉ qua lời mời",
+  "groups.visibility.createHelp": "Nhóm luôn riêng tư, chỉ tham gia qua lời mời. Chỉ chủ nhóm cấp mã mời; người nhận phải chủ động chấp nhận để gia nhập. Chỉ có mã nhóm không cấp quyền truy cập.",
   "groups.connectedInvite": "Mời bạn đã kết nối",
   "groups.connectedInviteHelp": "Chọn một bạn đã kết nối để tạo mã mời cho nhóm này.",
   "groups.connectedInviteNote": "Mã chỉ hiển thị một lần. Sao chép và chia sẻ ngoài cuộc trò chuyện cùng mã nhóm để người nhận chấp nhận thủ công. Tạo mã không tự thêm thành viên.",
@@ -33,7 +35,7 @@ export const viStudyGroups = {
   "groups.bounds":
     "Tối đa 2 nhóm sở hữu; 20 thành viên, mã mời, văn bản và báo cáo mỗi nhóm.",
   "groups.inviteHelp":
-    "Dán mã nhóm và mã mời được chủ nhóm chia sẻ. Mã dùng một lần, hết hạn sau 24 giờ.",
+    "Dán mã nhóm và mã mời do chủ nhóm cấp, rồi chọn gia nhập để chủ động chấp nhận lời mời vào nhóm riêng tư. Mã mời dùng một lần, hết hạn sau 24 giờ. Chỉ có mã nhóm không cấp quyền truy cập.",
   "groups.OWNER": "Chủ nhóm",
   "groups.MODERATOR": "Điều phối viên",
   "groups.MEMBER": "Thành viên",
@@ -97,6 +99,8 @@ export const viStudyGroups = {
   "groups.reasonBound": "Tối đa 500 ký tự.",
 } as const;
 export const enStudyGroups: Record<keyof typeof viStudyGroups, string> = {
+  "groups.visibility.privateInviteOnly": "Private · Invitation only",
+  "groups.visibility.createHelp": "Groups are always private and invitation only. Only the owner can issue invitations; recipients must explicitly accept to join. A group ID alone does not grant access.",
   "groups.connectedInvite": "Invite a connected partner",
   "groups.connectedInviteHelp": "Choose a connected partner to create an invitation for this group.",
   "groups.connectedInviteNote": "The code is shown once. Copy and share it outside chat with the group ID for manual acceptance. Creating a code does not add a member.",
@@ -131,7 +135,7 @@ export const enStudyGroups: Record<keyof typeof viStudyGroups, string> = {
   "groups.bounds":
     "Up to 2 owned groups; 20 members, invitations, texts and reports per group.",
   "groups.inviteHelp":
-    "Paste the group ID and token shared by the owner. Invitations are single-use and expire after 24 hours.",
+    "Paste the group ID and invitation token issued by the owner, then select Join with invitation to explicitly accept and join this private group. Each invitation is single-use and expires after 24 hours. A group ID alone does not grant access.",
   "groups.OWNER": "Owner",
   "groups.MODERATOR": "Moderator",
   "groups.MEMBER": "Member",

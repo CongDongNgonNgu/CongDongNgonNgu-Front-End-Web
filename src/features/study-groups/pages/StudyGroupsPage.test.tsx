@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { StudyGroupsPageView } from "./StudyGroupsPage";
 import { StudyGroupsApi } from "../study-groups.api";
+import type { StudyGroup } from "../study-groups.types";
 import { UiLocaleProvider } from "../../ui-locale/UiLocaleProvider";
 import { ApiClientError } from "../../../services/api-client";
 afterEach(() => {
@@ -83,6 +84,13 @@ it.each(["vi", "en"])(
       screen.getByLabelText(locale === "vi" ? /Tên nhóm/ : /Group name/),
       "  Synthetic group  ",
     );
+    expect(
+      within(screen.getByRole("dialog")).getByText(
+        locale === "vi"
+          ? /Nhóm luôn riêng tư, chỉ tham gia qua lời mời/
+          : /Groups are always private and invitation only/,
+      ),
+    ).toBeVisible();
     await userEvent.click(
       within(screen.getByRole("dialog")).getByRole("button", {
         name: locale === "vi" ? "Tạo nhóm" : "Create group",
@@ -120,4 +128,40 @@ it("acceptance has no group preview and safely clears invalid token", async () =
   expect(screen.getByLabelText(/Secret invitation token/)).toHaveValue("");
   expect(screen.queryByText("secret-details")).toBeNull();
   expect(location.search).toBe("");
+});
+
+it.each(["vi", "en"])(
+  "shows the fixed private invitation-only label on current membership list: %s",
+  async (locale) => {
+    const api = fake();
+    api.list.mockResolvedValue({
+      items: [{
+        id: "g",
+        name: "Private fixture",
+        description: "Only members",
+        role: "MEMBER",
+        visibility: "PRIVATE_INVITE_ONLY",
+        status: "ACTIVE",
+        createdAt: "",
+        updatedAt: "",
+      } satisfies StudyGroup],
+      page: 1,
+      limit: 20,
+      total: 1,
+    });
+    view(api, true, false, locale);
+    const item = (await screen.findByRole("link", { name: "Private fixture" })).closest("li")!;
+    expect(within(item).getByText(
+      locale === "en" ? "Private · Invitation only" : "Riêng tư · Chỉ qua lời mời",
+    )).toBeVisible();
+    expect(screen.queryByRole("combobox", { name: /Visibility|Hiển thị/ })).toBeNull();
+  },
+);
+
+it("explains explicit one-use invitation acceptance and that a group ID alone grants no access", () => {
+  view(fake(), true, true, "en");
+  expect(screen.getByText(/A group ID alone does not grant access/)).toBeVisible();
+  expect(screen.getByText(/issued by the owner/)).toBeVisible();
+  expect(screen.getByText(/expires after 24 hours/)).toBeVisible();
+  expect(screen.queryByRole("button", { name: /Request to join|Public join/ })).toBeNull();
 });

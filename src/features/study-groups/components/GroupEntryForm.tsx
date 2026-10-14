@@ -69,7 +69,9 @@ export function GroupEntryForm({
           disabled={busy}
         />
       )}
-      {mode === "accept" ? <p>{t("groups.inviteHelp")}</p> : null}
+      <p>
+        {t(mode === "create" ? "groups.visibility.createHelp" : "groups.inviteHelp")}
+      </p>
       <Button type="submit" loading={busy}>
         {t(mode === "create" ? "groups.create" : "groups.join")}
       </Button>

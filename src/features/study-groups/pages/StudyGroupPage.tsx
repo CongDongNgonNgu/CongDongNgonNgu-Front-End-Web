@@ -284,6 +284,7 @@ export function StudyGroupPageView({
             <div>
               <h1>{data.group.name}</h1>
               <p>{data.group.description}</p>
+              <p>{t("groups.visibility.privateInviteOnly")}</p>
               <span>{t(`groups.${data.group.role}`)}</span>
             </div>
             <div className={styles.actions}>

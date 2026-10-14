@@ -7,6 +7,7 @@ export interface StudyGroup {
   id: string;
   name: string;
   description: string;
+  visibility: "PRIVATE_INVITE_ONLY";
   status: "ACTIVE" | "ARCHIVED";
   role: GroupRole;
   createdAt: string;
