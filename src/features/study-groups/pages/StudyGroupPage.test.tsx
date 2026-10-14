@@ -478,6 +478,20 @@ it("closes a privileged pending confirmation on role downgrade while preserving 
   );
 });
 
+it("references only the mounted group panel as navigation changes", async () => {
+  view(fake("MEMBER"), "MEMBER");
+  const discussion = await screen.findByRole("button", { name: "Discussion" });
+  const members = screen.getByRole("button", { name: "Group members" });
+  expect(discussion).toHaveAttribute("aria-controls", "group-panel-discussion");
+  expect(members).not.toHaveAttribute("aria-controls");
+  expect(document.getElementById(discussion.getAttribute("aria-controls")!)).toBeVisible();
+
+  await userEvent.click(members);
+  expect(members).toHaveAttribute("aria-controls", "group-panel-members");
+  expect(discussion).not.toHaveAttribute("aria-controls");
+  expect(document.getElementById(members.getAttribute("aria-controls")!)).toBeVisible();
+});
+
 it.each(["OWNER", "MEMBER"] as const)(
   "shows fixed private visibility on an authorized %s detail",
   async (role) => {

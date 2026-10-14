@@ -343,7 +343,7 @@ export function StudyGroupPageView({
               <Button
                 key={x}
                 aria-pressed={selected === x}
-                aria-controls={"group-panel-" + x}
+                aria-controls={selected === x ? "group-panel-" + x : undefined}
                 id={"group-tab-" + x}
                 variant={selected === x ? "primary" : "quiet"}
                 onClick={() => {
