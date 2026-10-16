@@ -172,7 +172,7 @@ describe('CommunityPageView', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Đánh dấu hữu ích' }));
     await waitFor(() => expect(api.addHelpful).toHaveBeenCalledWith('one'));
-    expect(await screen.findByText('1 lượt hữu ích')).toBeVisible();
+    expect(await screen.findByRole('button', {name:'Bỏ đánh dấu hữu ích'})).toHaveAccessibleDescription('Hữu ích · 1');
   });
 
   it('sends unauthenticated composer intent to the existing login flow', async () => {

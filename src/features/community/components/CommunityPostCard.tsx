@@ -1,11 +1,13 @@
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { translate, type UiLocale, type TranslationKey } from '../../ui-locale/ui-locale';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiClientError } from '../../../services/api-client';
-import { Button } from '../../../components/ui/Button';
+import { CommunityActionButton } from './CommunityActionButton';
+import { CommunityPostTypeBadge } from './CommunityPostTypeBadge';
+import { getCommunityCapabilities } from '../community-capabilities';
 import { Icon } from '../../../components/ui/Icon/Icon';
-import { Avatar, Badge, Card, LanguageIndicator } from '../../../components/ui/Surface';
+import { Avatar, Card, LanguageIndicator } from '../../../components/ui/Surface';
 import type {
   CommunityPost,
   CommunityReactionResponse,
@@ -51,6 +53,9 @@ export function CommunityPostCard({
   onAuthRequired,
 }: CommunityPostCardProps) {
   const { t, locale, formatNumber, formatDate } = useUiLocale();
+  const helpfulCountId = useId();
+  const capabilities = getCommunityCapabilities(post, authenticated);
+  const primaryLabel = capabilities.primaryResponse === 'QA_ANSWER' ? t('community.card.answer') : capabilities.primaryResponse === 'CORRECTION_PROPOSAL' ? t('community.card.correct') : t('community.card.comment');
   const [viewerReacted, setViewerReacted] = useState(post.viewerReacted);
   const [helpfulCount, setHelpfulCount] = useState(post.helpfulCount);
   const [saved, setSaved] = useState(post.isSaved);
@@ -154,7 +159,7 @@ export function CommunityPostCard({
           </div>
           <div className={styles.headerBadges}>
             <LanguageIndicator language={post.targetLanguage.nativeName} level={post.cefrLevel ?? undefined} />
-            <Badge tone='neutral'>{t(COMMUNITY_POST_TYPE_LABELS_KEYS[post.postType])}</Badge>
+            <CommunityPostTypeBadge type={post.postType} />
           </div>
         </div>
 
@@ -168,58 +173,53 @@ export function CommunityPostCard({
           {t("community.posts.view.post.details")}</Link>
 
         <div className={styles.footer}>
-          <div className={styles.stats} aria-label={t("community.posts.post.interactions")}>
-            <span>{formatNumber(helpfulCount)} {t("community.posts.helpful.votes")}</span>
-            <span>{formatNumber(post.commentCount)} {t("community.posts.comments")}</span>
-          </div>
           <div className={styles.actions} aria-label={t("community.posts.post.actions")}>
-            {post.visibility === 'PUBLIC' && post.isShareable && ['DISCUSSION', 'QUESTION'].includes(post.postType)
-              ? <ShareContextButton reference={{ type: 'COMMUNITY_POST', id: post.id }}/> : null}
-            <Button
-              variant='quiet'
-              size='sm'
-              className={viewerReacted ? styles.actionActive : ''}
-              onClick={() => void handleHelpful()}
-              loading={pendingAction === 'helpful'}
-              aria-pressed={viewerReacted}
-              aria-label={viewerReacted ? t("community.posts.remove.helpful.vote") : t("community.posts.mark.as.helpful")}
-            >
-              <Icon name='thumbs-up' size={16} />
-              <span>{t("community.posts.helpful")}</span>
-            </Button>
-            <Button
-              variant='quiet'
-              size='sm'
-              className={saved ? styles.actionActive : ''}
-              onClick={() => void handleSave()}
-              loading={pendingAction === 'save'}
-              aria-pressed={saved}
-              aria-label={saved ? t("community.posts.unsave.post") : t("community.posts.save.post")}
-            >
-              <Icon name='bookmark' size={16} />
-              <span>{t("community.posts.save")}</span>
-            </Button>
-            {post.isShareable ? (
-              <Button
-                variant='quiet'
-                size='sm'
-                onClick={() => void handleShare()}
-                loading={pendingAction === 'share'}
-                aria-label={t("community.posts.share.a.post")}
+            {capabilities.supported ? <>
+              {capabilities.primaryResponse ? (
+                <Link className={styles.primaryAction} to={`/community/posts/${encodeURIComponent(post.id)}`}>
+                  <Icon name='message-circle' size={18} />
+                  {primaryLabel}{capabilities.primaryResponse === 'COMMENT' ? ` · ${formatNumber(post.commentCount)}` : ''}
+                </Link>
+              ) : null}
+              {capabilities.partnerShare
+                ? <ShareContextButton reference={{ type: 'COMMUNITY_POST', id: post.id }}/> : null}
+              <CommunityActionButton
+                onClick={() => void handleHelpful()}
+                loading={pendingAction === 'helpful'}
+                aria-pressed={viewerReacted}
+                aria-describedby={helpfulCountId}
+                aria-label={viewerReacted ? t("community.posts.remove.helpful.vote") : t("community.posts.mark.as.helpful")}
               >
-                <Icon name='share' size={16} />
-                <span>{t("community.posts.share")}</span>
-              </Button>
-            ) : null}
-            <Button
-              variant='quiet'
-              size='sm'
-              onClick={() => authenticated ? setReportOpen(true) : requireAuth()}
-              aria-label={t("community.posts.report.post")}
-            >
-              <Icon name='flag' size={16} />
-              <span>{t("community.posts.report")}</span>
-            </Button>
+                <Icon name={viewerReacted ? 'check' : 'thumbs-up'} size={18} />
+                <span id={helpfulCountId}>{t("community.posts.helpful")} · {formatNumber(helpfulCount)}</span>
+              </CommunityActionButton>
+              <CommunityActionButton
+                onClick={() => void handleSave()}
+                loading={pendingAction === 'save'}
+                aria-pressed={saved}
+                aria-label={saved ? t("community.posts.unsave.post") : t("community.posts.save.post")}
+              >
+                <Icon name={saved ? 'check' : 'bookmark'} size={18} />
+                <span>{t("community.posts.save")}</span>
+              </CommunityActionButton>
+              {capabilities.publicShare ? (
+                <CommunityActionButton
+                  onClick={() => void handleShare()}
+                  loading={pendingAction === 'share'}
+                  aria-label={t("community.posts.share.a.post")}
+                >
+                  <Icon name='share' size={16} />
+                  <span>{t("community.posts.share")}</span>
+                </CommunityActionButton>
+              ) : null}
+              <CommunityActionButton
+                onClick={() => authenticated ? setReportOpen(true) : requireAuth()}
+                aria-label={t("community.posts.report.post")}
+              >
+                <Icon name='flag' size={16} />
+                <span>{t("community.posts.report")}</span>
+              </CommunityActionButton>
+            </> : null}
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+import presentation from '../components/CommunityDetailPresentation.module.css';
 import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -434,7 +435,7 @@ it.each(['QUESTION', 'CORRECTION_REQUEST'] as const)('collapses secondary discus
   const summary = await screen.findByText(/Thảo luận chung/);
   const disclosure = summary.closest('details');
   expect(disclosure).not.toHaveAttribute('open');
-  expect(container.querySelectorAll('.community-detail__content')).toHaveLength(1);
+  expect(container.getElementsByClassName(presentation.content)).toHaveLength(1);
   summary.focus();
   expect(summary).toHaveFocus();
   await user.click(summary);
@@ -467,4 +468,10 @@ it.each(['QUESTION', 'CORRECTION_REQUEST'] as const)('preserves %s response and 
   expect(api.listComments).toHaveBeenCalledTimes(1);
   expect(listStructuredResponses).toHaveBeenCalledTimes(1);
   expect(screen.queryByText(postType)).toBeNull();
+});
+
+it('uses compact type context and an author-specific page identity', async () => {
+  renderDetail(createApi());
+  expect(await screen.findByRole('heading', {level:1, name:'Thảo luận của Nguyễn Minh'})).toBeInTheDocument();
+  expect(screen.queryByRole('heading', {name:'Bài viết cộng đồng'})).not.toBeInTheDocument();
 });
