@@ -432,10 +432,11 @@ it.each(['QUESTION', 'CORRECTION_REQUEST'] as const)('collapses secondary discus
     structuredApi={{listStructuredResponses:vi.fn().mockResolvedValue({items:[],nextCursor:null})} as unknown as import('../corrections.types').CommunityStructuredResponseApi}
     requestApi={{getCorrectionRequest:vi.fn().mockResolvedValue({post:post(),correction:{originalText:'Immutable correction',context:null}})}}/>
   </MemoryRouter>);
-  const summary = await screen.findByText(/Thảo luận chung/);
+  const summary = (await screen.findByText(/Thảo luận chung/)).closest('summary')!;
   const disclosure = summary.closest('details');
   expect(disclosure).not.toHaveAttribute('open');
-  expect(container.getElementsByClassName(presentation.content)).toHaveLength(1);
+  expect(container.getElementsByClassName(presentation.content)).toHaveLength(postType === 'CORRECTION_REQUEST' ? 0 : 1);
+  if (postType === 'CORRECTION_REQUEST') expect(await screen.findByText('Immutable correction')).toBeVisible();
   summary.focus();
   expect(summary).toHaveFocus();
   await user.click(summary);

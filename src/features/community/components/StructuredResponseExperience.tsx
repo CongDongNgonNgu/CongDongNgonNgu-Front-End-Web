@@ -1,5 +1,6 @@
+import type { CorrectionRequestSource } from '../hooks/useCorrectionRequestSource';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '../../../components/ui/Button/Button';
 import type { CommunityPost } from '../community.types';
 import type {
@@ -17,6 +18,7 @@ const RESPONSE_PAGE_SIZE = 20;
 
 interface StructuredResponseExperienceProps {
   parent: CommunityPost;
+  correctionSource?: CorrectionRequestSource;
   authenticated: boolean;
   api: CommunityStructuredResponseApi;
   requestApi: Pick<CommunityRequestApi, 'getCorrectionRequest'>;
@@ -50,6 +52,7 @@ function replaceResponse(
 
 export function StructuredResponseExperience({
   parent,
+  correctionSource,
   authenticated,
   api,
   requestApi,
@@ -76,33 +79,45 @@ export function StructuredResponseExperience({
     ? t('community.detail.no.corrections.yet.be.the.first.to.suggest.a.correction')
     : t('community.detail.no.answers.yet.share.your.perspective.to.help.the.requester');
 
+  const loadGeneration = useRef(0);
+  const sourceProvided = correctionSource !== undefined;
+  const sourceData = correctionSource?.data;
+  const sourceLoading = correctionSource?.loading;
+  const sourceError = correctionSource?.error;
+
   const load = useCallback(async () => {
+    const generation = ++loadGeneration.current;
     setLoading(true);
     setLoadError(null);
+    if (isCorrection && sourceProvided && (sourceLoading || sourceError)) return;
     try {
       const responsePromise = api.listStructuredResponses(parent.id, { limit: RESPONSE_PAGE_SIZE }, authenticated);
       const correctionPromise = isCorrection
-        ? requestApi.getCorrectionRequest(parent.id, authenticated)
+        ? sourceProvided ? Promise.resolve(sourceData ?? null) : requestApi.getCorrectionRequest(parent.id, authenticated)
         : Promise.resolve(null);
       const [result, correctionResult] = await Promise.all([responsePromise, correctionPromise]);
+      if (generation !== loadGeneration.current) return;
       setResponses(result.items);
       setNextCursor(result.nextCursor);
       setCorrection(correctionResult);
     } catch (error) {
+      if (generation !== loadGeneration.current) return;
       setResponses([]);
       setNextCursor(null);
       setLoadError({ cause: error });
     } finally {
-      setLoading(false);
+      if (generation === loadGeneration.current) setLoading(false);
     }
-  }, [api, authenticated, isCorrection, parent.id, requestApi]);
+  }, [api, authenticated, isCorrection, parent.id, requestApi, sourceProvided, sourceData, sourceLoading, sourceError]);
 
   useEffect(() => {
     if (isStructuredParent(parent)) void load();
+    return () => { loadGeneration.current += 1; };
   }, [load, parent]);
 
   const handleLoadMore = async () => {
     if (!nextCursor || loadingMore) return;
+    const generation = loadGeneration.current;
     setLoadingMore(true);
     try {
       const result = await api.listStructuredResponses(
@@ -110,10 +125,11 @@ export function StructuredResponseExperience({
         { limit: RESPONSE_PAGE_SIZE, cursor: nextCursor },
         authenticated,
       );
+      if (generation !== loadGeneration.current) return;
       setResponses((current) => [...current, ...result.items]);
       setNextCursor(result.nextCursor);
     } catch (error) {
-      setActionError(errorMessage(error, t, t('community.detail.could.not.load.more.responses')));
+      if (generation === loadGeneration.current) setActionError(errorMessage(error, t, t('community.detail.could.not.load.more.responses')));
     } finally {
       setLoadingMore(false);
     }
@@ -204,6 +220,8 @@ export function StructuredResponseExperience({
     }
   };
 
+  if (isCorrection && sourceProvided && (sourceLoading || sourceError)) return null;
+
   return (
     <section className={styles.section} aria-labelledby='structured-responses-title'>
       <div className={styles.sectionHeading}>
@@ -214,11 +232,11 @@ export function StructuredResponseExperience({
         <span className={styles.status}>{t('community.detail.responseCount', { count: responses.length })}</span>
       </div>
 
-      {isCorrection && correction && originalText !== parent.content ? <div className={styles.originalBlock}>
+      {!sourceProvided && isCorrection && correction && originalText !== parent.content ? <div className={styles.originalBlock}>
         <p className={styles.eyebrow}>{isCorrection ? t('community.detail.original.for.review') : t('community.detail.learner.question')}</p>
         <p>{originalText}</p>
       </div> : null}
-      {correction?.correction.context ? <p className={styles.muted}>{correction.correction.context}</p> : null}
+      {!sourceProvided && correction?.correction.context ? <p className={styles.muted}>{correction.correction.context}</p> : null}
 
       {loading ? (
         <p className={styles.status} role='status' aria-live='polite'>{t('community.detail.loading.responses')}</p>
@@ -234,6 +252,7 @@ export function StructuredResponseExperience({
               key={response.id}
               response={response}
               originalText={originalText}
+              direction={parent.targetLanguage.direction}
               authenticated={authenticated}
               pendingAction={pendingAction}
               actionError={actionError}
