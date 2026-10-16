@@ -9,8 +9,8 @@ export function FinalCtaSection() {
       <h2 id='final-cta-title'>Một ngôn ngữ mới bắt đầu từ một cuộc trò chuyện.</h2>
       <p className={styles.finalDescription}>Chọn một ngôn ngữ, đọc một câu hỏi, hoặc để lại điều bạn biết.</p>
       <div className={styles.finalActions}>
-        <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/#languages'>Khám phá ngôn ngữ</Link>
-        <Link className={shared.textLink} to='/#community'>Tìm hiểu cách đóng góp</Link>
+        <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/languages'>Khám phá ngôn ngữ</Link>
+        <Link className={shared.textLink} to='/community'>Tìm hiểu cách đóng góp</Link>
       </div>
     </section>
   );

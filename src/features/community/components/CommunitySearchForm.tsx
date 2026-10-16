@@ -1,4 +1,5 @@
-﻿import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
+import { Icon } from '../../../components/ui/Icon/Icon';
 import { Button } from '../../../components/ui/Button';
 import { SelectControl, TextInput } from '../../../components/ui/FormControls';
 import type { LanguageCatalogItem } from '../../languages/languages.types';
@@ -54,7 +55,7 @@ export function CommunitySearchForm({ query, languages, languagesLoading, authen
       </SelectControl>
     </div>
     <details className={styles.more} open={moreOpen} onToggle={(event) => setMoreOpen(event.currentTarget.open)}>
-      <summary>{t('community.search.more')}</summary>
+      <summary aria-expanded={moreOpen}><Icon name='search' size={18}/><span>{t('community.search.more')}</span><Icon name='chevron-down' size={18}/></summary>
       <div className={styles.fields}>
         <SelectControl label={t('community.search.type')} value={draft.postType ?? ''} onChange={(event) => {
           const type = event.target.value as CommunitySearchQuery['postType'];

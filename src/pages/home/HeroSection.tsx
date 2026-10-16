@@ -16,7 +16,7 @@ export function HeroSection() {
         </p>
         <div className={styles.heroActions}>
           <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/#how-it-works'>Xem cách bắt đầu</Link>
-          <Link className={`${shared.buttonLink} ${shared.buttonSecondary}`} to='/#community'>Khám phá cộng đồng</Link>
+          <Link className={`${shared.buttonLink} ${shared.buttonSecondary}`} to='/community'>Khám phá cộng đồng</Link>
         </div>
         <p className={styles.heroNote}>
           <Icon name='users' size={18} />

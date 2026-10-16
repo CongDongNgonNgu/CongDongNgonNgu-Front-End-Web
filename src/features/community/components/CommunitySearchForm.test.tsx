@@ -1,4 +1,4 @@
-﻿import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, it, vi } from 'vitest';
 import { UiLocaleProvider, useUiLocale } from '../../ui-locale/UiLocaleProvider';
@@ -52,4 +52,16 @@ it('clears unapplied drafts and validation when resetting an already empty URL',
  await user.click(screen.getByRole('button',{name:'Reset'}));
  expect(input).toHaveValue('');expect(input).not.toHaveAttribute('aria-invalid','true');
  expect(screen.queryByRole('alert')).toBeNull();
+});
+
+it('exposes advanced filter state and keeps unapplied filters off the server', async () => {
+  const user=userEvent.setup(), apply=setup();
+  const toggle=screen.getByText('More filters').closest('summary')!;
+  expect(toggle).toHaveAttribute('aria-expanded','false');
+  await user.click(toggle);
+  expect(toggle).toHaveAttribute('aria-expanded','true');
+  await user.selectOptions(screen.getByLabelText('Post type'),'QUESTION');
+  expect(apply).not.toHaveBeenCalled();
+  await user.click(screen.getByRole('button',{name:'Apply filters'}));
+  expect(apply).toHaveBeenCalledWith({postType:'QUESTION'});
 });

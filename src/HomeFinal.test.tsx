@@ -14,7 +14,7 @@ describe('final human-first homepage narrative', () => {
     expect(screen.getByText('Một cộng đồng mở để học cùng con người, thực hành với AI và xây dựng tri thức ngôn ngữ.')).toBeVisible();
     expect(screen.getByText('Từ người mới bắt đầu đến người muốn chia sẻ điều mình biết.')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Xem cách bắt đầu' })).toHaveAttribute('href', '/#how-it-works');
-    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/#community');
+    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/community');
     expect(screen.getByRole('img', { name: /cộng đồng đa ngôn ngữ/i }).getAttribute('src')).toMatch(/language-community-hero-v2[.]jpg/);
     expect(screen.getByRole('heading', { name: /vòng lặp học tập cộng đồng/i })).toBeVisible();
     expect(screen.getByRole('heading', { name: /thư viện ngôn ngữ mở/i })).toBeVisible();
@@ -41,8 +41,8 @@ describe('final human-first homepage narrative', () => {
     render(<App />);
 
     expect(screen.getByRole('link', { name: 'Xem cách bắt đầu' })).toHaveAttribute('href', '/#how-it-works');
-    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/#community');
-    expect(screen.getByRole('link', { name: 'Khám phá ngôn ngữ' })).toHaveAttribute('href', '/#languages');
-    expect(screen.getByRole('link', { name: 'Tìm hiểu cách đóng góp' })).toHaveAttribute('href', '/#community');
+    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/community');
+    expect(screen.getByRole('link', { name: 'Khám phá ngôn ngữ' })).toHaveAttribute('href', '/languages');
+    expect(screen.getByRole('link', { name: 'Tìm hiểu cách đóng góp' })).toHaveAttribute('href', '/community');
   });
 });
