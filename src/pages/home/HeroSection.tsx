@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../features/ui-locale/UiLocaleProvider';
 import { Icon } from '../../components/ui/Icon/Icon';
 import { Link } from 'react-router-dom';
 import heroImage from '../../assets/language-community-hero-v2.jpg';
@@ -6,6 +7,7 @@ import shared from './HomeShared.module.css';
 import styles from './HeroSection.module.css';
 
 export function HeroSection() {
+  const {t}=useUiLocale();
   return (
     <section className={styles.hero} aria-labelledby='page-title'>
       <div className={styles.heroCopy}>
@@ -15,8 +17,8 @@ export function HeroSection() {
           Một cộng đồng mở để học cùng con người, thực hành với AI và xây dựng tri thức ngôn ngữ.
         </p>
         <div className={styles.heroActions}>
-          <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/#how-it-works'>Xem cách bắt đầu</Link>
-          <Link className={`${shared.buttonLink} ${shared.buttonSecondary}`} to='/#community'>Khám phá cộng đồng</Link>
+          <Link className={`${shared.buttonLink} ${shared.buttonPrimary}`} to='/#how-it-works'>{t('community.explore.start')}</Link>
+          <Link className={`${shared.buttonLink} ${shared.buttonSecondary}`} to='/community'>{t('community.explore.community')}</Link>
         </div>
         <p className={styles.heroNote}>
           <Icon name='users' size={18} />

@@ -26,18 +26,15 @@ describe('homepage hash navigation', () => {
     await waitFor(() => expect(scroll).toHaveBeenCalled());
   });
 
-  it('scrolls to community when its CTA is activated with the keyboard', async () => {
+  it('opens the real Community surface when its CTA is activated with the keyboard', async () => {
     const user = userEvent.setup();
     render(<App />);
-    const section = document.getElementById('community')!;
-    const scroll = vi.fn();
-    section.scrollIntoView = scroll;
     const link = screen.getByRole('link', { name: 'Khám phá cộng đồng' });
     link.focus();
     await user.keyboard('{Enter}');
-    await waitFor(() => expect(scroll).toHaveBeenCalled());
-    expect(window.location.hash).toBe('#community');
-    expect(link).toHaveFocus();
+    await waitFor(() => expect(window.location.pathname).toBe('/community'));
+    expect(window.location.hash).toBe('');
+    expect(await screen.findByRole('heading', {name:'Cùng học, cùng góp tiếng nói.'})).toBeVisible();
   });
 
   it('scrolls to the community section on direct hash entry', async () => {

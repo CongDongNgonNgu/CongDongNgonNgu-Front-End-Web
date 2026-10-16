@@ -4,6 +4,7 @@ import { App } from './App';
 
 afterEach(() => {
   cleanup();
+  localStorage.removeItem('congdongngonngu.ui-locale.v1');
   window.history.pushState({}, '', '/');
 });
 
@@ -14,13 +15,13 @@ describe('final human-first homepage narrative', () => {
     expect(screen.getByText('Một cộng đồng mở để học cùng con người, thực hành với AI và xây dựng tri thức ngôn ngữ.')).toBeVisible();
     expect(screen.getByText('Từ người mới bắt đầu đến người muốn chia sẻ điều mình biết.')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Xem cách bắt đầu' })).toHaveAttribute('href', '/#how-it-works');
-    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/#community');
+    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/community');
     expect(screen.getByRole('img', { name: /cộng đồng đa ngôn ngữ/i }).getAttribute('src')).toMatch(/language-community-hero-v2[.]jpg/);
     expect(screen.getByRole('heading', { name: /vòng lặp học tập cộng đồng/i })).toBeVisible();
     expect(screen.getByRole('heading', { name: /thư viện ngôn ngữ mở/i })).toBeVisible();
     expect(screen.getByRole('heading', { name: /ngôn ngữ của bạn thuộc về thế giới/i })).toBeVisible();
     expect(screen.getByRole('heading', { name: /practice with ai\. learn with people\./i })).toBeVisible();
-    expect(screen.getByText(/khi cộng đồng sẵn sàng/i)).toBeVisible();
+    expect(screen.getByText('CÙNG HỌC QUA TRÒ CHUYỆN')).toBeVisible();
     expect(screen.getByRole('heading', { name: /cộng đồng miễn phí trước tiên/i })).toBeVisible();
 
     const languageRegion = within(screen.getByRole('region', { name: /bắt đầu từ ngôn ngữ/i }));
@@ -41,8 +42,18 @@ describe('final human-first homepage narrative', () => {
     render(<App />);
 
     expect(screen.getByRole('link', { name: 'Xem cách bắt đầu' })).toHaveAttribute('href', '/#how-it-works');
-    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/#community');
-    expect(screen.getByRole('link', { name: 'Khám phá ngôn ngữ' })).toHaveAttribute('href', '/#languages');
-    expect(screen.getByRole('link', { name: 'Tìm hiểu cách đóng góp' })).toHaveAttribute('href', '/#community');
+    expect(screen.getByRole('link', { name: 'Khám phá cộng đồng' })).toHaveAttribute('href', '/community');
+    expect(screen.getByRole('link', { name: 'Khám phá ngôn ngữ' })).toHaveAttribute('href', '/languages');
+    expect(screen.getByRole('link', { name: 'Tìm hiểu cách đóng góp' })).toHaveAttribute('href', '/community');
   });
+});
+
+it('localizes affected Explore CTAs while keeping real product destinations', () => {
+ localStorage.setItem('congdongngonngu.ui-locale.v1','en');
+ render(<App/>);
+ expect(screen.getByRole('link',{name:'Explore the community'})).toHaveAttribute('href','/community');
+ expect(screen.getByRole('link',{name:'Explore languages'})).toHaveAttribute('href','/languages');
+ expect(screen.getByRole('link',{name:'Learn how to contribute'})).toHaveAttribute('href','/community');
+ expect(within(document.getElementById('exchange')!).getByRole('link',{name:'Find a study partner'})).toHaveAttribute('href','/exchange');
+ expect(screen.queryByText(/connections will open later/i)).toBeNull();
 });
