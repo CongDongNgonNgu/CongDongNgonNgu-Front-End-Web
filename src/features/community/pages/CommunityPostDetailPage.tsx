@@ -17,6 +17,10 @@ import type { CommunityPostActionsApi } from '../components/CommunityPostCard';
 import { ShareContextButton } from '../../exchange/components/ShareContextButton';
 import { StructuredResponseExperience } from '../components/StructuredResponseExperience';
 import './CommunityPostDetailPage.css';
+import presentation from '../components/CommunityDetailPresentation.module.css';
+import { CommunityPostTypeBadge } from '../components/CommunityPostTypeBadge';
+import { CommunityActionButton } from '../components/CommunityActionButton';
+import { getCommunityCapabilities } from '../community-capabilities';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Dialog } from '../../../components/ui/Overlays';
 import { Icon } from '../../../components/ui/Icon/Icon';
@@ -779,12 +783,13 @@ export function CommunityPostDetailPageView({
             type="button"
             className="community-detail__mobile-icon-action"
             onClick={() => void handlePostAction('save')}
-            disabled={actionPending !== null}
+            aria-pressed={post.isSaved}
+                    disabled={actionPending !== null}
             aria-label={t('community.detail.save.post')}
           >
             <Icon name="bookmark" size={18} />
           </button>
-          {post.isShareable ? (
+          {getCommunityCapabilities(post, authenticated).publicShare ? (
             <button
               type="button"
               className="community-detail__mobile-icon-action"
@@ -808,7 +813,7 @@ export function CommunityPostDetailPageView({
       <div className="community-detail__layout">
         <div className="community-detail__primary">
           <article className="community-detail__post" aria-labelledby="community-detail-title">
-            <header className="community-detail__post-header">
+            <header className={presentation.header}>
               <div className="community-detail__post-topline">
                 <div className="community-detail__meta" aria-label={t('community.detail.post.information')}>
                   {postMeta.map((item) => (
@@ -820,12 +825,13 @@ export function CommunityPostDetailPageView({
                     type="button"
                     className="community-detail__icon-action"
                     onClick={() => void handlePostAction('save')}
+                    aria-pressed={post.isSaved}
                     disabled={actionPending !== null}
                     aria-label={post.isSaved ? t('community.detail.unsave.post') : t('community.detail.save.post')}
                   >
                     <Icon name="bookmark" size={18} />
                   </button>
-                  {post.isShareable ? (
+                  {getCommunityCapabilities(post, authenticated).publicShare ? (
                     <button
                       type="button"
                       className="community-detail__icon-action"
@@ -897,8 +903,8 @@ export function CommunityPostDetailPageView({
                   </div>
                 </div>
               </div>
-              <p className="community-detail__eyebrow">{t(COMMUNITY_POST_TYPE_LABELS_KEYS[post.postType])}</p>
-              <h1 id="community-detail-title">{t('community.detail.community.post')}</h1>
+              <CommunityPostTypeBadge type={post.postType} />
+              <h1 id="community-detail-title" className={presentation.identity}>{t('community.detail.identity', {type: t(COMMUNITY_POST_TYPE_LABELS_KEYS[post.postType]), name: post.author.displayName})}</h1>
               <div className="community-detail__author">
                 <span className="community-detail__avatar" aria-hidden="true">
                   {post.author.displayName.slice(0, 1).toUpperCase()}
@@ -910,19 +916,18 @@ export function CommunityPostDetailPageView({
               </div>
             </header>
 
-            <p className="community-detail__content">{post.content}</p>
+            <p className={presentation.content} dir={post.targetLanguage.direction}>{post.content}</p>
 
             <div className="community-detail__post-actions" aria-label={t('community.detail.post.actions')}>
-              {post.visibility === 'PUBLIC' && post.isShareable && ['DISCUSSION', 'QUESTION'].includes(post.postType)
+              {getCommunityCapabilities(post, authenticated).partnerShare
                 ? <ShareContextButton reference={{ type: 'COMMUNITY_POST', id: post.id }}/> : null}
-              <button
-                type="button"
-                onClick={() => void handlePostAction('helpful')}
-                aria-pressed={post.viewerReacted}
-                disabled={actionPending !== null}
-              >
-                {t('community.detail.postHelpful')}{post.helpfulCount ? ` · ${post.helpfulCount}` : ''}
-              </button>
+              <CommunityActionButton onClick={() => void handlePostAction('helpful')} aria-pressed={post.viewerReacted} disabled={actionPending !== null}>
+                <Icon name={post.viewerReacted ? 'check' : 'thumbs-up'} size={18} />
+                <span>{t('community.detail.postHelpful')} · {post.helpfulCount}</span>
+              </CommunityActionButton>
+              <CommunityActionButton onClick={() => { if (!authenticated) { handleRequireAuth(); return; } setReportTarget({type: 'POST', id: post.id}); setReportError(null); }} aria-label={t('community.posts.report.post')}>
+                <Icon name='flag' size={18} /><span>{t('community.posts.report')}</span>
+              </CommunityActionButton>
               <span className="community-detail__comment-count" aria-label={t('community.detail.commentCount', { count: post.commentCount ?? comments.length })}>
                 {t('community.detail.commentCount', {count: post.commentCount ?? comments.length})}
               </span>
@@ -947,7 +952,7 @@ export function CommunityPostDetailPageView({
             />
           ) : null}
 
-          <GeneralDiscussion key={'discussion:' + post.id} secondary={post.postType === 'QUESTION' || post.postType === 'CORRECTION_REQUEST'} count={post.commentCount ?? comments.length}>
+          <GeneralDiscussion key={'discussion:' + post.id} secondary={getCommunityCapabilities(post, authenticated).secondaryDiscussion} count={post.commentCount ?? comments.length}>
           <section className="community-detail__comments" aria-labelledby="comments-title">
             <div className="community-detail__section-heading">
               <div>
@@ -989,19 +994,12 @@ export function CommunityPostDetailPageView({
         </div>
 
         <aside className="community-detail__rail" aria-label={t('community.detail.learning.information')}>
-          <section className="community-detail__rail-card community-detail__rail-card--context">
-            <p className="community-detail__eyebrow">{t('community.detail.learning.context')}</p>
-            <h2>{t('community.detail.read.carefully.ask.clearly.learn.together')}</h2>
-            <p>
-              {t('community.detail.keep.replies.one.level.deep.so.everyone.can.follow.share')}</p>
-          </section>
           <section className="community-detail__rail-card community-detail__rail-card--metadata">
             <p className="community-detail__rail-label">{t('community.detail.post.information')}</p>
             <dl>
               <div><dt>{t('community.detail.language')}</dt><dd>{post.targetLanguage.nativeName}</dd></div>
               {post.cefrLevel ? <div><dt>{t('community.detail.level')}</dt><dd>CEFR {post.cefrLevel}</dd></div> : null}
               {post.topic ? <div><dt>{t('community.detail.topic')}</dt><dd>{post.topic}</dd></div> : null}
-              <div><dt>{t('community.detail.post.type')}</dt><dd>{t(COMMUNITY_POST_TYPE_LABELS_KEYS[post.postType])}</dd></div>
             </dl>
           </section>
           <details className="community-detail__rail-card community-detail__rail-card--guidelines" open>
@@ -1015,10 +1013,6 @@ export function CommunityPostDetailPageView({
               <li>{t('community.detail.encourage.fellow.learners')}</li>
             </ul>
           </details>
-          <section className="community-detail__rail-card community-detail__rail-card--discussion">
-            <p className="community-detail__rail-label">{t('community.detail.discussion.thread')}</p>
-            <p>{t('community.detail.replies.stay.one.level.deep.to.keep.questions.examples.and')}</p>
-          </section>
         </aside>
       </div>
 

@@ -1,11 +1,14 @@
+import { UiLocaleProvider } from '../../ui-locale/UiLocaleProvider';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CommunityPostCard, type CommunityPostActionsApi } from './CommunityPostCard';
+import { COMMUNITY_POST_TYPES } from '../community.types';
 import type { CommunityPost } from '../community.types';
 
-afterEach(cleanup);
+vi.mock('../../exchange/components/ShareContextButton', () => ({ ShareContextButton: () => <button>Partner share</button> }));
+afterEach(() => { cleanup(); window.localStorage.removeItem('congdongngonngu.ui-locale.v1'); });
 
 function post(overrides: Partial<CommunityPost> = {}): CommunityPost {
   return {
@@ -137,4 +140,51 @@ describe('CommunityPostCard', () => {
     }));
     expect(await screen.findByRole('status')).toHaveTextContent('Đã gửi báo cáo');
   });
+});
+
+describe('type-specific primary entry', () => {
+  it.each(COMMUNITY_POST_TYPES)('routes %s to its supported interaction', postType => {
+    renderCard(createApi(), post({postType}));
+    const link = screen.getByRole('link', {name: postType === 'QUESTION' ? 'Viết câu trả lời' : postType === 'CORRECTION_REQUEST' ? 'Đề xuất sửa câu' : /Bình luận/});
+    expect(link).toHaveAttribute('href', '/community/posts/post-1');
+  });
+});
+
+describe('rendered capability boundaries', () => {
+  it.each(COMMUNITY_POST_TYPES)('renders partner sharing only when eligible for %s', postType => {
+    renderCard(createApi(), post({postType}));
+    expect(screen.queryByRole('button', {name:'Partner share'}) !== null).toBe(['DISCUSSION','QUESTION'].includes(postType));
+  });
+  it('hides partner and public link sharing when not shareable', () => {
+    renderCard(createApi(), post({isShareable:false, visibility:'PRIVATE'}));
+    expect(screen.queryByRole('button', {name:'Partner share'})).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', {name:'Chia sẻ bài viết'})).not.toBeInTheDocument();
+  });
+  it('offers authentication without sending a mutation for a guest', async () => {
+    const api=createApi(), onAuthRequired=vi.fn();
+    render(<MemoryRouter><CommunityPostCard post={post()} api={api} authenticated={false} onAuthRequired={onAuthRequired}/></MemoryRouter>);
+    expect(screen.queryByRole('button', {name:'Partner share'})).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button',{name:'Đánh dấu hữu ích'}));
+    expect(onAuthRequired).toHaveBeenCalledOnce();
+    expect(api.addHelpful).not.toHaveBeenCalled();
+  });
+  it('exposes selected helpful state and the server count', () => {
+    renderCard(createApi(), post({viewerReacted:true, helpfulCount:7}));
+    const action=screen.getByRole('button',{name:'Bỏ đánh dấu hữu ích'});
+    expect(action).toHaveAttribute('aria-pressed','true');
+    expect(action).toHaveTextContent('7');
+  });
+});
+
+it('renders no actions for an unknown runtime post type', () => {
+  renderCard(createApi(), post({postType:'FUTURE_TYPE' as CommunityPost['postType']}));
+  expect(screen.queryAllByRole('button')).toHaveLength(0);
+  expect(screen.getAllByRole('link')).toHaveLength(1);
+});
+it('localizes the primary response and selected actions in English', () => {
+  window.localStorage.setItem('congdongngonngu.ui-locale.v1','en');
+  render(<UiLocaleProvider><MemoryRouter><CommunityPostCard post={post({postType:'QUESTION',isSaved:true,viewerReacted:true})} api={createApi()} authenticated onAuthRequired={vi.fn()} /></MemoryRouter></UiLocaleProvider>);
+  expect(screen.getByRole('link',{name:'Write an answer'})).toHaveAttribute('href','/community/posts/post-1');
+  expect(screen.getByRole('button',{name:'Unsave post'})).toHaveAttribute('aria-pressed','true');
+  expect(screen.getByRole('button',{name:'Remove helpful vote'})).toHaveAttribute('aria-pressed','true');
 });

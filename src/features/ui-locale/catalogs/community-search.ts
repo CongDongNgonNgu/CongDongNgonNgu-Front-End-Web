@@ -1,4 +1,9 @@
 export const viCommunitySearch = {
+  'community.card.answer':'Viết câu trả lời',
+  'community.card.correct':'Đề xuất sửa câu',
+  'community.card.comment':'Bình luận',
+  'community.detail.identity':'{type} của {name}',
+
   "community.explore.exchangeEyebrow":"CÙNG HỌC QUA TRÒ CHUYỆN",
   "community.explore.exchangeNote":"Khám phá bạn học theo ngôn ngữ và mục tiêu. Bạn chủ động chọn người để kết nối.",
   "community.explore.community":"Khám phá cộng đồng",
@@ -45,6 +50,11 @@ export const viCommunitySearch = {
   'community.search.retryError':'Tìm kiếm tạm thời chưa hoàn tất. Vui lòng thử lại.',
 } as const;
 export const enCommunitySearch: Record<keyof typeof viCommunitySearch,string> = {
+  'community.card.answer':'Write an answer',
+  'community.card.correct':'Suggest a correction',
+  'community.card.comment':'Comment',
+  'community.detail.identity':'{type} by {name}',
+
   "community.explore.exchangeEyebrow":"LEARN THROUGH CONVERSATION",
   "community.explore.exchangeNote":"Discover study partners by language and goals. You choose whom to connect with.",
   "community.explore.community":"Explore the community",
