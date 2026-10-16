@@ -68,7 +68,7 @@ export function StructuredResponseCard({
               <p>{response.answerText}</p>
             </div>
           )}
-          {response.explanation ? <div className={styles.explanation}><h3>{t('community.correction.explanation')}</h3><p>{response.explanation}</p></div> : null}
+          {response.explanation ? <div className={styles.explanation}><h3>{t(response.responseKind === 'CORRECTION_PROPOSAL' ? 'community.correction.explanation' : 'community.response.explanation')}</h3><p>{response.explanation}</p></div> : null}
           <div className={styles.responseActions}>
             {response.canVote || !authenticated ? (
               <CommunityActionButton aria-pressed={response.viewerHelpful}

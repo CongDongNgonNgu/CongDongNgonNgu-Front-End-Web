@@ -1,4 +1,5 @@
 export const viCommunitySearch = {
+  'community.response.explanation':'Giải thích',
   'community.correction.context':'Ngữ cảnh',
   'community.correction.note':'Ghi chú thêm của người hỏi',
   'community.correction.changes':'Xem phần thay đổi',
@@ -55,6 +56,7 @@ export const viCommunitySearch = {
   'community.search.retryError':'Tìm kiếm tạm thời chưa hoàn tất. Vui lòng thử lại.',
 } as const;
 export const enCommunitySearch: Record<keyof typeof viCommunitySearch,string> = {
+  'community.response.explanation':'Explanation',
   'community.correction.context':'Context',
   'community.correction.note':'Additional note from the requester',
   'community.correction.changes':'See what changed',

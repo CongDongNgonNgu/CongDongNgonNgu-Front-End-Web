@@ -159,3 +159,11 @@ it('ignores an earlier response list after the canonical source is retried', asy
  expect(screen.getByText('The current proposal.')).toBeVisible();
  expect(requestApi.getCorrectionRequest).not.toHaveBeenCalled();
 });
+
+it('labels an answer explanation without implying a corrected sentence', async () => {
+ window.localStorage.setItem('congdongngonngu.ui-locale.v1','en');
+ const {api,requestApi}=createApis(response({responseKind:'QA_ANSWER',answerText:'Both expressions are natural.',correctedText:null,explanation:'The first is a little gentler.'}));
+ render(<UiLocaleProvider><StructuredResponseExperience parent={{...post(),postType:'QUESTION'}} authenticated api={api} requestApi={requestApi} onAuthRequired={vi.fn()}/></UiLocaleProvider>);
+ expect(await screen.findByRole('heading',{name:'Explanation',level:3})).toBeVisible();
+ expect(screen.queryByText('Why this change helps')).toBeNull();
+});
