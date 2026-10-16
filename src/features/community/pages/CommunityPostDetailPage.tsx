@@ -1,3 +1,6 @@
+import { CommunityDisclosure } from '../components/CommunityDisclosure';
+import { CorrectionRequestOriginal } from '../components/CorrectionRequestOriginal';
+import { useCorrectionRequestSource } from '../hooks/useCorrectionRequestSource';
 import type { TranslationKey } from '../../ui-locale/ui-locale';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { GeneralDiscussion } from '../components/GeneralDiscussion';
@@ -265,6 +268,8 @@ export function CommunityPostDetailPageView({
   const postStateHeadingRef = useRef<HTMLHeadingElement>(null);
   const [shareMessage, setShareMessage] = useState('');
   const [shareHref, setShareHref] = useState('');
+
+  const correctionSource = useCorrectionRequestSource(post, requestApi, authenticated, currentUserId);
 
   const loadPost = useCallback(async () => {
     setPostLoading(true);
@@ -916,7 +921,7 @@ export function CommunityPostDetailPageView({
               </div>
             </header>
 
-            <p className={presentation.content} dir={post.targetLanguage.direction}>{post.content}</p>
+            {post.postType === 'CORRECTION_REQUEST' ? <CorrectionRequestOriginal source={correctionSource} content={post.content} direction={post.targetLanguage.direction} /> : <p className={presentation.content} dir={post.targetLanguage.direction}>{post.content}</p>}
 
             <div className="community-detail__post-actions" aria-label={t('community.detail.post.actions')}>
               {getCommunityCapabilities(post, authenticated).partnerShare
@@ -943,11 +948,12 @@ export function CommunityPostDetailPageView({
 
           {post.postType === 'CORRECTION_REQUEST' || post.postType === 'QUESTION' ? (
             <StructuredResponseExperience
-              key={'structured:' + post.id}
+              key={'structured:' + post.id + ':' + (authenticated ? currentUserId ?? 'member' : 'guest')}
               parent={post}
               authenticated={authenticated}
               api={structuredApi}
               requestApi={requestApi}
+              correctionSource={post.postType === 'CORRECTION_REQUEST' ? correctionSource : undefined}
               onAuthRequired={handleRequireAuth}
             />
           ) : null}
@@ -1002,17 +1008,13 @@ export function CommunityPostDetailPageView({
               {post.topic ? <div><dt>{t('community.detail.topic')}</dt><dd>{post.topic}</dd></div> : null}
             </dl>
           </section>
-          <details className="community-detail__rail-card community-detail__rail-card--guidelines" open>
-            <summary>
-              <span className="community-detail__rail-label">{t('community.detail.discussion.guidelines')}</span>
-              <span aria-hidden="true">⌄</span>
-            </summary>
+          <CommunityDisclosure className="community-detail__rail-card community-detail__rail-card--guidelines" title={t('community.detail.discussion.guidelines')}>
             <ul>
               <li>{t('community.detail.respect.cultural.context')}</li>
               <li>{t('community.detail.use.clear.specific.examples')}</li>
               <li>{t('community.detail.encourage.fellow.learners')}</li>
             </ul>
-          </details>
+          </CommunityDisclosure>
         </aside>
       </div>
 

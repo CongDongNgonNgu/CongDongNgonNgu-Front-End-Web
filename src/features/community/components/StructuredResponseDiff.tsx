@@ -6,8 +6,9 @@ import styles from './StructuredResponse.module.css';
 interface StructuredResponseDiffProps {
   original: string;
   corrected: string;
+  direction?: 'ltr' | 'rtl';
 }
-export function StructuredResponseDiff({ original, corrected }: StructuredResponseDiffProps) {
+export function StructuredResponseDiff({ original, corrected, direction = 'ltr' }: StructuredResponseDiffProps) {
   const { t } = useUiLocale();
   const diff = useMemo(() => buildStructuredDiff(original, corrected), [original, corrected]);
   return (
@@ -17,7 +18,7 @@ export function StructuredResponseDiff({ original, corrected }: StructuredRespon
         <span className={styles.diffLegendItem}><ins>{t('community.detail.added.text')}</ins></span>
         <span>{t('community.detail.unmarked.text.is.unchanged')}</span>
       </div>
-      <div className={styles.diffGrid}>
+      <div className={styles.diffGrid} dir={direction}>
         <div className={styles.diffColumn}>
           <h3>{t('community.detail.original')}</h3>
           <p className={styles.diffText}>

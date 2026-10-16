@@ -1,4 +1,9 @@
 export const viCommunitySearch = {
+  'community.correction.context':'Ngữ cảnh',
+  'community.correction.note':'Ghi chú thêm của người hỏi',
+  'community.correction.changes':'Xem phần thay đổi',
+  'community.correction.explanation':'Vì sao sửa như vậy',
+
   'community.card.answer':'Viết câu trả lời',
   'community.card.correct':'Đề xuất sửa câu',
   'community.card.comment':'Bình luận',
@@ -50,6 +55,11 @@ export const viCommunitySearch = {
   'community.search.retryError':'Tìm kiếm tạm thời chưa hoàn tất. Vui lòng thử lại.',
 } as const;
 export const enCommunitySearch: Record<keyof typeof viCommunitySearch,string> = {
+  'community.correction.context':'Context',
+  'community.correction.note':'Additional note from the requester',
+  'community.correction.changes':'See what changed',
+  'community.correction.explanation':'Why this change helps',
+
   'community.card.answer':'Write an answer',
   'community.card.correct':'Suggest a correction',
   'community.card.comment':'Comment',

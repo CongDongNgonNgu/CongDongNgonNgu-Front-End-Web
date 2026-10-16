@@ -1,5 +1,5 @@
 import { UiLocaleProvider } from '../../ui-locale/UiLocaleProvider';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CommunityPost } from '../community.types';
@@ -143,4 +143,19 @@ it('renders English answer controls while preserving contributor text verbatim',
   expect(screen.getByRole('button',{name:'Add explanation'})).toHaveAttribute('aria-expanded','false');
   expect(screen.getByRole('button',{name:'Answer helpful · 2'})).toHaveAttribute('aria-pressed','false');
   expect(screen.queryByText('Câu trả lời')).toBeNull();
+});
+
+it('ignores an earlier response list after the canonical source is retried', async () => {
+ const {api,requestApi}=createApis();
+ let first!:(value:Awaited<ReturnType<CommunityStructuredResponseApi['listStructuredResponses']>>)=>void,second!:(value:Awaited<ReturnType<CommunityStructuredResponseApi['listStructuredResponses']>>)=>void;
+ vi.mocked(api.listStructuredResponses).mockImplementationOnce(()=>new Promise(resolve=>{first=resolve;})).mockImplementationOnce(()=>new Promise(resolve=>{second=resolve;}));
+ const source={data:correction(),loading:false,error:null,retry:vi.fn()};
+ const view=render(<StructuredResponseExperience parent={post()} authenticated api={api} requestApi={requestApi} correctionSource={source} onAuthRequired={vi.fn()}/>);
+ view.rerender(<StructuredResponseExperience parent={post()} authenticated api={api} requestApi={requestApi} correctionSource={{...source,data:{...correction(),correction:{...correction().correction,originalText:'New canonical read'}}}} onAuthRequired={vi.fn()}/>);
+ await act(async()=>{second({items:[response({id:'new',correctedText:'The current proposal.'})],nextCursor:null});});
+ expect(await screen.findByText('The current proposal.')).toBeVisible();
+ await act(async()=>{first({items:[response({id:'old',correctedText:'An obsolete proposal.'})],nextCursor:null});});
+ expect(screen.queryByText('An obsolete proposal.')).toBeNull();
+ expect(screen.getByText('The current proposal.')).toBeVisible();
+ expect(requestApi.getCorrectionRequest).not.toHaveBeenCalled();
 });

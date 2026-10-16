@@ -242,3 +242,7 @@
 .originalBlock, .explanation, .authorName { overflow-wrap: anywhere; }
 .section, .responseCard { min-width: 0; }
 .responseActions button { white-space: normal; max-width: 100%; }
+
+.proposal h3, .explanation h3 { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-bottom: .5rem; }
+.correctedText { margin: 0 0 .75rem; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1.125rem; line-height: 1.7; }
+.explanation p { margin: 0; line-height: 1.65; overflow-wrap: anywhere; }

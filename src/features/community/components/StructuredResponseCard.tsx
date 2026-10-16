@@ -1,3 +1,6 @@
+import { CommunityDisclosure } from './CommunityDisclosure';
+import { CommunityActionButton } from './CommunityActionButton';
+import { Icon } from '../../../components/ui/Icon/Icon';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { Button } from '../../../components/ui/Button/Button';
 import type { StructuredResponseResponse } from '../corrections.types';
@@ -7,6 +10,7 @@ import styles from './StructuredResponse.module.css';
 interface StructuredResponseCardProps {
   response: StructuredResponseResponse;
   originalText: string;
+  direction?: 'ltr' | 'rtl';
   authenticated: boolean;
   pendingAction: string | null;
   actionError: string | null;
@@ -20,6 +24,7 @@ interface StructuredResponseCardProps {
 export function StructuredResponseCard({
   response,
   originalText,
+  direction = 'ltr',
   authenticated,
   pendingAction,
   actionError,
@@ -50,25 +55,29 @@ export function StructuredResponseCard({
       ) : (
         <>
           {response.responseKind === 'CORRECTION_PROPOSAL' && response.correctedText ? (
-            <StructuredResponseDiff original={originalText} corrected={response.correctedText} />
+            <div className={styles.proposal}>
+              <h3>{t('community.detail.suggested.correction.heading')}</h3>
+              <p className={styles.correctedText} dir={direction}>{response.correctedText}</p>
+              <CommunityDisclosure title={t('community.correction.changes')}>
+                {expanded => expanded ? <StructuredResponseDiff direction={direction} original={originalText} corrected={response.correctedText!} /> : null}
+              </CommunityDisclosure>
+            </div>
           ) : (
             <div className={styles.originalBlock}>
               <p className={styles.eyebrow}>{t('community.detail.answer.content')}</p>
               <p>{response.answerText}</p>
             </div>
           )}
-          {response.explanation ? <p className={styles.explanation}>{response.explanation}</p> : null}
+          {response.explanation ? <div className={styles.explanation}><h3>{t('community.correction.explanation')}</h3><p>{response.explanation}</p></div> : null}
           <div className={styles.responseActions}>
             {response.canVote || !authenticated ? (
-              <Button
-                variant='quiet'
-                size='sm'
-                aria-pressed={response.viewerHelpful}
+              <CommunityActionButton aria-pressed={response.viewerHelpful}
                 onClick={() => authenticated ? onHelpful(response) : onAuthRequired()}
                 disabled={Boolean(pendingAction)}
               >
+                <Icon name={response.viewerHelpful ? 'check' : 'thumbs-up'} size={18} />
                 {t(response.responseKind === 'QA_ANSWER' ? 'community.detail.answerHelpful' : 'community.detail.proposalHelpful')}{response.helpfulCount ? ' · ' + formatNumber(response.helpfulCount) : ''}
-              </Button>
+              </CommunityActionButton>
             ) : null}
             {response.canAccept ? (
               <Button
