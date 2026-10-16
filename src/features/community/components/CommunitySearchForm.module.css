@@ -17,3 +17,9 @@
 .actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-3); }
 .actions button, .saved button { max-width: 100%; white-space: normal; min-height: 44px; }
 @media (max-width: 560px) { .primary, .fields { grid-template-columns: minmax(0, 1fr); } .actions > button { flex: 1 1 8rem; } }
+
+.form input:not([type=checkbox]):focus-visible,
+.form select:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
