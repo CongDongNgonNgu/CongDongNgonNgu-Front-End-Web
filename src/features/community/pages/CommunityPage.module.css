@@ -1,5 +1,5 @@
 .page {
-  padding: clamp(1.5rem, 4vw, 3.5rem) 0 7rem;
+  padding: var(--space-6) 0 var(--space-10);
 }
 
 .breadcrumbs {
@@ -19,8 +19,7 @@
 
 .breadcrumbs a:hover,
 .breadcrumbs a:focus-visible,
-.railLink:hover,
-.railLink:focus-visible {
+.breadcrumbs a:active {
   color: var(--color-brand-orange-readable);
   text-decoration: underline;
   text-underline-offset: 0.2em;
@@ -28,7 +27,7 @@
 
 .hero {
   max-width: 48rem;
-  margin: clamp(2.5rem, 6vw, 5rem) 0 clamp(2rem, 4vw, 3rem);
+  margin: var(--space-6) 0;
 }
 
 .eyebrow {
@@ -40,10 +39,10 @@
 }
 
 .hero h1 {
-  max-width: 18ch;
+  max-width: 30ch;
   margin: 0;
   color: var(--color-text-primary);
-  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-size: clamp(1.5rem, 3vw, 2rem);
   letter-spacing: -0.045em;
   line-height: var(--leading-tight);
 }
@@ -52,7 +51,7 @@
   max-width: 43rem;
   margin: var(--space-5) 0 0;
   color: var(--color-text-secondary);
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: var(--font-size-md);
   line-height: var(--leading-body);
 }
 
@@ -81,8 +80,7 @@
   box-shadow: var(--shadow-low);
 }
 
-.promptIcon,
-.railIcon {
+.promptIcon {
   display: grid;
   place-items: center;
   color: var(--color-brand-navy);
@@ -163,10 +161,7 @@
 }
 
 .loadingCard {
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
-  background: var(--color-surface-elevated);
+ padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-surface); background: var(--color-surface-elevated);
 }
 
 .inlineNotice {
@@ -193,36 +188,11 @@
   top: 6rem;
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
-  background: var(--color-surface-elevated);
+
 }
 
-.railHeading {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-}
-
-.railHeading h2 {
-  margin: 0;
-  color: var(--color-text-primary);
-  font-size: var(--font-size-lg);
-}
-
-.railIcon {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.625rem;
-}
-
-.rail > p {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: var(--leading-body);
-}
+.guidelineCard { padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-surface); }
+.guidelineCard h2 { margin: 0 0 var(--space-3); font-size: var(--font-size-md); }
 
 .guidelines {
   display: grid;
@@ -234,12 +204,6 @@
   line-height: var(--leading-body);
 }
 
-.railLink {
-  color: var(--color-brand-navy);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  text-decoration: none;
-}
 
 @media (max-width: 63.999rem) {
   .contentGrid {
@@ -253,15 +217,15 @@
 
 @media (max-width: 47.999rem) {
   .page {
-    padding-bottom: 5rem;
+    padding-bottom: var(--space-8);
   }
 
   .hero {
-    margin-top: 2.75rem;
+    margin-top: var(--space-6);
   }
 
   .hero h1 {
-    font-size: clamp(2.25rem, 12vw, 3.5rem);
+    font-size: clamp(1.5rem, 6vw, 2rem);
   }
 
   .composerPrompt {

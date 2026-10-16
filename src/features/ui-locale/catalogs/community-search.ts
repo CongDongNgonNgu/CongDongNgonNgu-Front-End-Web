@@ -1,4 +1,13 @@
-﻿export const viCommunitySearch = {
+export const viCommunitySearch = {
+  "community.explore.exchangeEyebrow":"CÙNG HỌC QUA TRÒ CHUYỆN",
+  "community.explore.exchangeNote":"Khám phá bạn học theo ngôn ngữ và mục tiêu. Bạn chủ động chọn người để kết nối.",
+  "community.explore.community":"Khám phá cộng đồng",
+  "community.explore.languages":"Khám phá ngôn ngữ",
+  "community.explore.contribute":"Tìm hiểu cách đóng góp",
+  "community.explore.start":"Xem cách bắt đầu",
+  "community.discovery.clear":"Xóa bộ lọc tìm kiếm",
+  'community.discovery.title':'Tìm ngôn ngữ của bạn',
+  'community.discovery.description':'Chọn ngôn ngữ để khám phá tài nguyên, câu hỏi và bạn học phù hợp.',
   'community.search.invalidFilters':'Hãy kiểm tra bộ lọc và chọn giá trị được hỗ trợ.',
   'community.search.label':'Tìm bài viết cộng đồng',
   'community.search.queryHint':'Tìm cụm văn bản trong nội dung bài viết, tối đa 120 ký tự Unicode.',
@@ -36,6 +45,15 @@
   'community.search.retryError':'Tìm kiếm tạm thời chưa hoàn tất. Vui lòng thử lại.',
 } as const;
 export const enCommunitySearch: Record<keyof typeof viCommunitySearch,string> = {
+  "community.explore.exchangeEyebrow":"LEARN THROUGH CONVERSATION",
+  "community.explore.exchangeNote":"Discover study partners by language and goals. You choose whom to connect with.",
+  "community.explore.community":"Explore the community",
+  "community.explore.languages":"Explore languages",
+  "community.explore.contribute":"Learn how to contribute",
+  "community.explore.start":"See how to get started",
+  "community.discovery.clear":"Clear search filters",
+  'community.discovery.title':'Find your language',
+  'community.discovery.description':'Choose a language to discover learning resources, questions and study partners.',
   'community.search.invalidFilters':'Check the filters and choose supported values.',
   'community.search.label':'Search community posts',
   'community.search.queryHint':'Find a literal phrase in post content, up to 120 Unicode characters.',

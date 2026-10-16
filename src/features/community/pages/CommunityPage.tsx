@@ -1,3 +1,4 @@
+import { CommunityLanguageDiscoveryCard } from '../components/CommunityLanguageDiscoveryCard';
 import { CommunitySearchForm } from '../components/CommunitySearchForm';
 import { parseCommunitySearch, serializeCommunitySearch, type CommunitySearchQuery } from '../community-search';
 import { COMMUNITY_POST_TYPE_LABELS_KEYS } from '../community.constants';
@@ -205,11 +206,14 @@ export function CommunityPageView({
             ) : null}
 
             {showResults && !feed.isLoading && !feed.error && feed.items.length === 0 ? (
+              <div>
               <EmptyState
                 title={filtered ? t('community.search.noMatches') : t('community.posts.no.posts.yet')}
                 description={t(filtered ? 'community.search.emptyHelp' : 'community.posts.come.back.later.or.be.the.first.to')}
                 icon='message-circle'
               />
+              {filtered ? <Button variant='secondary' onClick={handleReset}>{t('community.discovery.clear')}</Button> : null}
+              </div>
             ) : null}
 
             {showResults && !feed.isLoading && !feed.error ? <p className={styles.searchSummary}>{t('community.search.shown', { count: feed.items.length })}</p> : null}
@@ -245,18 +249,15 @@ export function CommunityPageView({
         </section>
 
         <aside className={styles.rail} aria-label={t("community.posts.about.the.community")}>
-          <div className={styles.railHeading}>
-            <span className={styles.railIcon} aria-hidden='true'><Icon name='sparkles' size={18} /></span>
-            <h2>{t("community.posts.an.open.community")}</h2>
-          </div>
-          <p>
-            {t("community.posts.a.thoughtful.answer.can.help.someone.understand.a")}</p>
-          <ul className={styles.guidelines}>
-            <li>{t("community.posts.keep.your.content.clear.and.respectful")}</li>
-            <li>{t("community.posts.choose.the.correct.target.language")}</li>
-            <li>{t("community.posts.share.something.useful.with.other.learners")}</li>
-          </ul>
-          <Link className={styles.railLink} to='/languages'>{t("community.posts.explore.languages")}{' '}<span aria-hidden='true'>→</span></Link>
+          <CommunityLanguageDiscoveryCard/>
+          <section className={styles.guidelineCard}>
+            <h2>{t('community.detail.discussion.guidelines')}</h2>
+            <ul className={styles.guidelines}>
+              <li>{t("community.posts.keep.your.content.clear.and.respectful")}</li>
+              <li>{t("community.posts.choose.the.correct.target.language")}</li>
+              <li>{t("community.posts.share.something.useful.with.other.learners")}</li>
+            </ul>
+          </section>
         </aside>
       </div>
 

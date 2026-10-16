@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom';
+import { useUiLocale } from '../../features/ui-locale/UiLocaleProvider';
 import { Icon } from '../../components/ui/Icon/Icon';
 import shared from './HomeShared.module.css';
 import styles from './ExchangeSection.module.css';
 
 export function ExchangeSection() {
+  const {t}=useUiLocale();
   return (
     <section className={`${shared.section} ${styles.exchangeSection}`} id='exchange' aria-labelledby='exchange-title'>
       <div className={styles.exchangeVisual} aria-hidden='true'>
@@ -15,10 +18,11 @@ export function ExchangeSection() {
         <p className={styles.exchangeCaption}>Mỗi người vừa học, vừa góp một điều hữu ích.</p>
       </div>
       <div className={styles.exchangeCopy}>
-        <p className={shared.kicker}>Khi cộng đồng sẵn sàng</p>
+        <p className={shared.kicker}>{t('community.explore.exchangeEyebrow')}</p>
         <h2 id='exchange-title'>Gặp nhau qua ngôn ngữ.</h2>
         <p className={styles.exchangeDescription}>Chúng tôi hướng tới những cuộc trao đổi dựa trên sự tò mò, tôn trọng và bối cảnh — nơi mỗi người vừa học, vừa giúp người khác tiến bộ, bất kể cặp ngôn ngữ nào.</p>
-        <p className={styles.availabilityNote}><Icon name='circle-help' size={18} />Tính năng kết nối sẽ mở sau, khi nguyên tắc cộng đồng và cơ chế bảo vệ người dùng đã sẵn sàng.</p>
+        <p className={styles.availabilityNote}><Icon name='shield-check' size={18}/>{t('community.explore.exchangeNote')}</p>
+        <Link className={shared.textLink} to='/exchange'>{t('navigation.exchange')}</Link>
       </div>
     </section>
   );
