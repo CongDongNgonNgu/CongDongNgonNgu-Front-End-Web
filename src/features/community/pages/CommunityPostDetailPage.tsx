@@ -757,7 +757,7 @@ export function CommunityPostDetailPageView({
           <p className="community-detail__eyebrow">{t('community.detail.community')}</p>
           <h1 ref={postStateHeadingRef} tabIndex={-1}>{t(postError?.message ?? 'community.detail.post.unavailable')}</h1>
           <p>
-            {postError?.unavailable
+            {postError?.unavailable || unsupportedPost
               ? t('community.detail.the.content.may.have.been.deleted.hidden.or.placed.under')
               : t('community.detail.please.try.reloading.the.page.shortly')}
           </p>
