@@ -390,7 +390,6 @@
 }
 
 .community-detail--state {
-  min-height: 60vh;
   display: grid;
   place-items: center;
 }
