@@ -476,3 +476,13 @@ it('uses compact type context and an author-specific page identity', async () =>
   expect(await screen.findByRole('heading', {level:1, name:'Thảo luận của Nguyễn Minh'})).toBeInTheDocument();
   expect(screen.queryByRole('heading', {name:'Bài viết cộng đồng'})).not.toBeInTheDocument();
 });
+
+it.each([{authenticated:false,locale:'vi',heading:'Bài viết không khả dụng'},{authenticated:true,locale:'vi',heading:'Bài viết không khả dụng'},{authenticated:false,locale:'en',heading:'Post unavailable'},{authenticated:true,locale:'en',heading:'Post unavailable'}])('fails closed for an unknown detail type ($locale, authenticated=$authenticated)', async ({authenticated,locale,heading}) => {
+  window.localStorage.setItem('congdongngonngu.ui-locale.v1',locale);
+  const api=createApi({getPost:vi.fn().mockResolvedValue(post({postType:'FUTURE_TYPE' as CommunityPost['postType'],isOwner:true,content:'Unsupported learning content'}))});
+  const {container}=render(<UiLocaleProvider><MemoryRouter><CommunityPostDetailPageView api={api} postId='post-1' authenticated={authenticated} currentUserId={authenticated?'user-1':null}/></MemoryRouter></UiLocaleProvider>);
+  expect(await screen.findByRole('heading',{level:1,name:heading})).toBeVisible();
+  expect(screen.queryByText('Unsupported learning content')).not.toBeInTheDocument();
+  expect(container.querySelector('article, form, textarea, button')).toBeNull();
+  for(const action of [api.addHelpful,api.savePost,api.getShareLink,api.reportPost,api.createComment,api.updatePost,api.deletePost]) expect(action).not.toHaveBeenCalled();
+});
