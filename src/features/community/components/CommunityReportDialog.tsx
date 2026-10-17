@@ -87,7 +87,7 @@ export function CommunityReportDialog({
   };
 
   return (
-    <Dialog open={open} title={t("community.posts.report.post")} onClose={isSubmitting ? () => undefined : onClose}>
+    <Dialog closeLabel={t('common.close')} open={open} title={t("community.posts.report.post")} onClose={isSubmitting ? () => undefined : onClose}>
       {submitted ? (
         <div className={styles.submitted} role='status'>
           <span className={styles.submittedIcon} aria-hidden='true'><Icon name='check' size={20} /></span>

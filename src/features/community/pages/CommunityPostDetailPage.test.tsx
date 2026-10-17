@@ -486,3 +486,12 @@ it.each([{authenticated:false,locale:'vi',heading:'Bài viết không khả dụ
   expect(container.querySelector('article, form, textarea, button')).toBeNull();
   for(const action of [api.addHelpful,api.savePost,api.getShareLink,api.reportPost,api.createComment,api.updatePost,api.deletePost]) expect(action).not.toHaveBeenCalled();
 });
+
+it.each([{locale:'vi',menu:'Tùy chọn bài viết',edit:'Chỉnh sửa bài viết',close:'Đóng'},{locale:'en',menu:'Post options',edit:'Edit post',close:'Close'}])('localizes detail dialog close and restores focus ($locale)',async ({locale,menu,edit,close})=>{
+  window.localStorage.setItem('congdongngonngu.ui-locale.v1',locale);
+  const user=userEvent.setup();const api=createApi({getPost:vi.fn().mockResolvedValue(post({isOwner:true}))});
+  render(<UiLocaleProvider><MemoryRouter><CommunityPostDetailPageView api={api} postId='post-1' authenticated currentUserId='user-1'/></MemoryRouter></UiLocaleProvider>);
+  const trigger=await screen.findByRole('button',{name:menu});await user.click(trigger);await user.click(screen.getByRole('menuitem',{name:edit}));
+  const dialog=screen.getByRole('dialog',{name:edit});await user.click(within(dialog).getByRole('button',{name:close}));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(trigger).toHaveFocus();
+});
