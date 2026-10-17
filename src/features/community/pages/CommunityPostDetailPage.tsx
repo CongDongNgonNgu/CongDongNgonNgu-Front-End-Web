@@ -1021,6 +1021,7 @@ export function CommunityPostDetailPageView({
       </div>
 
       <Dialog
+        closeLabel={t('common.close')}
         open={editingPost}
         title={t('community.detail.edit.post')}
         description={t('community.detail.you.can.update.the.content.and.existing.post.information')}
@@ -1046,6 +1047,7 @@ export function CommunityPostDetailPageView({
       </Dialog>
 
       <Dialog
+        closeLabel={t('common.close')}
         open={Boolean(editingComment)}
         title={t('community.detail.edit.comment')}
         description={t('community.detail.preserve.the.meaning.of.your.comment.when.editing')}
@@ -1071,6 +1073,7 @@ export function CommunityPostDetailPageView({
       </Dialog>
 
       <Dialog
+        closeLabel={t('common.close')}
         open={Boolean(commentDeleting)}
         title={t('community.detail.delete.comment')}
         description={t('community.detail.the.comment.will.be.replaced.with.a.deleted.state.and')}
@@ -1089,6 +1092,7 @@ export function CommunityPostDetailPageView({
       </Dialog>
 
       <Dialog
+        closeLabel={t('common.close')}
         open={confirmPostDelete}
         title={t('community.detail.delete.post.confirmation')}
         description={t('community.detail.the.post.will.no.longer.be.public.and.cannot.be')}
@@ -1110,6 +1114,7 @@ export function CommunityPostDetailPageView({
       </Dialog>
 
       <Dialog
+        closeLabel={t('common.close')}
         open={Boolean(reportTarget)}
         title={t('community.detail.report.content')}
         description={t('community.detail.report.only.content.that.violates.community.rules')}
