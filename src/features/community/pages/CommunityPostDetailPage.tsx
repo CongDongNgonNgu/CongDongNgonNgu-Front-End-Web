@@ -739,6 +739,8 @@ export function CommunityPostDetailPageView({
     ].filter(Boolean) as string[];
   }, [post, t]);
 
+  const unsupportedPost = post !== null && !getCommunityCapabilities(post, authenticated).supported;
+
   if (postLoading) {
     return (
       <div className="community-detail community-detail--loading" aria-busy="true">
@@ -748,10 +750,10 @@ export function CommunityPostDetailPageView({
     );
   }
 
-  if (postError || !post) {
+  if (postError || !post || unsupportedPost) {
     return (
       <div className="community-detail community-detail--state">
-        <section className="community-detail__state" role={postError?.unavailable ? undefined : 'alert'}>
+        <section className="community-detail__state" role={postError?.unavailable || unsupportedPost ? undefined : 'alert'}>
           <p className="community-detail__eyebrow">{t('community.detail.community')}</p>
           <h1 ref={postStateHeadingRef} tabIndex={-1}>{t(postError?.message ?? 'community.detail.post.unavailable')}</h1>
           <p>
@@ -759,7 +761,7 @@ export function CommunityPostDetailPageView({
               ? t('community.detail.the.content.may.have.been.deleted.hidden.or.placed.under')
               : t('community.detail.please.try.reloading.the.page.shortly')}
           </p>
-          {!postError?.unavailable ? (
+          {!postError?.unavailable && !unsupportedPost ? (
             <button type="button" onClick={() => void loadPost()}>
               {t('community.detail.try.again')}</button>
           ) : null}
