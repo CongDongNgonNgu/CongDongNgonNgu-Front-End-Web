@@ -112,7 +112,7 @@ export function CommunityComposer({
   };
 
   return (
-    <Dialog
+    <Dialog closeLabel={t('common.close')}
       open={open}
       title={t("community.posts.share.a.post")}
       description={(

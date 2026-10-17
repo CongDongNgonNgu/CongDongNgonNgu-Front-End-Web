@@ -7,6 +7,7 @@ import { UI_LOCALE_STORAGE_KEY } from '../ui-locale/ui-locale';
 import { CommunityPageView, type CommunityPageApi } from './pages/CommunityPage';
 import { CommunityQuestionRequestPageView } from './pages/CommunityQuestionRequestPage';
 import { CommunityCorrectionRequestPageView } from './pages/CommunityCorrectionRequestPage';
+import { CommunityComposer } from './components/CommunityComposer';
 import { CommunityReportDialog } from './components/CommunityReportDialog';
 import type { CommunityPost } from './community.types';
 import type { CommunityRequestApi } from './corrections.types';
@@ -77,9 +78,12 @@ describe('Community English target chrome', () => {
     const user = userEvent.setup();
     english(<CommunityReportDialog open post={post} api={{ reportPost: vi.fn() }} authenticated onClose={vi.fn()} onAuthRequired={vi.fn()} />);
     expect(screen.getByRole('dialog', { name: 'Report post' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Send report' }));
     expect(await screen.findByText('Please choose a report reason.')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Harassment' })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText('Additional details')).toBeInTheDocument());
   });
 });
+
+it('localizes the feed composer close label',()=>{english(<CommunityComposer open authenticated languages={[language]} api={{createPost:vi.fn()}} onClose={vi.fn()} onCreated={vi.fn()} onAuthRequired={vi.fn()}/>);expect(screen.getByRole('button',{name:'Close'})).toBeInTheDocument();});
