@@ -1,3 +1,4 @@
+import { CommunitySocialNavigation } from '../components/CommunitySocialNavigation';
 import { CommunityLanguageDiscoveryCard } from '../components/CommunityLanguageDiscoveryCard';
 import { CommunitySearchForm } from '../components/CommunitySearchForm';
 import { parseCommunitySearch, serializeCommunitySearch, type CommunitySearchQuery } from '../community-search';
@@ -148,7 +149,7 @@ export function CommunityPageView({
           {t("community.posts.a.place.for.learners.and.native.speakers.to")}</p>
       </header>
 
-      <p><Link to='/community/groups'>{t('groups.title')}</Link></p>
+      {authenticated ? <CommunitySocialNavigation/> : null}
       <div className={styles.contentGrid}>
         <section className={styles.feedColumn} aria-labelledby='community-feed-heading'>
           <section className={styles.composerPrompt} aria-label={t("community.posts.create.a.post")}>

@@ -7,6 +7,7 @@ export interface NavigationItem {
   shortLabel: string;
   icon: IconName;
   href?: string;
+  excludedPaths?: readonly string[];
   labelKey?: TranslationKey;
   shortLabelKey?: TranslationKey;
 }
@@ -22,6 +23,7 @@ export function isNavigationItemActive(item: NavigationItem, pathname: string, h
   const [hrefPath, hrefHash] = item.href.split('#');
   const targetPath = normalizePath(hrefPath || '/');
   const currentPath = normalizePath(pathname);
+  if (item.excludedPaths?.some(path => currentPath === path || currentPath.startsWith(path + '/'))) return false;
 
   if (hrefHash) return currentPath === targetPath && hash === `#${hrefHash}`;
   if (targetPath === '/') return currentPath === '/';
@@ -40,6 +42,7 @@ export const headerNavigation: NavigationItem[] = [
   },
   {
     id: "exchange",
+    excludedPaths: ["/exchange/conversations"],
     labelKey: 'navigation.exchange',
     shortLabelKey: 'navigation.exchangeShort',
     label: "Tìm bạn học",
@@ -52,7 +55,12 @@ export const headerNavigation: NavigationItem[] = [
 export const additionalNavigation: NavigationItem[] = [
   { id: 'library', label: 'Thư viện', shortLabel: 'Thư viện', labelKey: 'navigation.library', icon: 'book-open', href: '/library' },
   { id: "languages", labelKey: 'navigation.languages', label: "Ngôn ngữ", shortLabel: "Ngôn ngữ", icon: "languages", href: "/languages" },
-  { id: "community", labelKey: 'navigation.community', label: "Cộng đồng", shortLabel: "Cộng đồng", icon: "users", href: "/community" },
+  { id: "community", excludedPaths: ["/community/groups"], labelKey: 'navigation.community', label: "Cộng đồng", shortLabel: "Cộng đồng", icon: "users", href: "/community" },
   { id: "membership", labelKey: 'navigation.membership', label: "Membership", shortLabel: "Membership", icon: "award", href: "/membership" },
   { id: "how-it-works", labelKey: 'navigation.how-it-works', label: "Cách bắt đầu", shortLabel: "Cách bắt đầu", icon: "book-open", href: "/#how-it-works" },
+];
+
+export const socialNavigation: NavigationItem[] = [
+  { id: 'groups', label: 'Nhóm của tôi', shortLabel: 'Nhóm của tôi', labelKey: 'navigation.groups', icon: 'users', href: '/community/groups' },
+  { id: 'messages', label: 'Tin nhắn', shortLabel: 'Tin nhắn', labelKey: 'navigation.messages', icon: 'message-circle', href: '/exchange/conversations' },
 ];

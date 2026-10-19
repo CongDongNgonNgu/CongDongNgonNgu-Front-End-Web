@@ -30,6 +30,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
   const searchTriggerRef = useRef<HTMLElement | null>(null);
 
+  const closeAccount = useCallback(() => setAccountOpen(false), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const openDrawer = useCallback((event: MouseEvent<HTMLButtonElement>) => {
@@ -65,6 +66,13 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
     setMoreOpen(false);
     setAccountOpen(false);
     setDrawerOpen(false);
+    setSearchOpen(false);
+  }, [isAuthenticated, userDisplayName]);
+
+  useEffect(() => {
+    setMoreOpen(false);
+    setAccountOpen(false);
+    setDrawerOpen(false);
   }, [pathname, search, hash]);
 
   useEffect(() => {
@@ -92,6 +100,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
         searchOpen={searchOpen}
         onAccountToggle={toggleAccount}
         accountOpen={accountOpen}
+        onAccountClose={closeAccount}
       />
       <MobileHeader isAuthenticated={isAuthenticated} userDisplayName={avatarName} searchOpen={searchOpen} onSearch={openSearch} onMenu={openDrawer} />
 
@@ -114,7 +123,7 @@ export function Header({ isAuthenticated = false, userDisplayName, onLogout, hid
         returnFocusRef={menuButtonRef}
       />
 
-      {hideMobileActionBar ? null : <MobileActionBar onSearch={openSearch} onMenu={openDrawer} />}
+      {hideMobileActionBar ? null : <MobileActionBar isAuthenticated={isAuthenticated} onSearch={openSearch} onMenu={openDrawer} />}
     </header>
   );
 }

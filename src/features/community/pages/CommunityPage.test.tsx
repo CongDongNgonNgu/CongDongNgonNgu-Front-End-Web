@@ -234,3 +234,18 @@ it('requires sign-in for a saved URL and never sends an anonymous saved request'
   expect(onAuthRequired).toHaveBeenCalledOnce();
   expect(api.listPosts).not.toHaveBeenCalled();
 });
+
+describe('Community social task entries', () => {
+  it('offers authorized destinations without changing the public feed request', async () => {
+    const api = createApi([{ items: [], nextCursor: null }]);
+    renderPage(api, true);
+    expect(screen.getByRole('link', { name: 'Nhóm của tôi' })).toHaveAttribute('href', '/community/groups');
+    expect(screen.getByRole('link', { name: 'Tin nhắn' })).toHaveAttribute('href', '/exchange/conversations');
+    await waitFor(() => expect(api.listPosts).toHaveBeenCalled());
+  });
+  it('does not advertise a private group directory to guests', () => {
+    renderPage(createApi([{ items: [], nextCursor: null }]));
+    expect(screen.queryByRole('link', { name: 'Nhóm của tôi' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Tin nhắn' })).not.toBeInTheDocument();
+  });
+});
