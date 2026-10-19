@@ -1,4 +1,12 @@
 export const viStudyGroups = {
+  "groups.indexIntro": "Không gian cùng bạn bè luyện ngôn ngữ và theo đuổi mục tiêu học tập.",
+  "groups.emptyHelp": "Tạo một nhóm học riêng tư hoặc nhận mã mời từ chủ nhóm để bắt đầu.",
+  "groups.createPrivacy": "Nhóm luôn riêng tư, chỉ tham gia qua lời mời.",
+  "groups.learningPurpose": "Bạn muốn luyện ngôn ngữ nào? Chia sẻ mục tiêu, trình độ và chủ đề học.",
+  "groups.namePlaceholder": "Ví dụ: Tiếng Pháp B1 và đọc sách",
+  "groups.descriptionPlaceholder": "Mục tiêu học, chủ đề luyện tập và cách học cùng nhau…",
+  "groups.open": "Vào nhóm học",
+  "groups.openNamed": "Vào nhóm học: {name}",
   "groups.visibility.privateInviteOnly": "Riêng tư · Chỉ qua lời mời",
   "groups.visibility.createHelp": "Nhóm luôn riêng tư, chỉ tham gia qua lời mời. Chỉ chủ nhóm cấp mã mời; người nhận phải chủ động chấp nhận để gia nhập. Chỉ có mã nhóm không cấp quyền truy cập.",
   "groups.connectedInvite": "Mời bạn đã kết nối",
@@ -99,6 +107,14 @@ export const viStudyGroups = {
   "groups.reasonBound": "Tối đa 500 ký tự.",
 } as const;
 export const enStudyGroups: Record<keyof typeof viStudyGroups, string> = {
+  "groups.indexIntro": "A place to practise languages and work towards your learning goals together.",
+  "groups.emptyHelp": "Create a private study group or ask its owner for an invitation to get started.",
+  "groups.createPrivacy": "Groups are always private and invitation only.",
+  "groups.learningPurpose": "What language will you practise? Describe your goals, level and topics.",
+  "groups.namePlaceholder": "For example: French B1 and reading together",
+  "groups.descriptionPlaceholder": "Learning goals, practice topics and how you will study together…",
+  "groups.open": "Open study group",
+  "groups.openNamed": "Open study group: {name}",
   "groups.visibility.privateInviteOnly": "Private · Invitation only",
   "groups.visibility.createHelp": "Groups are always private and invitation only. Only the owner can issue invitations; recipients must explicitly accept to join. A group ID alone does not grant access.",
   "groups.connectedInvite": "Invite a connected partner",

@@ -7,10 +7,12 @@ export function GroupEntryForm({
   mode,
   busy,
   onSubmit,
+  onCancel,
 }: {
   mode: "create" | "accept";
   busy: boolean;
   onSubmit: (first: string, second: string) => Promise<boolean>;
+  onCancel?: () => void;
 }) {
   const { t } = useUiLocale();
   const [first, setFirst] = useState("");
@@ -38,7 +40,9 @@ export function GroupEntryForm({
   }
   return (
     <form className={styles.form} onSubmit={(e) => void submit(e)} noValidate>
+      {mode === "create" ? <p className={styles.privacy}>{t("groups.createPrivacy")}</p> : null}
       <TextInput
+        placeholder={mode === "create" ? t("groups.namePlaceholder") : undefined}
         label={t(mode === "create" ? "groups.name" : "groups.groupId")}
         value={first}
         onChange={(e) => setFirst(e.target.value)}
@@ -51,6 +55,7 @@ export function GroupEntryForm({
       {mode === "create" ? (
         <Textarea
           label={t("groups.description")}
+          placeholder={t("groups.descriptionPlaceholder")}
           value={second}
           onChange={(e) => setSecond(e.target.value)}
           maxLength={500}
@@ -69,12 +74,13 @@ export function GroupEntryForm({
           disabled={busy}
         />
       )}
-      <p>
-        {t(mode === "create" ? "groups.visibility.createHelp" : "groups.inviteHelp")}
-      </p>
-      <Button type="submit" loading={busy}>
-        {t(mode === "create" ? "groups.create" : "groups.join")}
-      </Button>
+      {mode === "create" ? <p className={styles.learningHelp}>{t("groups.learningPurpose")}</p> : <p>{t("groups.inviteHelp")}</p>}
+      <div className={styles.actions}>
+        {onCancel ? <Button variant="secondary" disabled={busy} onClick={onCancel}>{t("groups.cancel")}</Button> : null}
+        <Button type="submit" loading={busy}>
+          {t(mode === "create" ? "groups.create" : "groups.join")}
+        </Button>
+      </div>
     </form>
   );
 }
