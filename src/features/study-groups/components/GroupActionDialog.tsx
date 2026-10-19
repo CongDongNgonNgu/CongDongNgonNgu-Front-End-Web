@@ -1,3 +1,4 @@
+import styles from "./GroupActionDialog.module.css";
 import { useState, type FormEvent } from "react";
 import { Dialog } from "../../../components/ui/Overlays";
 import { Button } from "../../../components/ui/Button";
@@ -82,7 +83,7 @@ export function GroupActionDialog({
         if (!busy) onClose();
       }}
     >
-      <form onSubmit={(e) => void submit(e)}>
+      <form className={styles.form} onSubmit={(e) => void submit(e)}>
         {targetName ? (
           <p>
             <strong>{t("groups.targetMember", { name: targetName })}</strong>
@@ -105,6 +106,7 @@ export function GroupActionDialog({
             disabled={busy}
           />
         ) : null}
+        <div className={styles.actions}>
         <Button
           type="submit"
           loading={busy}
@@ -117,10 +119,11 @@ export function GroupActionDialog({
           }
         >
           {t("groups.confirm")}
-        </Button>{" "}
+        </Button>
         <Button variant="quiet" disabled={busy} onClick={onClose}>
           {t("groups.cancel")}
         </Button>
+        </div>
       </form>
     </Dialog>
   );

@@ -1,4 +1,11 @@
 export const viStudyGroups = {
+  "groups.you": "Bạn",
+  "groups.joined": "Tham gia ngày {date}",
+  "groups.memberRolesHelp": "Vai trò chỉ áp dụng trong nhóm học này.",
+  "groups.invitationHistory": "Lịch sử lời mời",
+  "groups.invitationHistoryHelp": "Mỗi mã dùng một lần. Mã bí mật chỉ hiển thị khi vừa tạo và không thể xem lại tại đây.",
+  "groups.invitationId": "Mã tham chiếu lời mời",
+  "groups.reportedText": "Nội dung được báo cáo",
   "groups.learningTogether": "Học cùng nhau",
   "groups.discussionEmptyHelp": "Bắt đầu bằng mục tiêu học, một câu hỏi hoặc tài liệu hữu ích cho nhóm.",
   "groups.indexIntro": "Không gian cùng bạn bè luyện ngôn ngữ và theo đuổi mục tiêu học tập.",
@@ -109,6 +116,13 @@ export const viStudyGroups = {
   "groups.reasonBound": "Tối đa 500 ký tự.",
 } as const;
 export const enStudyGroups: Record<keyof typeof viStudyGroups, string> = {
+  "groups.you": "You",
+  "groups.joined": "Joined {date}",
+  "groups.memberRolesHelp": "Roles apply within this study group.",
+  "groups.invitationHistory": "Invitation history",
+  "groups.invitationHistoryHelp": "Each code is single-use. Secret tokens are shown only when issued and cannot be recovered here.",
+  "groups.invitationId": "Invitation reference",
+  "groups.reportedText": "Reported text",
   "groups.learningTogether": "Learning together",
   "groups.discussionEmptyHelp": "Start with a learning goal, a question or a useful resource for your group.",
   "groups.indexIntro": "A place to practise languages and work towards your learning goals together.",

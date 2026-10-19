@@ -294,9 +294,9 @@ export function StudyGroupPageView({
                       enabled={authenticated && !resource.error}
                     />
                   ) : null}
-                  <Button disabled={busy} onClick={() => void issue()}>
+                  {selected !== "invitations" ? <Button disabled={busy} onClick={() => void issue()}>
                     {t("groups.issue")}
-                  </Button>
+                  </Button> : null}
                   <Button
                     variant="danger"
                     disabled={busy}
