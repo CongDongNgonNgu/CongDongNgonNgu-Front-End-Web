@@ -165,3 +165,38 @@ it("explains explicit one-use invitation acceptance and that a group ID alone gr
   expect(screen.getByText(/expires after 24 hours/)).toBeVisible();
   expect(screen.queryByRole("button", { name: /Request to join|Public join/ })).toBeNull();
 });
+
+it.each(['vi', 'en'])('guides freeform learning purpose and cancels a create draft: %s', async locale => {
+  const api = fake(); view(api, true, false, locale);
+  await screen.findByText(locale === 'en' ? 'You have not joined a group yet.' : 'Bạn chưa tham gia nhóm nào.');
+  await userEvent.click(screen.getByRole('button', { name: locale === 'en' ? 'Create group' : 'Tạo nhóm' }));
+  const dialog = screen.getByRole('dialog');
+  expect(within(dialog).getByText(locale === 'en'
+    ? 'What language will you practise? Describe your goals, level and topics.'
+    : 'Bạn muốn luyện ngôn ngữ nào? Chia sẻ mục tiêu, trình độ và chủ đề học.')).toBeVisible();
+  expect(within(dialog).getAllByRole('textbox')).toHaveLength(2);
+  await userEvent.type(within(dialog).getByRole('textbox', { name: locale === 'en' ? /Group name/ : /Tên nhóm/ }), 'Draft only');
+  await userEvent.click(within(dialog).getByRole('button', { name: locale === 'en' ? 'Cancel' : 'Hủy' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(api.create).not.toHaveBeenCalled();
+});
+it('gives each authorized group a distinct destination without invented learning fields', async () => {
+  const api = fake();
+  api.list.mockResolvedValue({ items: [{ id: 'g', name: 'Private fixture', description: 'Vietnamese B1: weekly conversation', role: 'MODERATOR', visibility: 'PRIVATE_INVITE_ONLY', status: 'ACTIVE', createdAt: '', updatedAt: '' }], page: 1, limit: 20, total: 1 });
+  view(api, true, false, 'en');
+  expect(await screen.findByRole('link', { name: 'Open study group: Private fixture' })).toHaveAttribute('href', '/community/groups/g');
+  expect(screen.getByText('Vietnamese B1: weekly conversation')).toBeVisible();
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+});
+it('keeps a failed create draft and announces safe failure inside the dialog', async () => {
+  const api = fake(); api.create.mockRejectedValue(new ApiClientError('private backend details', 503, 'UNAVAILABLE'));
+  view(api, true, false, 'en');
+  await screen.findByText('You have not joined a group yet.');
+  await userEvent.click(screen.getByRole('button', { name: 'Create group' }));
+  const dialog = screen.getByRole('dialog');
+  await userEvent.type(within(dialog).getByRole('textbox', { name: /Group name/ }), 'Keep this draft');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Create group' }));
+  expect(await within(dialog).findByRole('alert')).toHaveTextContent('Could not complete the request');
+  expect(within(dialog).getByRole('textbox', { name: /Group name/ })).toHaveValue('Keep this draft');
+  expect(screen.queryByText('private backend details')).not.toBeInTheDocument();
+});

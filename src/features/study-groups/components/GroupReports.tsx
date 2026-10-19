@@ -16,13 +16,14 @@ export function GroupReports({
   const { t } = useUiLocale();
   return (
     <section aria-label={t("groups.reports")}>
+      <h2 className={styles.title}>{t("groups.reports")}</h2>
       {items.length === 0 ? <p>{t("groups.noReports")}</p> : null}
       <ul className={styles.list}>
         {items.map((x) => (
           <li key={x.id}>
-            <code>{x.textId}</code>
+            <span className={styles.state}>{t(`groups.${x.status}`)}</span>
+            <p className={styles.reference}>{t("groups.reportedText")}: <code>{x.textId}</code></p>
             <p>{x.reason}</p>
-            <span>{t(`groups.${x.status}`)}</span>
             {x.status === "OPEN" ? (
               <div>
                 <Button

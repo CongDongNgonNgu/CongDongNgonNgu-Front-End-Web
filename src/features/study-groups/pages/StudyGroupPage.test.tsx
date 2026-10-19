@@ -501,3 +501,20 @@ it.each(["OWNER", "MEMBER"] as const)(
     expect(screen.queryByRole("combobox", { name: "Visibility" })).toBeNull();
   },
 );
+
+it('keeps a private learning identity and owner management without an owner leave action', async () => {
+  view(fake());
+  await screen.findByRole('heading', { name: 'Synthetic group' });
+  expect(screen.getByText('Learning together')).toBeVisible();
+  expect(screen.getByText('group only')).toBeVisible();
+  expect(screen.getByText('Private · Invitation only')).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Leave group' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Reports' })).toBeInTheDocument();
+});
+it('uses one invitation issue action on the owner invitation panel', async () => {
+  const api = fake(); view(api);
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitations' }));
+  expect(screen.getAllByRole('button', { name: 'Issue invitation' })).toHaveLength(1);
+  expect(screen.getByRole('heading', { name: 'Invitation history' })).toBeVisible();
+  expect(screen.queryByRole('textbox', { name: /Secret invitation token/ })).not.toBeInTheDocument();
+});

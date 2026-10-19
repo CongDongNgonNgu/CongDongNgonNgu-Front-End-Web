@@ -1,14 +1,7 @@
-.form {
-  display: grid;
-  gap: var(--space-4);
-  max-width: 36rem;
-}
-.form p {
-  color: var(--color-text-secondary);
-  line-height: var(--leading-body);
-  margin: 0;
-}
-.form button {
-  justify-self: start;
-  min-height: 44px;
-}
+.form { display: grid; gap: var(--space-4); max-width: 36rem; }
+.form p { color: var(--color-text-secondary); line-height: var(--leading-body); margin: 0; }
+.privacy { padding: var(--space-3); border-left: 3px solid var(--color-brand-orange); background: var(--color-surface-muted); border-radius: var(--radius-control); font-size: var(--font-size-sm); }
+.learningHelp { font-size: var(--font-size-sm); }
+.actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-2); padding-top: var(--space-2); }
+.actions button { min-height: 2.75rem; max-width: 100%; white-space: normal; }
+@media (max-width: 35rem) { .actions button { flex: 1 1 7rem; } }

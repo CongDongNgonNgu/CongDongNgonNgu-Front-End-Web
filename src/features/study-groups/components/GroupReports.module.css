@@ -27,3 +27,7 @@
 .list button {
   min-height: 44px;
 }
+.title { margin: 0 0 var(--space-4); font-size: var(--font-size-lg); }
+.state { color: var(--color-brand-navy); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.reference { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+.list button { max-width: 100%; white-space: normal; }

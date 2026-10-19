@@ -1,5 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Icon } from "../../../components/ui/Icon/Icon";
+import { StudyGroupSummary } from "../components/StudyGroupSummary";
 import { Button } from "../../../components/ui/Button";
 import { Dialog } from "../../../components/ui/Overlays";
 import { useAuth } from "../../auth/AuthProvider";
@@ -41,6 +43,7 @@ export function StudyGroupsPageView({
   const [page, setPage] = useState(1);
   const [create, setCreate] = useState(false);
   const [busy, setBusy] = useState(false);
+  useEffect(() => { setCreate(false); }, [userId, authenticated, location.pathname]);
   const acceptance = accept || location.pathname.endsWith("/invitations");
   const load = useCallback(() => api.list(page), [api, page]);
   const resource = useGroupResource(
@@ -61,24 +64,25 @@ export function StudyGroupsPageView({
   }
   return (
     <div className={styles.page}>
-      <nav aria-label={t("groups.community")}>
+      <nav className={styles.breadcrumbs} aria-label={t("groups.community")}>
         <Link to="/community">{t("groups.community")}</Link> /{" "}
         <Link to="/community/groups">{t("groups.title")}</Link>
       </nav>
       <header className={styles.heading}>
         <div>
           <h1>{t(acceptance ? "groups.join" : "groups.title")}</h1>
-          <p>{t("groups.privacy")}</p>
+          <p>{t(acceptance ? "groups.createPrivacy" : "groups.indexIntro")}</p>
         </div>
         {authenticated && !acceptance ? (
           <div className={styles.actions}>
             <Button onClick={() => setCreate(true)}>
               {t("groups.create")}
             </Button>
-            <Link to="/community/groups/invitations">{t("groups.join")}</Link>
+            <Link className={styles.acceptLink} to="/community/groups/invitations">{t("groups.join")}</Link>
           </div>
         ) : null}
       </header>
+      {!acceptance ? <p className={styles.privacy}><Icon name="lock" size={16}/>{t("groups.visibility.privateInviteOnly")}</p> : null}
       {authLoading || resource.loading ? (
         <p role="status">{t("groups.loading")}</p>
       ) : null}
@@ -91,7 +95,7 @@ export function StudyGroupsPageView({
           {t("groups.login")}
         </Button>
       ) : null}
-      {resource.error ? (
+      {resource.error && !create ? (
         <p role="alert">
           {t(groupErrorKey(resource.error))}{" "}
           <Button variant="quiet" onClick={() => void resource.refresh()}>
@@ -100,25 +104,17 @@ export function StudyGroupsPageView({
         </p>
       ) : null}
       {authenticated && acceptance ? (
-        <GroupEntryForm mode="accept" busy={busy} onSubmit={submit} />
+        <div className={styles.acceptance}><GroupEntryForm key={userId} mode="accept" busy={busy} onSubmit={submit} /></div>
       ) : null}
       {resource.data ? (
         <>
           <ul className={styles.list}>
-            {resource.data.items.map((g) => (
-              <li key={g.id}>
-                <h2>
-                  <Link to={"/community/groups/" + encodeURIComponent(g.id)}>
-                    {g.name}
-                  </Link>
-                </h2>
-                <p>{g.description}</p>
-                <p>{t("groups.visibility.privateInviteOnly")}</p>
-                <span>{t(`groups.${g.role}`)}</span>
-              </li>
-            ))}
+            {resource.data.items.map(group => <StudyGroupSummary key={group.id} group={group}/>)}
           </ul>
-          {resource.data.items.length === 0 ? <p>{t("groups.empty")}</p> : null}
+          {resource.data.items.length === 0 ? <div className={styles.empty}>
+            <Icon name="book-open" size={24}/>
+            <h2>{t("groups.empty")}</h2><p>{t("groups.emptyHelp")}</p>
+          </div> : null}
           <GroupPagination value={resource.data} onChange={setPage} />
         </>
       ) : null}
@@ -131,7 +127,8 @@ export function StudyGroupsPageView({
           if (!busy) setCreate(false);
         }}
       >
-        <GroupEntryForm mode="create" busy={busy} onSubmit={submit} />
+        {resource.error ? <p role="alert">{t(groupErrorKey(resource.error))}</p> : null}
+        <GroupEntryForm key={userId} mode="create" busy={busy} onSubmit={submit} onCancel={() => setCreate(false)} />
       </Dialog>
     </div>
   );
