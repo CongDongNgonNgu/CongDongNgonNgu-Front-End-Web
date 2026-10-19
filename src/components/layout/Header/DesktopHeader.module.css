@@ -29,3 +29,10 @@
   .headerActions { flex-wrap: wrap; }
 }
 @media (max-width: 47.999rem) { .desktopHeader { display: none; } }
+
+/* Authenticated task navigation has its own row so utility controls never compete for width. */
+.authenticated .headerInner { flex-wrap: wrap; padding-block: var(--space-2); row-gap: var(--space-2); }
+.authenticated .brand { flex: 1 1 10rem; }
+.authenticated .headerActions { flex-shrink: 0; }
+.authenticated .desktopNav { flex-basis: 100%; margin-inline: 0; }
+.authenticated .desktopNavList { justify-content: center; flex-wrap: wrap; }
