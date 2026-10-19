@@ -133,4 +133,3 @@ export function StudyGroupsPageView({
     </div>
   );
 }
-

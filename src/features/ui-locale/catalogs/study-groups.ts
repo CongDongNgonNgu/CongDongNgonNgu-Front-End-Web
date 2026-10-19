@@ -1,4 +1,6 @@
 export const viStudyGroups = {
+  "groups.learningTogether": "Học cùng nhau",
+  "groups.discussionEmptyHelp": "Bắt đầu bằng mục tiêu học, một câu hỏi hoặc tài liệu hữu ích cho nhóm.",
   "groups.indexIntro": "Không gian cùng bạn bè luyện ngôn ngữ và theo đuổi mục tiêu học tập.",
   "groups.emptyHelp": "Tạo một nhóm học riêng tư hoặc nhận mã mời từ chủ nhóm để bắt đầu.",
   "groups.createPrivacy": "Nhóm luôn riêng tư, chỉ tham gia qua lời mời.",
@@ -107,6 +109,8 @@ export const viStudyGroups = {
   "groups.reasonBound": "Tối đa 500 ký tự.",
 } as const;
 export const enStudyGroups: Record<keyof typeof viStudyGroups, string> = {
+  "groups.learningTogether": "Learning together",
+  "groups.discussionEmptyHelp": "Start with a learning goal, a question or a useful resource for your group.",
   "groups.indexIntro": "A place to practise languages and work towards your learning goals together.",
   "groups.emptyHelp": "Create a private study group or ask its owner for an invitation to get started.",
   "groups.createPrivacy": "Groups are always private and invitation only.",

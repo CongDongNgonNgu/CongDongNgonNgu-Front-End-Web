@@ -20,6 +20,7 @@ import {
   groupErrorKey,
   isAccessLost,
 } from "../study-groups.policy";
+import { StudyGroupHeader } from "../components/StudyGroupHeader";
 import { GroupMembers } from "../components/GroupMembers";
 import { GroupTextPanel } from "../components/GroupTextPanel";
 import { GroupInvitations } from "../components/GroupInvitations";
@@ -249,7 +250,7 @@ export function StudyGroupPageView({
       : tab;
   return (
     <div className={styles.page}>
-      <nav aria-label={t("groups.title")}>
+      <nav className={styles.breadcrumbs} aria-label={t("groups.title")}>
         <Link to="/community">{t("groups.community")}</Link> /{" "}
         <Link to="/community/groups">{t("groups.title")}</Link>
       </nav>
@@ -280,14 +281,7 @@ export function StudyGroupPageView({
       ) : null}
       {data ? (
         <>
-          <header className={styles.heading}>
-            <div>
-              <h1>{data.group.name}</h1>
-              <p>{data.group.description}</p>
-              <p>{t("groups.visibility.privateInviteOnly")}</p>
-              <span>{t(`groups.${data.group.role}`)}</span>
-            </div>
-            <div className={styles.actions}>
+          <StudyGroupHeader group={data.group}>
               {canManage(data.group.role) ? (
                 <>
                   {connectionsApi ? (
@@ -321,8 +315,7 @@ export function StudyGroupPageView({
                   {t("groups.leave")}
                 </Button>
               )}
-            </div>
-          </header>
+          </StudyGroupHeader>
           <p className={styles.privacy}>{t("groups.privacy")}</p>
           <p role="status" aria-live="polite">
             {message}

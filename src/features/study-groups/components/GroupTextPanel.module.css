@@ -1,56 +1,18 @@
-.panel form {
-  display: grid;
-  gap: var(--space-3);
-}
-.panel form button {
-  justify-self: start;
-}
-.texts {
-  display: grid;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-}
-.texts article {
-  padding: var(--space-5);
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-surface);
-  min-width: 0;
-}
-.texts header {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-.texts time {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-.body {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  line-height: var(--leading-body);
-}
-.actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-.panel button {
-  min-height: 44px;
-}
-.editor {
-  min-height: 0;
-  max-height: 240px;
-  overflow-wrap: anywhere;
-  resize: vertical;
-  line-height: 1.5;
-}
-.panel form button {
-  max-width: 100%;
-  white-space: normal;
-}
-.texts strong {
-  overflow-wrap: anywhere;
-}
+.panel { min-width: 0; }
+.panel form { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding: var(--space-5); border: 1px solid var(--color-border-strong); border-radius: var(--radius-surface); background: var(--color-surface-elevated); }
+.panel form button { justify-self: start; max-width: 100%; white-space: normal; }
+.texts { display: grid; gap: var(--space-4); }
+.texts article { padding: var(--space-5); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-surface); min-width: 0; }
+.texts header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.identity { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.identity > span { flex-shrink: 0; }
+.texts strong { overflow-wrap: anywhere; }
+.texts time { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
+.body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: var(--leading-body); }
+.actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); }
+.panel button { min-height: 2.75rem; }
+.editor { min-height: 0; max-height: 240px; overflow-wrap: anywhere; resize: vertical; line-height: 1.5; }
+.empty { padding: var(--space-6) var(--space-4); border: 1px dashed var(--color-border-strong); border-radius: var(--radius-surface); text-align: center; }
+.empty h3 { margin: 0 0 var(--space-2); font-size: var(--font-size-md); }
+.empty p { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: var(--leading-body); }
+@media (max-width: 35rem) { .panel form, .texts article { padding: var(--space-4); } }

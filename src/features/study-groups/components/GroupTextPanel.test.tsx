@@ -121,3 +121,9 @@ it("rotates retry identity after explicit draft editing, even when restored to t
     write.mock.calls[1][0].clientMessageId,
   );
 });
+
+it('introduces an empty learning discussion without fabricated activity', () => {
+  setup();
+  expect(screen.getByText('Start with a learning goal, a question or a useful resource for your group.')).toBeVisible();
+  expect(screen.queryByText(/online|typing|last active/i)).not.toBeInTheDocument();
+});

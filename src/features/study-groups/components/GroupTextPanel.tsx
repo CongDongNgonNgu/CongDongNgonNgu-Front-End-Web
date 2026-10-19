@@ -1,4 +1,5 @@
 ﻿import { useMemo, useRef, useState, type FormEvent } from "react";
+import { Avatar } from "../../../components/ui/Surface";
 import { Button } from "../../../components/ui/Button";
 import { Textarea, TextInput } from "../../../components/ui/FormControls";
 import { useUiLocale } from "../../ui-locale/UiLocaleProvider";
@@ -82,6 +83,53 @@ export function GroupTextPanel({
   const visible = texts.filter((x) => !x.hidden || canModerate(role));
   return (
     <section aria-label={t("groups.discussion")} className={styles.panel}>
+
+      {visible.length === 0 ? <div className={styles.empty}><h3>{t("groups.noTexts")}</h3><p>{t("groups.discussionEmptyHelp")}</p></div> : null}
+      <div
+        className={styles.texts}
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
+      >
+        {visible.map((text) => (
+          <article key={text.id}>
+            <header>
+              <div className={styles.identity}><span aria-hidden="true"><Avatar name={text.author.displayName} size="sm"/></span><strong>{text.author.displayName}</strong></div>
+              <time dateTime={text.createdAt}>
+                {formatDate(text.createdAt, { dateStyle: "medium", timeStyle: "short" })}
+              </time>
+            </header>
+            {text.hidden ? <p>{t("groups.hidden")}</p> : null}
+            <p className={styles.body}>{text.body}</p>
+            {text.context ? (
+              <MessageContextCard
+                queue={contextQueue ?? null}
+                messageId={text.id}
+              />
+            ) : null}
+            <div className={styles.actions}>
+              {!text.hidden ? (
+                <Button
+                  variant="quiet"
+                  disabled={disabled}
+                  onClick={() => onAction("report", text.id)}
+                >
+                  {t("groups.report")}
+                </Button>
+              ) : null}
+              {canModerate(role) && !text.hidden ? (
+                <Button
+                  variant="danger"
+                  disabled={disabled}
+                  onClick={() => onAction("hide", text.id)}
+                >
+                  {t("groups.hide")}
+                </Button>
+              ) : null}
+            </div>
+          </article>
+        ))}
+      </div>
       <form onSubmit={(event) => void submit(event)} noValidate>
         <Textarea
           ref={bodyRef}
@@ -137,52 +185,6 @@ export function GroupTextPanel({
           {t(failed ? "groups.collaboration.retry" : "groups.post")}
         </Button>
       </form>
-      {visible.length === 0 ? <p role="status">{t("groups.noTexts")}</p> : null}
-      <div
-        className={styles.texts}
-        role="log"
-        aria-live="polite"
-        aria-relevant="additions text"
-      >
-        {visible.map((text) => (
-          <article key={text.id}>
-            <header>
-              <strong>{text.author.displayName}</strong>
-              <time dateTime={text.createdAt}>
-                {formatDate(text.createdAt)}
-              </time>
-            </header>
-            {text.hidden ? <p>{t("groups.hidden")}</p> : null}
-            <p className={styles.body}>{text.body}</p>
-            {text.context ? (
-              <MessageContextCard
-                queue={contextQueue ?? null}
-                messageId={text.id}
-              />
-            ) : null}
-            <div className={styles.actions}>
-              {!text.hidden ? (
-                <Button
-                  variant="quiet"
-                  disabled={disabled}
-                  onClick={() => onAction("report", text.id)}
-                >
-                  {t("groups.report")}
-                </Button>
-              ) : null}
-              {canModerate(role) && !text.hidden ? (
-                <Button
-                  variant="danger"
-                  disabled={disabled}
-                  onClick={() => onAction("hide", text.id)}
-                >
-                  {t("groups.hide")}
-                </Button>
-              ) : null}
-            </div>
-          </article>
-        ))}
-      </div>
     </section>
   );
 }

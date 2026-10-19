@@ -19,4 +19,3 @@ export function StudyGroupSummary({ group }: { group: StudyGroup }) {
     </Link>
   </li>;
 }
-
