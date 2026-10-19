@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { additionalNavigation, headerNavigation, isNavigationItemActive } from './navigation';
+import { additionalNavigation, headerNavigation, socialNavigation, isNavigationItemActive } from './navigation';
 
 describe('global navigation routes', () => {
   it('points public menu items at implemented destinations', () => {
@@ -33,5 +33,24 @@ describe('global navigation routes', () => {
     expect(howItWorks && isNavigationItemActive(howItWorks, '/', '#how-it-works')).toBe(true);
     expect(howItWorks && isNavigationItemActive(howItWorks, '/', '#community')).toBe(false);
     expect(howItWorks && isNavigationItemActive(howItWorks, '/community')).toBe(false);
+  });
+});
+
+describe('social navigation domains', () => {
+  it('uses private destinations and excludes their parent active states', () => {
+    expect(socialNavigation.map(item => item.href)).toEqual(['/community/groups', '/exchange/conversations']);
+    const exchange = headerNavigation.find(item => item.id === 'exchange')!;
+    const community = additionalNavigation.find(item => item.id === 'community')!;
+    for (const path of ['/exchange/conversations', '/exchange/conversations/room/']) {
+      expect(isNavigationItemActive(exchange, path)).toBe(false);
+      expect(isNavigationItemActive(socialNavigation[1], path)).toBe(true);
+    }
+    for (const path of ['/community/groups', '/community/groups/invitations', '/community/groups/group/']) {
+      expect(isNavigationItemActive(community, path)).toBe(false);
+      expect(isNavigationItemActive(socialNavigation[0], path)).toBe(true);
+    }
+    expect(isNavigationItemActive(exchange, '/exchange/connections')).toBe(true);
+    expect(isNavigationItemActive(community, '/community/groups-old')).toBe(true);
+    expect(isNavigationItemActive(socialNavigation[0], '/community/groups-old')).toBe(false);
   });
 });

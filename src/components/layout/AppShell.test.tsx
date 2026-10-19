@@ -99,11 +99,11 @@ describe("AppShell", () => {
 
     await user.click(trigger);
     await user.click(screen.getByRole("button", { name: "Outside dropdown" }));
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
 
     await user.click(trigger);
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
 
@@ -112,24 +112,24 @@ describe("AppShell", () => {
     renderShell();
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    await user.click(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" }));
+    await user.click(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/languages");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    await user.click(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" }));
+    await user.click(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/community");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    await user.click(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Membership" }));
+    await user.click(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Membership" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/membership");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    await user.click(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cách bắt đầu" }));
+    await user.click(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Cách bắt đầu" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/#how-it-works");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
   });
 
   it("closes More when another component changes the route", async () => {
@@ -140,7 +140,7 @@ describe("AppShell", () => {
     await user.click(screen.getByRole("link", { name: "Đi tới cộng đồng" }));
 
     expect(screen.getByTestId("location")).toHaveTextContent("/community");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
   });
 
   it("derives desktop, drawer, and quick-action active state from the current route", async () => {
@@ -151,9 +151,9 @@ describe("AppShell", () => {
     expect(within(quickActions).getByRole("link", { name: "Trang chủ" })).not.toHaveAttribute("aria-current", "page");
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    const communityMenuItem = within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" });
+    const communityMenuItem = within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" });
     expect(communityMenuItem).toHaveAttribute("aria-current", "page");
-    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).not.toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).not.toHaveAttribute("aria-current", "page");
 
     await user.click(screen.getAllByRole("button", { name: "Mở menu" })[0]);
     const drawer = screen.getByRole("dialog", { name: "Menu" });
@@ -166,8 +166,8 @@ describe("AppShell", () => {
     renderShell(false, "/languages");
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("aria-current", "page");
-    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" })).not.toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" })).not.toHaveAttribute("aria-current", "page");
   });
 
   it("uses router-backed footer destinations and exposes unavailable auth-footer items as disabled", () => {
@@ -201,15 +201,15 @@ describe("AppShell", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Ngôn ngữ" })).toHaveAttribute("aria-current", "page");
     await user.click(screen.getByRole("button", { name: "Back" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/community");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    expect(within(screen.getByRole("menu", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("aria-current", "page");
+    expect(within(screen.getByRole("region", { name: "Thêm" })).getByRole("link", { name: "Cộng đồng" })).toHaveAttribute("aria-current", "page");
     await user.click(screen.getByRole("button", { name: "Forward" }));
     expect(screen.getByTestId("location")).toHaveTextContent("/languages");
-    expect(screen.queryByRole("menu", { name: "Thêm" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Thêm" })).not.toBeInTheDocument();
   });
 
   it("opens searchable shell feedback and supports the desktop overflow menu", async () => {
@@ -226,8 +226,8 @@ describe("AppShell", () => {
     expect(document.activeElement).toHaveAttribute("aria-label", "Tìm kiếm");
 
     await user.click(screen.getByRole("button", { name: "Thêm" }));
-    expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Ngôn ngữ");
-    expect(screen.getByRole("menu", { name: "Thêm" })).toHaveTextContent("Cách bắt đầu");
+    expect(screen.getByRole("region", { name: "Thêm" })).toHaveTextContent("Ngôn ngữ");
+    expect(screen.getByRole("region", { name: "Thêm" })).toHaveTextContent("Cách bắt đầu");
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
   });
 

@@ -2,7 +2,7 @@ import { useUiLocale } from '../../../features/ui-locale/UiLocaleProvider';
 import type { RefObject } from 'react';
 import { Link } from 'react-router-dom';
 import { Drawer } from '../../ui/Overlays';
-import { additionalNavigation, headerNavigation } from '../../navigation/navigation';
+import { additionalNavigation, headerNavigation, socialNavigation } from '../../navigation/navigation';
 import { NavigationLink } from './NavigationLink';
 import { runLogout } from './header.utils';
 import styles from './HeaderDrawer.module.css';
@@ -32,6 +32,7 @@ export function HeaderDrawer({ open, isAuthenticated, onLogout, onClose, initial
       <nav className={styles.drawerNav} aria-label={t('shell.mobileNavigation')}>
         <NavigationLink item={headerNavigation[0]} short iconName='home' className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose} />
         {headerNavigation.filter((item) => item.id !== 'home').map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose} />)}
+        {isAuthenticated ? socialNavigation.map(item => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose}/>) : null}
         {additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.drawerNavItem} activeClassName={styles.drawerNavItemActive} onClick={onClose} />)}
       </nav>
       <UiLocaleSelector />

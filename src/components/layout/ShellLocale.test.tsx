@@ -98,8 +98,8 @@ describe('bounded shell UI locale', () => {
     render(<UiLocaleProvider><MemoryRouter initialEntries={['/library']}><AppShell isAuthenticated userDisplayName='Test Member' onLogout={onLogout}><Probe /></AppShell></MemoryRouter></UiLocaleProvider>);
     await user.selectOptions(screen.getAllByRole('combobox', { name: 'Ngôn ngữ giao diện' })[0], 'en');
     await user.click(screen.getByRole('button', { name: /Test Member Account/ }));
-    expect(screen.getByRole('menuitem', { name: 'Language passport' })).toHaveAttribute('href', '/profile');
-    expect(screen.getByRole('menuitem', { name: 'Membership' })).toHaveAttribute('href', '/membership');
+    expect(screen.getByRole('link', { name: 'Language passport' })).toHaveAttribute('href', '/profile');
+    expect(screen.getByRole('link', { name: 'Membership' })).toHaveAttribute('href', '/membership');
     expect(onLogout).not.toHaveBeenCalled();
     expect(screen.getByTestId('route')).toHaveTextContent('/library');
     await user.click(screen.getByRole('button', { name: 'Log out' }));
