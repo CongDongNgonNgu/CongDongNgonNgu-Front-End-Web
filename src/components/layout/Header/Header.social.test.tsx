@@ -83,3 +83,12 @@ describe('shell identity boundaries', () => {
     expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
   });
 });
+
+describe('authenticated desktop row keyboard order', () => {
+  it('reaches the social navigation after the top-row account actions', async () => {
+    const user = userEvent.setup(); view(true, 'en');
+    screen.getByRole('button', { name: 'Log out' }).focus();
+    await user.tab();
+    expect(within(screen.getByRole('navigation', { name: 'Primary navigation' })).getByRole('link', { name: 'Home' })).toHaveFocus();
+  });
+});

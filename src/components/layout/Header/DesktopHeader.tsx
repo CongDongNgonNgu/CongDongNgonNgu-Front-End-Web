@@ -28,21 +28,16 @@ interface DesktopHeaderProps {
 
 export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, moreOpen, onMoreToggle, onMoreClose, onSearch, searchOpen, onAccountToggle, accountOpen, onAccountClose }: DesktopHeaderProps) {
   const { t } = useUiLocale();
-  return (
-    <div className={styles.desktopHeader}>
-      <div className='shell-width'>
-        <div className={styles.headerInner}>
-          <Link className={styles.brand} to='/'>
-            <img className={styles.brandMark} src='/brand/congdongngonngu-mark.png' alt='' width='512' height='512' />
-            <span className={styles.brandWordmark}><span className={styles.brandName}>{t('shell.brand')}</span><span className={styles.brandTagline}>{t('shell.tagline')}</span></span>
-          </Link>
-          <nav className={styles.desktopNav} aria-label={t('shell.primaryNavigation')}>
+  const navigation = (
+    <nav className={styles.desktopNav} aria-label={t('shell.primaryNavigation')}>
             <ul className={styles.desktopNavList}>
               {[...headerNavigation, ...(isAuthenticated ? socialNavigation : [])].map((item) => <li key={item.id}><NavigationLink item={item} short={isAuthenticated} className={styles.navLink} activeClassName={styles.navLinkActive} /></li>)}
               <li><DropdownMenu variant='navigation' open={moreOpen} label={t('shell.more')} onToggle={onMoreToggle} onClose={onMoreClose}>{additionalNavigation.map((item) => <NavigationLink key={item.id} item={item} className={styles.dropdownItem} activeClassName={styles.dropdownItemActive} onClick={onMoreClose} />)}</DropdownMenu></li>
             </ul>
           </nav>
-          <div className={styles.headerActions}>
+  );
+  const actions = (
+    <div className={styles.headerActions}>
             <UiLocaleSelector compact />
             <button className={controls.iconButton} type='button' onClick={onSearch} aria-label={t('shell.search')} aria-expanded={searchOpen} aria-controls='global-search-panel'><Icon name='search' size={20} /></button>
             {isAuthenticated ? <NotificationBell /> : null}
@@ -59,6 +54,16 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
             ) : null}
             <HeaderAuthActions isAuthenticated={isAuthenticated} onLogout={onLogout} />
           </div>
+  );
+  return (
+    <div className={[styles.desktopHeader, isAuthenticated ? styles.authenticated : ''].filter(Boolean).join(' ')}>
+      <div className='shell-width'>
+        <div className={styles.headerInner}>
+          <Link className={styles.brand} to='/'>
+            <img className={styles.brandMark} src='/brand/congdongngonngu-mark.png' alt='' width='512' height='512' />
+            <span className={styles.brandWordmark}><span className={styles.brandName}>{t('shell.brand')}</span><span className={styles.brandTagline}>{t('shell.tagline')}</span></span>
+          </Link>
+          {isAuthenticated ? <>{actions}{navigation}</> : <>{navigation}{actions}</>}
         </div>
       </div>
     </div>
