@@ -44,7 +44,7 @@ export function ConversationPanel({ api, id, actor, streamAuth, streamClient, on
         <div className={styles.identity}><span aria-hidden='true'><Avatar name={thread.summary.partner.displayName}/></span><strong>{thread.summary.partner.displayName}</strong></div>
         <Link className={styles.link} to={'/exchange/profile/' + encodeURIComponent(thread.summary.partner.userId)}>{t('exchange.messaging.profile')}</Link>
       </header>
-      {stream !== 'connected' && <p className={styles.status} role='status'>{t(stream === 'connecting' ? 'exchange.messaging.connecting' : stream === 'unavailable' ? 'exchange.messaging.unavailable' : 'exchange.messaging.reconnecting')}</p>}
+      {stream !== 'connected' && <p className={styles.status} role='status'>{t(stream === 'connecting' ? 'exchange.messaging.connecting' : stream === 'unavailable' ? 'exchange.messaging.unavailable' : stream === 'offline' ? 'exchange.messaging.updatesInterrupted' : 'exchange.messaging.reconnecting')}</p>}
       <MessageTimeline messages={thread.messages} actor={actor} partner={thread.summary.partner.displayName}
         contextQueue={contextQueue}
         hasOlder={thread.hasOlder} loading={thread.loading} onLoadOlder={thread.loadOlder} onAtLatestChange={setAtLatest}/>

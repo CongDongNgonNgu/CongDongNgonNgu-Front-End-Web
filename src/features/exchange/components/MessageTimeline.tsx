@@ -65,7 +65,7 @@ export function MessageTimeline({ messages, actor, partner, loading, hasOlder, o
     <div ref={viewport} className={styles.viewport} onScroll={() => report(programmaticTop.current === viewport.current?.scrollTop)} role='log' aria-label={t('exchange.messaging.thread', { partner })}
       aria-live='polite' aria-relevant='additions' tabIndex={0}>
       {hasOlder && <div className={styles.older}><Button variant='quiet' loading={loading} onClick={() => void onLoadOlder()}>{t('exchange.messaging.older')}</Button></div>}
-      {messages.length === 0 && !loading && <p className={styles.empty}>{t('exchange.messaging.empty')}</p>}
+      {messages.length === 0 && !loading && <div className={styles.empty}><h2>{t('exchange.messaging.firstPrompt')}</h2><p>{t('exchange.messaging.empty')}</p><p>{t('exchange.messaging.learningPrompt')}</p></div>}
       <ol ref={content} className={styles.messages}>
         {messages.map(message => <li key={message.id} data-message-id={message.id} className={`${styles.message} ${message.senderUserId === actor ? styles.own : ''}`}>
           <span className={styles.speaker}>{message.senderUserId === actor ? t('exchange.messaging.you') : partner}</span>

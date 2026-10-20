@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Button } from '../../../components/ui/Button';
-import { Avatar } from '../../../components/ui/Surface';
 import { useAuth } from '../../auth/AuthProvider';
 import { useUiLocale } from '../../ui-locale/UiLocaleProvider';
 import { useConversations } from '../hooks/use-conversations';

@@ -108,3 +108,24 @@ describe('native messages page integration', () => {
     expect(screen.getAllByRole('link', { name: 'B\u1ea1n h\u1ecdc c\u1ee7a b\u1ea1n' })).toHaveLength(2);
   });
  });
+
+describe('Phase29 thread feedback', () => {
+  it('describes a failed live stream truthfully while REST messages remain usable', async () => {
+    const source = api();
+    render(<MemoryRouter><MessagesPageView api={source} actor='A' conversationId='room' streamAuth={session}
+      streamClient={{ connect: vi.fn().mockRejectedValue(new TypeError('stream interrupted')) }}/></MemoryRouter>);
+    await screen.findByText('C\u1eadp nh\u1eadt tr\u1ef1c ti\u1ebfp b\u1ecb gi\u00e1n \u0111o\u1ea1n. V\u1eabn \u0111ang ki\u1ec3m tra tin nh\u1eafn \u0111\u1ecbnh k\u1ef3.');
+    expect(screen.getByRole('textbox')).toBeEnabled();
+    expect(screen.queryByText(/Ngo\u1ea1i tuy\u1ebfn/)).not.toBeInTheDocument();
+  });
+  it('keeps Enter as a newline and provides a learning-oriented first-message prompt', async () => {
+    const source = api(); vi.mocked(source.get).mockResolvedValue({ ...summary, headSequence: '0', unreadCount: '0' });
+    vi.mocked(source.history).mockResolvedValue({ items: [], nextCursor: null, beforeCursor: 'before', afterCursor: 'after' });
+    view(source, 'room');
+    const input = await screen.findByRole('textbox');
+    await userEvent.type(input, 'Hello{enter}Xin chao');
+    expect(input).toHaveValue('Hello\nXin chao');
+    expect(source.send).not.toHaveBeenCalled();
+    expect(screen.getByText('B\u1ea1n mu\u1ed1n luy\u1ec7n g\u00ec h\u00f4m nay?')).toBeInTheDocument();
+  });
+});
