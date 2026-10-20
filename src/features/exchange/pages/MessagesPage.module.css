@@ -12,6 +12,6 @@
   .header { flex-direction: column; gap: 0; }
   .header h1 { font-size: 1.75rem; }
   .layout { grid-template-columns: minmax(0, 1fr); }
-  
+
   .selected > aside, .prompt { display: none; }
 }
