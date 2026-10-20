@@ -1,9 +1,12 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { ApiClientError } from '../../../services/api-client';
 import { MessagesPageView } from './MessagesPage';
+import type { MessageStreamOptions } from '../message-stream.client';
+import { UiLocaleProvider } from '../../ui-locale/UiLocaleProvider';
+import { UI_LOCALE_STORAGE_KEY } from '../../ui-locale/ui-locale';
 import type { DirectConversationPage, DirectConversationSummary, DirectMessage, MessagingApiContract, SendMessageInput } from '../messaging.types';
 
 afterEach(cleanup);
@@ -90,4 +93,96 @@ describe('native messages page integration', () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole('link', { name: /Nguyễn Thị Thu Hương/ })).not.toBeInTheDocument());
   });
+});
+
+ describe('Phase29 inbox metadata', () => {
+  it('shows the server update time and an accessible unread count on its canonical row', async () => {
+    const result = view(api());
+    const row = await screen.findByRole('link', { name: new RegExp(summary.partner.displayName) });
+    expect(row.querySelector('time')).toHaveAttribute('datetime', summary.updatedAt);
+    expect(row).toHaveAccessibleName(expect.stringContaining('1 tin ch\u01b0a \u0111\u1ecdc'));
+    expect(row).toHaveAttribute('href', '/exchange/conversations/room');
+    expect(result.container.querySelector('time')).toHaveTextContent(new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(summary.updatedAt)));
+  });
+  it('provides a learning-partner destination in the genuinely empty inbox', async () => {
+    const source = api(); vi.mocked(source.list).mockResolvedValue({ items: [], nextCursor: null });
+    view(source);
+    await screen.findByText(/Ch\u01b0a c\u00f3 h\u1ed9i tho\u1ea1i\./);
+    expect(screen.getAllByRole('link', { name: 'B\u1ea1n h\u1ecdc c\u1ee7a b\u1ea1n' })).toHaveLength(2);
+  });
+ });
+
+describe('Phase29 thread feedback', () => {
+  it('describes a failed live stream truthfully while REST messages remain usable', async () => {
+    const source = api();
+    render(<MemoryRouter><MessagesPageView api={source} actor='A' conversationId='room' streamAuth={session}
+      streamClient={{ connect: vi.fn().mockRejectedValue(new TypeError('stream interrupted')) }}/></MemoryRouter>);
+    await screen.findByText('C\u1eadp nh\u1eadt tr\u1ef1c ti\u1ebfp b\u1ecb gi\u00e1n \u0111o\u1ea1n. V\u1eabn \u0111ang ki\u1ec3m tra tin nh\u1eafn \u0111\u1ecbnh k\u1ef3.');
+    expect(screen.getByRole('textbox')).toBeEnabled();
+    expect(screen.queryByText(/Ngo\u1ea1i tuy\u1ebfn/)).not.toBeInTheDocument();
+  });
+  it('keeps Enter as a newline and provides a learning-oriented first-message prompt', async () => {
+    const source = api(); vi.mocked(source.get).mockResolvedValue({ ...summary, headSequence: '0', unreadCount: '0' });
+    vi.mocked(source.history).mockResolvedValue({ items: [], nextCursor: null, beforeCursor: 'before', afterCursor: 'after' });
+    view(source, 'room');
+    const input = await screen.findByRole('textbox');
+    await userEvent.type(input, 'Hello{enter}Xin chao');
+    expect(input).toHaveValue('Hello\nXin chao');
+    expect(source.send).not.toHaveBeenCalled();
+    expect(screen.getByText('B\u1ea1n mu\u1ed1n luy\u1ec7n g\u00ec h\u00f4m nay?')).toBeInTheDocument();
+  });
+});
+
+describe('Phase29 authorized pair information', () => {
+  it('shows only the current pair with ordinary profile and connection links, then returns focus on Escape', async () => {
+    const source = api(); view(source, 'room');
+    const trigger = await screen.findByRole('button', { name: 'Th\u00f4ng tin h\u1ed9i tho\u1ea1i' });
+    await userEvent.click(trigger);
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(summary.partner.displayName)).toBeInTheDocument();
+    expect(within(dialog).getByText('B\u1ea1n')).toBeInTheDocument();
+    expect(within(dialog).getByRole('link', { name: 'Xem h\u1ed3 s\u01a1' })).toHaveAttribute('href', '/exchange/profile/B');
+    expect(within(dialog).getByRole('link', { name: 'B\u1ea1n h\u1ecdc c\u1ee7a b\u1ea1n' })).toHaveAttribute('href', '/exchange/connections');
+    expect(within(dialog).queryByRole('button', { name: /Th\u00eam|X\u00f3a|B\u00e1o c\u00e1o/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(trigger).toHaveFocus();
+  });
+  it('disposes an open information dialog immediately after protected access is denied', async () => {
+    const source = api(); let options!: MessageStreamOptions;
+    const client = { connect: vi.fn((next: MessageStreamOptions) => { options = next; return new Promise<void>(() => undefined); }) };
+    render(<MemoryRouter><MessagesPageView api={source} actor='A' conversationId='room' streamAuth={session} streamClient={client}/></MemoryRouter>);
+    await userEvent.click(await screen.findByRole('button', { name: 'Th\u00f4ng tin h\u1ed9i tho\u1ea1i' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    vi.mocked(source.get).mockRejectedValue(new ApiClientError('denied', 404, 'MESSAGE_UNAVAILABLE'));
+    await act(async () => { options.onHint('2'); });
+    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Th\u00f4ng tin h\u1ed9i tho\u1ea1i' })).not.toBeInTheDocument();
+  });
+  it('clears an open pair dialog on route/actor change and ignores an old late summary', async () => {
+    const source = api(); const result = view(source, 'room');
+    await userEvent.click(await screen.findByRole('button', { name: 'Th\u00f4ng tin h\u1ed9i tho\u1ea1i' }));
+    let finish!: (value: DirectConversationSummary) => void;
+    vi.mocked(source.get).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    result.rerender(<MemoryRouter><MessagesPageView api={source} actor='A' conversationId='other' streamAuth={session} streamClient={stream}/></MemoryRouter>);
+    await waitFor(() => expect(source.get).toHaveBeenCalledWith('other', expect.any(AbortSignal)));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    result.rerender(<MemoryRouter><MessagesPageView api={source} actor='C' streamAuth={session} streamClient={stream}/></MemoryRouter>);
+    finish({ ...summary, id: 'other' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByRole('log')).not.toBeInTheDocument();
+  });
+});
+
+it('localizes inbox metadata and current-pair information in English', async () => {
+  localStorage.setItem(UI_LOCALE_STORAGE_KEY, 'en');
+  try {
+    render(<UiLocaleProvider><MemoryRouter><MessagesPageView api={api()} actor='A' actorName='Linh Nguyen' conversationId='room' streamAuth={session} streamClient={stream}/></MemoryRouter></UiLocaleProvider>);
+    await userEvent.click(await screen.findByRole('button', { name: 'Conversation information' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Linh Nguyen')).toBeInTheDocument();
+    expect(within(dialog).getByText('You')).toBeInTheDocument();
+    expect(within(dialog).getByRole('link', { name: 'Your learning partners' })).toHaveAttribute('href', '/exchange/connections');
+    expect(screen.getByText(/^Updated /)).toBeInTheDocument();
+  } finally { localStorage.removeItem(UI_LOCALE_STORAGE_KEY); }
 });

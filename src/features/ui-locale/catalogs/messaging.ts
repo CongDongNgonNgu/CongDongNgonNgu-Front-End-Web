@@ -1,4 +1,12 @@
 export const viMessaging = {
+  'exchange.messaging.info': 'Th\u00f4ng tin h\u1ed9i tho\u1ea1i',
+  'exchange.messaging.closeInfo': '\u0110\u00f3ng th\u00f4ng tin h\u1ed9i tho\u1ea1i',
+  'exchange.messaging.pairIntro': 'Cu\u1ed9c tr\u00f2 chuy\u1ec7n tr\u1ef1c ti\u1ebfp gi\u1eefa b\u1ea1n v\u00e0 b\u1ea1n h\u1ecdc.',
+  'exchange.messaging.contextAccess': 'Chia s\u1ebb n\u1ed9i dung \u0111\u1ec3 c\u00f9ng h\u1ecdc. Ng\u01b0\u1eddi nh\u1eadn v\u1eabn c\u1ea7n quy\u1ec1n xem n\u1ed9i dung \u0111\u01b0\u1ee3c chia s\u1ebb.',
+  'exchange.messaging.firstPrompt': 'B\u1ea1n mu\u1ed1n luy\u1ec7n g\u00ec h\u00f4m nay?',
+  'exchange.messaging.learningPrompt': 'Chia s\u1ebb m\u1ee5c ti\u00eau, luy\u1ec7n h\u1ed9i tho\u1ea1i ho\u1eb7c trao \u0111\u1ed5i m\u1ed9t c\u00e2u h\u1ecfi c\u00f9ng b\u1ea1n h\u1ecdc.',
+  'exchange.messaging.updatesInterrupted': 'C\u1eadp nh\u1eadt tr\u1ef1c ti\u1ebfp b\u1ecb gi\u00e1n \u0111o\u1ea1n. V\u1eabn \u0111ang ki\u1ec3m tra tin nh\u1eafn \u0111\u1ecbnh k\u1ef3.',
+  'exchange.messaging.updated': 'C\u1eadp nh\u1eadt {date}',
   'exchange.messaging.shareWithPartner': 'Chia sẻ với bạn học',
   'exchange.messaging.shareTitle': 'Chia sẻ nội dung',
   'exchange.messaging.shareIntro': 'Chọn bạn học đã kết nối để cùng trao đổi về nội dung này.',
@@ -49,6 +57,14 @@ export const viMessaging = {
 } as const;
 
 export const enMessaging: Record<keyof typeof viMessaging, string> = {
+  'exchange.messaging.info': 'Conversation information',
+  'exchange.messaging.closeInfo': 'Close conversation information',
+  'exchange.messaging.pairIntro': 'A direct conversation between you and your learning partner.',
+  'exchange.messaging.contextAccess': 'Share content to learn together. The recipient still needs permission to view the shared content.',
+  'exchange.messaging.firstPrompt': 'What would you like to practise today?',
+  'exchange.messaging.learningPrompt': 'Share a goal, practise a conversation, or discuss a question with your learning partner.',
+  'exchange.messaging.updatesInterrupted': 'Live updates interrupted. Still checking messages periodically.',
+  'exchange.messaging.updated': 'Updated {date}',
   'exchange.messaging.shareWithPartner': 'Share with a learning partner',
   'exchange.messaging.shareTitle': 'Share content',
   'exchange.messaging.shareIntro': 'Choose a connected learning partner to discuss this content together.',
