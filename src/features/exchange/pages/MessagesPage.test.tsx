@@ -91,3 +91,20 @@ describe('native messages page integration', () => {
     await waitFor(() => expect(screen.queryByRole('link', { name: /Nguyễn Thị Thu Hương/ })).not.toBeInTheDocument());
   });
 });
+
+ describe('Phase29 inbox metadata', () => {
+  it('shows the server update time and an accessible unread count on its canonical row', async () => {
+    const result = view(api());
+    const row = await screen.findByRole('link', { name: new RegExp(summary.partner.displayName) });
+    expect(row.querySelector('time')).toHaveAttribute('datetime', summary.updatedAt);
+    expect(row).toHaveAccessibleName(expect.stringContaining('1 tin ch\u01b0a \u0111\u1ecdc'));
+    expect(row).toHaveAttribute('href', '/exchange/conversations/room');
+    expect(result.container.querySelector('time')).toHaveTextContent(new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(summary.updatedAt)));
+  });
+  it('provides a learning-partner destination in the genuinely empty inbox', async () => {
+    const source = api(); vi.mocked(source.list).mockResolvedValue({ items: [], nextCursor: null });
+    view(source);
+    await screen.findByText(/Ch\u01b0a c\u00f3 h\u1ed9i tho\u1ea1i\./);
+    expect(screen.getAllByRole('link', { name: 'B\u1ea1n h\u1ecdc c\u1ee7a b\u1ea1n' })).toHaveLength(2);
+  });
+ });
