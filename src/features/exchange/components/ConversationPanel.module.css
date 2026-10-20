@@ -10,3 +10,5 @@
   .panel { height: auto; min-height: 28rem; }
   .identity { flex-basis: 100%; }
 }
+
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }

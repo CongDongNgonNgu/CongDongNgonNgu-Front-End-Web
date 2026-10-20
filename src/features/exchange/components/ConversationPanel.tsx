@@ -9,17 +9,18 @@ import { useMessageStream } from '../hooks/use-message-stream';
 import { useVisibleMessageRead } from '../hooks/use-visible-message-read';
 import { useMessageContexts } from '../hooks/use-message-contexts';
 import type { MessagingApiContract, MessageContextApi } from '../messaging.types';
+import { ConversationInfo } from './ConversationInfo';
 import { MessageComposer } from './MessageComposer';
 import { MessageTimeline } from './MessageTimeline';
 import styles from './ConversationPanel.module.css';
 
 type StreamOptions = Parameters<typeof useMessageStream>[0];
 export interface ConversationPanelProps {
-  api: MessagingApiContract & Partial<MessageContextApi>; id: string; actor: string;
+  api: MessagingApiContract & Partial<MessageContextApi>; id: string; actor: string; actorName?: string;
   streamAuth: StreamOptions['auth']; streamClient?: StreamOptions['client'];
   onConversationChange?: () => Promise<void>;
 }
-export function ConversationPanel({ api, id, actor, streamAuth, streamClient, onConversationChange }: ConversationPanelProps) {
+export function ConversationPanel({ api, id, actor, actorName, streamAuth, streamClient, onConversationChange }: ConversationPanelProps) {
   const { t } = useUiLocale();
   const thread = useMessageThread(api, id, actor);
   const contextQueue = useMessageContexts(api, id, actor, thread.loading);
@@ -42,7 +43,8 @@ export function ConversationPanel({ api, id, actor, streamAuth, streamClient, on
     {thread.summary && <>
       <header className={styles.header}>
         <div className={styles.identity}><span aria-hidden='true'><Avatar name={thread.summary.partner.displayName}/></span><strong>{thread.summary.partner.displayName}</strong></div>
-        <Link className={styles.link} to={'/exchange/profile/' + encodeURIComponent(thread.summary.partner.userId)}>{t('exchange.messaging.profile')}</Link>
+        <div className={styles.actions}><Link className={styles.link} to={'/exchange/profile/' + encodeURIComponent(thread.summary.partner.userId)}>{t('exchange.messaging.profile')}</Link>
+          <ConversationInfo key={actor + ':' + id + ':' + thread.summary.partner.userId} partner={thread.summary.partner} actorName={actorName}/></div>
       </header>
       {stream !== 'connected' && <p className={styles.status} role='status'>{t(stream === 'connecting' ? 'exchange.messaging.connecting' : stream === 'unavailable' ? 'exchange.messaging.unavailable' : stream === 'offline' ? 'exchange.messaging.updatesInterrupted' : 'exchange.messaging.reconnecting')}</p>}
       <MessageTimeline messages={thread.messages} actor={actor} partner={thread.summary.partner.displayName}

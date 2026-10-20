@@ -10,7 +10,7 @@ import { ConversationPanel, type ConversationPanelProps } from '../components/Co
 import styles from './MessagesPage.module.css';
 
 interface Props {
-  api: MessagingApiContract & Partial<MessageContextApi>; actor?: string; authLoading?: boolean; conversationId?: string;
+  api: MessagingApiContract & Partial<MessageContextApi>; actor?: string; actorName?: string; authLoading?: boolean; conversationId?: string;
   streamAuth: ConversationPanelProps['streamAuth']; streamClient?: ConversationPanelProps['streamClient'];
 }
 export function MessagesPage() {
@@ -19,10 +19,10 @@ export function MessagesPage() {
   const api = useMemo(() => new MessagingApi(auth.api), [auth.api]);
   const streamAuth = useMemo(() => ({ getAccessToken: () => auth.api.getAccessToken(), refresh: auth.refresh }), [auth.api, auth.refresh]);
   return <MessagesPageView api={api} actor={auth.status === 'authenticated' ? auth.user?.id : undefined}
-    authLoading={auth.status === 'loading'} conversationId={conversationId} streamAuth={streamAuth}/>;
+    actorName={auth.status === 'authenticated' ? auth.user?.displayName : undefined} authLoading={auth.status === 'loading'} conversationId={conversationId} streamAuth={streamAuth}/>;
 }
 
-export function MessagesPageView({ api, actor, authLoading = false, conversationId, streamAuth, streamClient }: Props) {
+export function MessagesPageView({ api, actor, actorName, authLoading = false, conversationId, streamAuth, streamClient }: Props) {
   const { t } = useUiLocale();
   const list = useConversations(api, actor);
   return <section className={styles.page} aria-labelledby='messages-title'>
@@ -35,7 +35,7 @@ export function MessagesPageView({ api, actor, authLoading = false, conversation
       {conversationId && <Link className={`${styles.link} ${styles.back}`} to='/exchange/conversations'>← {t('exchange.messaging.list')}</Link>}
       <div className={`${styles.layout} ${conversationId ? styles.selected : ''}`}>
         <ConversationInbox list={list} selected={conversationId}/>
-        {conversationId ? <ConversationPanel key={actor + ':' + conversationId} api={api} id={conversationId} actor={actor} streamAuth={streamAuth} streamClient={streamClient} onConversationChange={list.refresh}/>
+        {conversationId ? <ConversationPanel key={actor + ':' + conversationId} api={api} id={conversationId} actor={actor} actorName={actorName} streamAuth={streamAuth} streamClient={streamClient} onConversationChange={list.refresh}/>
           : <div className={styles.prompt}><p>{t('exchange.messaging.select')}</p></div>}
       </div>
     </>}
