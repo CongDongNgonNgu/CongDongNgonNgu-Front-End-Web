@@ -85,10 +85,10 @@ describe('shell identity boundaries', () => {
 });
 
 describe('authenticated desktop row keyboard order', () => {
-  it('reaches the social navigation after the top-row account actions', async () => {
+  it('reaches the utility actions after the single-row navigation', async () => {
     const user = userEvent.setup(); view(true, 'en');
-    screen.getByRole('button', { name: 'Log out' }).focus();
+    screen.getByRole('button', { name: 'More' }).focus();
     await user.tab();
-    expect(within(screen.getByRole('navigation', { name: 'Primary navigation' })).getByRole('link', { name: 'Home' })).toHaveFocus();
+    expect(screen.getAllByRole('combobox', { name: 'Interface language' })[0]).toHaveFocus();
   });
 });
