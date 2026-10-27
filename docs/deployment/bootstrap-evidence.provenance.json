@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "app": "frontend",
+  "sourceSha": "8777545f1d42ffe85e37e2ce5f1d7c8ff9030fea",
+  "distHash": "161dd82b465231a9b0592acc916cc25ab12a4a0b6150406820728b4ac6d3fa8b",
+  "modulesHash": null,
+  "packageHash": null,
+  "lockHash": null,
+  "provenance": {
+    "method": "reproducible-build",
+    "reference": "https://github.com/CongDongNgonNgu/CongDongNgonNgu-Front-End-Web/actions/runs/40508043375",
+    "reviewedBy": "Codex coordinator; independent review /root/provenance",
+    "summary": "REPRODUCTION-RESULT.json",
+    "historicalBuildProvenance": "NOT_ESTABLISHED"
+  },
+  "productionApiOrigin": "https://api.congdongngonngu.vn/api/v1",
+  "nginx": {
+    "root": "/var/www/congdongngonngu/frontend/dist",
+    "symlinkTraversalReviewed": false
+  }
+}

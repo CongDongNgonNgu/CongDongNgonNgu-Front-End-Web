@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "purpose": "reviewed-byte-reproduction-summary",
+  "app": "frontend",
+  "byteReproducibility": "PASS",
+  "historicalBuildProvenance": "NOT_ESTABLISHED",
+  "bootstrapReadiness": "BLOCKED",
+  "sourceSha": "8777545f1d42ffe85e37e2ce5f1d7c8ff9030fea",
+  "toolchain": {
+    "osImage": "ubuntu-24.04",
+    "node": "24.18.1",
+    "npm": "11.16.0",
+    "originalBuildToolchainVerified": false
+  },
+  "commands": [
+    "npm ci --include=dev",
+    "npm run build"
+  ],
+  "hashes": {
+    "distHash": "161dd82b465231a9b0592acc916cc25ab12a4a0b6150406820728b4ac6d3fa8b",
+    "modulesHash": null,
+    "packageHash": null,
+    "lockHash": null
+  },
+  "replicas": [
+    {
+      "replica": 1,
+      "reportSha256": "6ac5cd7a95016e709c5d175da6e54c69c1cd20cfba8a2c7e188bdce0dd58826b",
+      "toolchain": {
+        "platform": "linux",
+        "arch": "x64",
+        "kernel": "6.17.0-1022-azure",
+        "node": "24.18.1",
+        "npm": "11.16.0"
+      },
+      "comparisons": {
+        "distHash": "MATCH",
+        "modulesHash": "MATCH",
+        "packageHash": "MATCH",
+        "lockHash": "MATCH"
+      },
+      "distDifferences": {
+        "onlyInProduction": [],
+        "onlyInBuild": [],
+        "changed": []
+      },
+      "artifact": {
+        "id": 12736410795,
+        "url": "https://github.com/CongDongNgonNgu/CongDongNgonNgu-Front-End-Web/actions/runs/40508043375/artifacts/12736410795",
+        "digest": "sha256:201d154e806697e7299ce6300a683a92ebf913bf9d86ddcde9e379ec8caf6ed7",
+        "expiresAt": "2026-11-26T12:59:05Z"
+      }
+    },
+    {
+      "replica": 2,
+      "reportSha256": "6ac5cd7a95016e709c5d175da6e54c69c1cd20cfba8a2c7e188bdce0dd58826b",
+      "toolchain": {
+        "platform": "linux",
+        "arch": "x64",
+        "kernel": "6.17.0-1022-azure",
+        "node": "24.18.1",
+        "npm": "11.16.0"
+      },
+      "comparisons": {
+        "distHash": "MATCH",
+        "modulesHash": "MATCH",
+        "packageHash": "MATCH",
+        "lockHash": "MATCH"
+      },
+      "distDifferences": {
+        "onlyInProduction": [],
+        "onlyInBuild": [],
+        "changed": []
+      },
+      "artifact": {
+        "id": 12735868120,
+        "url": "https://github.com/CongDongNgonNgu/CongDongNgonNgu-Front-End-Web/actions/runs/40508043375/artifacts/12735868120",
+        "digest": "sha256:5269dcf572f75e379360b997682dbab0c37e9765e9276533ac46852a9fba7fa3",
+        "expiresAt": "2026-11-26T12:59:05Z"
+      }
+    }
+  ],
+  "nonsecretBuildConfiguration": {
+    "VITE_API_BASE_URL": "https://api.congdongngonngu.vn/api/v1"
+  },
+  "provenanceStatus": "PASS",
+  "provenanceMethod": "reproducible-build",
+  "reviewed": true,
+  "reviewedBy": "Codex coordinator; independent review /root/provenance",
+  "scope": "Exact content trees and package/lock bytes; excludes historical build chain, permissions, ownership, runtime and activation approval",
+  "run": {
+    "url": "https://github.com/CongDongNgonNgu/CongDongNgonNgu-Front-End-Web/actions/runs/40508043375",
+    "id": 40508043375,
+    "attempt": 1,
+    "helperRevision": "d3a7d23ef937bca3a3da3780177d417100ac5d5c",
+    "status": "success"
+  }
+}
