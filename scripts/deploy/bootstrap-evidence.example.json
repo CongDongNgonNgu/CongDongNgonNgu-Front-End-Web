@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "app": "frontend",
+  "sourceSha": "8777545f1d42ffe85e37e2ce5f1d7c8ff9030fea",
+  "distHash": null,
+  "modulesHash": null,
+  "packageHash": null,
+  "lockHash": null,
+  "provenance": {
+    "method": null,
+    "reference": null,
+    "reviewedBy": null
+  },
+  "nginx": {
+    "root": "/var/www/congdongngonngu/frontend/dist",
+    "symlinkTraversalReviewed": false
+  },
+  "productionApiOrigin": null
+}
