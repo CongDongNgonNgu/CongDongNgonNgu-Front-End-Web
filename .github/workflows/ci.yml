@@ -45,4 +45,7 @@ jobs:
         run: npm run performance:check
 
       - name: Security audit
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=moderate
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=moderate
