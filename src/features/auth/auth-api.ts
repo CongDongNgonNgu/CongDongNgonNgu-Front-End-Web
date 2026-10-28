@@ -176,7 +176,18 @@ export class AuthApi {
     const method = (init.method ?? 'GET').toUpperCase();
     if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
     if (method !== 'GET' && method !== 'HEAD') {
-      const csrf = readCookie('cdn_csrf');
+      const base = resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
+      const crossOrigin = new URL(base, window.location.origin).origin !== window.location.origin;
+      // Re-read for each mutation: refresh rotates the API-host CSRF cookie.
+      // Never fall back to an apex cookie when the API is on another origin.
+      const needsSessionCsrf = path === '/auth/refresh' || path === '/auth/logout' ||
+        path === '/auth/logout-all' || headers.has('Authorization');
+      const csrf = crossOrigin && needsSessionCsrf
+        ? (await apiClient.request<{ csrfToken: string | null }>('/auth/csrf', {
+          credentials: 'include', cache: 'no-store',
+        })).csrfToken
+        : crossOrigin ? null : readCookie('cdn_csrf');
+      headers.delete('X-CSRF-Token');
       if (csrf) headers.set('X-CSRF-Token', csrf);
     }
     return apiClient.request<T>(path, {
