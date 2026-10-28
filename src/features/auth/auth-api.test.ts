@@ -96,6 +96,49 @@ describe('AuthApi', () => {
     expect(new Headers(init.headers).get('X-CSRF-Token')).toBe('csrf-value');
   });
 
+  it('refreshes after OAuth using API CSRF instead of a stale apex cookie', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.test/api/v1');
+    document.cookie = 'cdn_csrf=stale-apex-cookie; path=/';
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ csrfToken: 'api-host-token' }).mockResolvedValueOnce(session);
+    const api = new AuthApi();
+    await expect(api.refreshAccess()).resolves.toEqual(session);
+    expect(request.mock.calls[0][0]).toBe('/auth/csrf');
+    expect(request.mock.calls[0][1]).toMatchObject({ credentials: 'include', cache: 'no-store' });
+    expect(new Headers(request.mock.calls[1][1]?.headers).get('X-CSRF-Token')).toBe('api-host-token');
+    expect(api.getAccessToken()).toBe(session.accessToken);
+  });
+
+  it('retrieves the rotated token for logout and supports reload bootstrap', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.test/api/v1');
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ csrfToken: 'callback-token' }).mockResolvedValueOnce(session)
+      .mockResolvedValueOnce({ csrfToken: 'rotated-token' }).mockResolvedValueOnce({});
+    const api = new AuthApi();
+    await expect(api.bootstrap()).resolves.toEqual(session.user);
+    await api.logout();
+    expect(new Headers(request.mock.calls[3][1]?.headers).get('X-CSRF-Token')).toBe('rotated-token');
+    expect(api.getAccessToken()).toBeNull();
+  });
+
+  it('fails closed when cross-origin CSRF delivery is denied', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.test/api/v1');
+    const request = vi.spyOn(apiClient, 'request')
+      .mockRejectedValue(new ApiClientError('denied', 403, 'AUTH_CSRF_INVALID'));
+    await expect(new AuthApi().bootstrap()).resolves.toBeNull();
+    expect(request).toHaveBeenCalledOnce();
+    expect(request.mock.calls[0][0]).toBe('/auth/csrf');
+  });
+
+  it('allows password login to replace legacy host cookies without a CSRF bootstrap', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.test/api/v1');
+    const request = vi.spyOn(apiClient, 'request').mockResolvedValue(session);
+    const api = new AuthApi();
+    await expect(api.login({ email: session.user.email, password: 'local-password' })).resolves.toEqual(session);
+    expect(request).toHaveBeenCalledOnce();
+    expect(request.mock.calls[0][0]).toBe('/auth/login');
+  });
+
   it('builds the unified Google OAuth redirect from the configured API base', () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://auth.example.test/api/v1');
     const api = new AuthApi();
