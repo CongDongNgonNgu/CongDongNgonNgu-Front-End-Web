@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "sourceRevision": "5f236223cd7d229eee9003e984030dba4409df73",
+  "byteSource": "Exact Git blobs, no Windows checkout conversion",
+  "status": "SOURCE_REVIEW_COMPLETE_LINUX_RESULTS_PENDING",
+  "scope": "Inspection and bootstrap safety helpers; no transfer/Production execution approved. All helpers must be verified together from one pinned revision.",
+  "files": [
+    {
+      "path": "scripts/deploy/bootstrap-core.cjs",
+      "sha256": "95af889f88590220400009b49ba68277c5e2b55fd5ac4612fe8a9a4a8c12520b",
+      "bytes": 18687
+    },
+    {
+      "path": "scripts/deploy/bootstrap-process-guard.cjs",
+      "sha256": "14d72e76f808355e1b909268984bb7e5764758461f833ed1db2896ef1b9a786b",
+      "bytes": 1015
+    },
+    {
+      "path": "scripts/deploy/bootstrap.cjs",
+      "sha256": "166c4da451646151236361e1e713aa44392dcd2ba674cc8abdea7aa7929b6e35",
+      "bytes": 4070
+    },
+    {
+      "path": "scripts/deploy/bootstrap.sh",
+      "sha256": "e6fe25ef3fd0081c0f0c8514f568b10911e20782f1015d880016f0712b19ff8e",
+      "bytes": 996
+    },
+    {
+      "path": "scripts/deploy/bootstrap-config.json",
+      "sha256": "2e9a2fbe461ec407458f05f555167a30abc19a30d6931a255f29c138a42e03de",
+      "bytes": 119
+    },
+    {
+      "path": "scripts/deploy/verify.cjs",
+      "sha256": "80578c0fefa1c2de649e2a45c157dc83c078eb44e8ca36ab07b3074388becc4e",
+      "bytes": 1964
+    },
+    {
+      "path": "scripts/deploy/exchange.py",
+      "sha256": "bc28c3de93d6293585ed9713227fea8e3072ae67bf6c7364996ef3279e7b81d8",
+      "bytes": 771
+    }
+  ]
+}
