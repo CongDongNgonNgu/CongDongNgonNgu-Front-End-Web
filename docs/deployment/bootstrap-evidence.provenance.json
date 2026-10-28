@@ -16,6 +16,14 @@
   "productionApiOrigin": "https://api.congdongngonngu.vn/api/v1",
   "nginx": {
     "root": "/var/www/congdongngonngu/frontend/dist",
-    "symlinkTraversalReviewed": false
+    "symlinkTraversalReviewed": true,
+    "effectivePolicyReviewed": true,
+    "effectiveSymlinkPolicy": "off",
+    "syntaxValidated": true,
+    "dumpPipelineStatus": 0,
+    "currentWorkerAccessVerified": true,
+    "liveReleaseSymlinkTraversal": "NOT_ACTIVATED_NOT_VERIFIED",
+    "evidenceReference": "OPERATOR-EVIDENCE-2026-10-28.json",
+    "reviewScope": "Effective policy and current path access only; future live release traversal is a post-activation requirement"
   }
 }
