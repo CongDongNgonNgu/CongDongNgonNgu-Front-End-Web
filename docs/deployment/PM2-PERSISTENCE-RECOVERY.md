@@ -72,21 +72,16 @@ part of ordinary required CI. The rehearsal has no authority to change gates.
    instances/PORT/NODE_ENV. Retain those nulls. Review actual launch/persistence
    sources and configuration loading semantics privately before proposing an
    explicit contract change; do not edit/save PM2 to satisfy the validator.
-2. Host systemd launch/resurrection identity and saved-source selection remain
-   unverified. The following prints only nonsecret service identity/state:
-
-~~~bash
-systemctl show pm2-cdnn-deploy --no-pager \
-  --property=User,Group,ActiveState,SubState,UnitFileState,MainPID
-~~~
-
-   Review the effective unit and any drop-ins locally; return only whether its
-   user, PM2_HOME, pinned PM2/Node executable and resurrection source match the
-   reviewed design. Do not paste raw unit Environment/ExecStart/ExecStop output.
-   Do not enable, start, stop, restart, reload or regenerate the service.
+2. Host systemd configuration identity and persistence-source configuration are
+   now verified by the operator: cdnn-deploy, enabled/active/running, expected
+   PM2_HOME/PIDFile, no drop-ins and pinned pm2 resurrect ExecStart. See
+   [host evidence](HOST-SYSTEMD-EVIDENCE-2026-10-28.json). Do not repeat that
+   completed inspection unless inputs change. Actual Production restart/reboot
+   and backup-dump fallback operation remain untested.
 3. Production listener-to-health-responder correlation is still UNVERIFIED.
    Independent listener and health PASS must not be described as exact endpoint
-   identity. A separately reviewed read-only correlation method is still needed.
+   identity. The [read-only correlation design](ENDPOINT-CORRELATION-DESIGN.md) is prepared;
+   implementation/Linux negative-path validation and operator execution remain pending.
 4. Operational Production rollback requires an approved concrete plan, fresh
    host provenance/metadata/storage checks, retained verified originals, actual
    atomic-exchange compatibility and restoration/public-asset acceptance.
@@ -101,3 +96,12 @@ Workspace draft PR #185 and both main revisions.
 References: [PM2 save/resurrect and startup](https://pm2.keymetrics.io/docs/usage/startup/),
 [PM2 launch fields](https://pm2.keymetrics.io/docs/usage/application-declaration/),
 [Nginx symlink default](https://nginx.org/en/docs/http/ngx_http_core_module.html#disable_symlinks).
+
+## Host configuration evidence consolidation
+
+The operator verified systemd identity and configured persistence source on
+2026-10-28; earlier pending-configuration statements are superseded by
+[HOST-SYSTEMD-EVIDENCE-2026-10-28.json](HOST-SYSTEMD-EVIDENCE-2026-10-28.json).
+This does not prove the original launch command, actual Production restart or
+host reboot. The strict runtime contract remains unchanged and blocked. See
+[the concrete bootstrap/rollback acceptance plan](BOOTSTRAP-ROLLBACK-ACCEPTANCE.md).
