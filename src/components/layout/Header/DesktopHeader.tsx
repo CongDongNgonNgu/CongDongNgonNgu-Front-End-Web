@@ -45,7 +45,7 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
               <div className={styles.accountMenuWrap}>
                 <DropdownMenu variant='navigation' open={accountOpen} label={t('shell.account')} onToggle={onAccountToggle} onClose={onAccountClose}
                   triggerClassName={styles.accountTrigger}
-                  triggerContent={<><Avatar name={userDisplayName} size='sm' decorative /><span>{t('shell.account')}</span></>}>
+                  triggerContent={<><Avatar name={userDisplayName} size='sm' decorative /><span className={styles.accountLabel}>{t('shell.account')}</span></>}>
                   {socialNavigation.map(item => <NavigationLink key={item.id} item={item} className={styles.dropdownItem} activeClassName={styles.dropdownItemActive}/>)}
                   <Link className={styles.dropdownItem} to='/profile'><Icon name='user-round' size={18}/>{t('shell.passport')}</Link>
                   <Link className={styles.dropdownItem} to='/membership'><Icon name='award' size={18}/>{t('shell.membership')}</Link>
@@ -56,14 +56,15 @@ export function DesktopHeader({ isAuthenticated, userDisplayName, onLogout, more
           </div>
   );
   return (
-    <div className={[styles.desktopHeader, isAuthenticated ? styles.authenticated : ''].filter(Boolean).join(' ')}>
+    <div className={styles.desktopHeader}>
       <div className='shell-width'>
         <div className={styles.headerInner}>
-          <Link className={styles.brand} to='/'>
+          <Link className={styles.brand} to='/' aria-label={t('shell.brandHome')}>
             <img className={styles.brandMark} src='/brand/congdongngonngu-mark.png' alt='' width='512' height='512' />
             <span className={styles.brandWordmark}><span className={styles.brandName}>{t('shell.brand')}</span><span className={styles.brandTagline}>{t('shell.tagline')}</span></span>
           </Link>
-          {isAuthenticated ? <>{actions}{navigation}</> : <>{navigation}{actions}</>}
+          {navigation}
+          {actions}
         </div>
       </div>
     </div>
