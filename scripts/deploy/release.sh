@@ -18,6 +18,7 @@ candidate="$base/.cdnn-next-$sha-$run"
 rollback="$base/.cdnn-rollback-$sha-$run"
 test ! -e "$candidate" && test ! -L "$candidate"
 test ! -e "$rollback" && test ! -L "$rollback"
+node scripts/deploy/release-assets.cjs reserve "$base"
 npm ci --include=dev
 VITE_API_BASE_URL=https://api.congdongngonngu.vn/api/v1 npm run build
 npm audit --omit=dev --audit-level=moderate
@@ -65,6 +66,7 @@ recover() {
   exit "$status"
 }
 printf '{"sha":"%s","old_inode":"%s","new_inode":"%s","candidate":"%s","rollback_inode":"%s","previous_index":"%s"}\n' "$sha" "$old_inode" "$new_inode" "$candidate" "$rollback_inode" "$previous_index" > "$release/activation-intent.json"
+node scripts/deploy/release-assets.cjs sync "$release/activation-intent.json" "$release" "$base"
 trap recover EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
