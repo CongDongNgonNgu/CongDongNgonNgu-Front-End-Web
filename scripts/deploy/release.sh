@@ -74,4 +74,5 @@ python3 scripts/deploy/exchange.py "$base/dist" "$candidate"
 test "$(stat -c '%d:%i' "$base/dist")" = "$new_inode"
 verify "$sha"
 record verified
+printf 'DEPLOYED_SHA=%s RESULT=verified\n' "$sha"
 trap - EXIT INT TERM
