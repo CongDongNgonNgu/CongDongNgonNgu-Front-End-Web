@@ -22,6 +22,8 @@ const reply=(data,status=200,code='UNKNOWN_TEST_ERROR')=>{res.writeHead(status,{
 if(settings.holdLoading && (path.endsWith('/languages') || path.endsWith('/exchange/discovery')))await new Promise(done=>pendingLoads.push(done));
 if(settings.delay)await new Promise(done=>setTimeout(done,settings.delay));
 if(path.endsWith('/auth/providers'))return reply({providers:[{provider:'google',enabled:false,reason:'NOT_CONFIGURED'}]});
+// Match the production OAuth hotfix contract; this token is synthetic fixture data.
+if(path.endsWith('/auth/csrf'))return reply({csrfToken:settings.authenticated?'SYNTHETIC_CSRF_TEST_ONLY':null});
 if(path.endsWith('/auth/refresh'))return settings.authenticated?reply({accessToken:'SYNTHETIC_TEST_ONLY',expiresIn:600,user}):reply(null,403);
 if(path.endsWith('/auth/login')){if(settings.mode==='login-success'){settings.authenticated=true;return reply({accessToken:'SYNTHETIC_TEST_ONLY',expiresIn:600,user});}return reply(null,400,settings.mode==='known-error'?'AUTH_INVALID_CREDENTIALS':'UNKNOWN_TEST_ERROR');}
 if(path.endsWith('/auth/logout')){settings.authenticated=false;return reply({loggedOut:true});}

@@ -40,3 +40,9 @@ node scripts/verify-navigation-runtime.mjs
 Artifacts default to ignored `artifacts/navigation/`: `report.json` and `vi-{anonymous,authenticated}-{390,1440}.png`. Set `HEADER_TARGET_ORIGIN` to the Vercel TEST origin to verify deployed frontend assets with isolated synthetic API responses. Set `HEADER_ARTIFACT_DIR` to keep a separate report. `HEADER_BASELINE=1` records the old layout for comparison without asserting the new design.
 
 Rollback, if required, is a normal revert PR targeting dev. No production workflow activation is required.
+
+## Isolated main release verification ? 2026-10-29
+
+Source cherry-picked: cf24061bd6a741b7ac3fe2aa8214a967fd42b568. Release branch starts from main containing the accepted OAuth CSRF hotfix; no auth/session application file is changed. The synthetic member fixture now answers /auth/csrf to match that existing main contract.
+
+Local lint, typecheck, 146 test files / 831 tests, Production-API build, performance budget and high-severity audit passed (zero vulnerabilities). Runtime checks passed all 52 measurements at 320/375/390/412/768/1024/1280/1440/1920px, two locales, both auth states, loading/login/logout transitions, keyboard/drawer/dropdowns and four axe header checks. These browser sessions use synthetic API data and do not constitute a live Google-account login acceptance. Production verification remains a post-CD gate.
